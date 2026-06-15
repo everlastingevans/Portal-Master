@@ -21,6 +21,56 @@ export async function GET() {
         resume_text: true,
         linkedin_url: true,
         github_url: true,
+        video_interviews: {
+          select: {
+            id: true,
+            video_url: true,
+            questions: true,
+            score: true,
+            feedback: true,
+            status: true,
+            created_at: true,
+          }
+        },
+        job_matches: {
+          select: {
+            id: true,
+            match_score: true,
+            missing_skills: true,
+            matched_skills: true,
+            recommendation: true,
+            fit_summary: true,
+            job: {
+              select: {
+                id: true,
+                title: true,
+                company: true,
+              }
+            }
+          }
+        },
+        applications: {
+          select: {
+            id: true,
+            status: true,
+            applied_at: true,
+            job: {
+              select: {
+                id: true,
+                title: true,
+                company: true,
+              }
+            }
+          }
+        },
+        resume_tasks: {
+          select: {
+            id: true,
+            status: true,
+            progress: true,
+            updated_at: true,
+          }
+        }
       },
       orderBy: { id: 'desc' }
     });
