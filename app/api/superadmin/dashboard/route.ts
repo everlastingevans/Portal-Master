@@ -19,6 +19,8 @@ export async function GET() {
         professional_title: true,
         experience_level: true,
         resume_text: true,
+        linkedin_url: true,
+        github_url: true,
       },
       orderBy: { id: 'desc' }
     });
@@ -30,6 +32,7 @@ export async function GET() {
         id: true,
         name: true,
         email: true,
+        tenant_id: true,
         jobs_posted: {
           select: {
             id: true,
@@ -37,22 +40,42 @@ export async function GET() {
             company: true,
             location: true,
             description: true,
+            salary_min: true,
+            salary_max: true,
+            status: true,
+            years_experience: true,
+            mandatory_skills: true,
+            tech_stack: true,
           }
         }
       },
       orderBy: { id: 'desc' }
     });
 
-    // 3. All Job Matches
+    // 3. All Jobs for the Dedicated Jobs Tab
+    const jobs = await db.job.findMany({
+      include: {
+        employer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          }
+        }
+      },
+      orderBy: { id: 'desc' }
+    });
+
+    // 4. All Job Matches
     const matches = await db.jobMatch.findMany({
       include: {
-        candidate: { select: { name: true, email: true } },
-        job: { select: { title: true, company: true } }
+        candidate: { select: { id: true, name: true, email: true } },
+        job: { select: { id: true, title: true, company: true } }
       },
       orderBy: { match_score: 'desc' }
     });
 
-    // 4. All Job Applications for Success Rates
+    // 5. All Job Applications for Success Rates
     const applications = await db.jobApplication.findMany({
       include: {
         candidate: { select: { id: true, name: true, email: true } },
@@ -61,7 +84,7 @@ export async function GET() {
       orderBy: { applied_at: 'desc' }
     });
 
-    // 5. All Initiated Interviews & Parties
+    // 6. All Initiated Interviews & Parties
     const interviews = await db.interview.findMany({
       include: {
         candidate: { select: { id: true, name: true, email: true } },
@@ -87,12 +110,14 @@ export async function GET() {
       user: { role: 'SUPERADMIN', name: 'System Administrator' },
       candidates,
       employers,
+      jobs,
       matches,
       applications,
       interviews,
       stats: {
         totalCandidates: candidates.length,
         totalEmployers: employers.length,
+        totalJobs: jobs.length,
         totalMatches: matches.length,
         totalApplications: totalApps,
         totalInterviews: interviews.length,
