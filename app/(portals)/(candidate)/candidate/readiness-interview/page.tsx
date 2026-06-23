@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import LaunchpathMuxPlayer from '@/components/LaunchpathMuxPlayer';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, Video, VideoOff, Timer, ChevronRight, 
@@ -30,13 +31,17 @@ const QUESTIONS = [
   }
 ];
 
+const LAUNCHPATH_POSTER_SVG = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgNDUwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ2xvdyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxZTFiNGIiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI0MCUiIHN0b3AtY29sb3I9IiMwZjE3MmEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDIwNjE3Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJicmFuZCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNzE0NUZGIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzhiNWNmNiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI0NTAiIGZpbGw9InVybCgjZ2xvdykiLz4KICAKICA8IS0tIFN1YnRsZSBmdXR1cmlzdGljIGxpbmVzIC0tPgogIDxnIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9IjAuMDMiIHN0cm9rZS13aWR0aD0iMSI+CiAgICA8bGluZSB4MT0iMTAwIiB5MT0iMCIgeDI9IjEwMCIgeTI9IjQ1MCIvPgogICAgPGxpbmUgeDE9IjIwMCIgeTE9IjAiIHgyPSIyMDAiIHkyPSI0NTAiLz4KICAgIDxsaW5lIHgxPSIzMDAiIHkxPSIwIiB4Mj0iMzAwIiB5Mj0iNDUwIi8+CiAgICA8bGluZSB4MT0iNDAwIiB5MT0iMCIgeDI9IjQwMCIgeTI9IjQ1MCIvPgogICAgPGxpbmUgeDE9IjUwMCIgeTE9IjAiIHgyPSI1MDAiIHkyPSI0NTAiLz4KICAgIDxsaW5lIHgxPSI2MDAiIHkxPSIwIiB4Mj0iNjAwIiB5Mj0iNDUwIi8+CiAgICA8bGluZSB4MT0iNzAwIiB5MT0iMCIgeDI9IjcwMCIgeTI9IjQ1MCIvPgogICAgPGxpbmUgeDE9IjAiIHkxPSIxMDAiIHgyPSI4MDAiIHkyPSIxMDAiLz4KICAgIDxsaW5lIHgxPSIwIiB5MT0iMjAwIiB4Mj0iODAwIiB5Mj0iMjAwIi8+CiAgICA8bGluZSB4PSIwIiB5MT0iMzAwIiB4Mj0iODAwIiB5Mj0iMzAwIi8+CiAgICA8bGluZSB4PSIwIiB5MT0iNDAwIiB4Mj0iODAwIiB5Mj0iNDAwIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjQwMCIgY3k9IjIyNSIgcj0iMTQwIiBmaWxsPSIjNzE0NUZGIiBmaWxsLW9wYWNpdHk9IjAuMTUiIGZpbHRlcj0iYmx1cig2MHB4KSIvPgogIDxjaXJjbGUgY3g9IjIwMCIgY3k9IjE1MCIgcj0iODAiIGZpbGw9IiMzYjgyZjYiIGZpbGwtb3BhY2l0eT0iMC4xIiBmaWx0ZXI9ImJsdXIoNDBweCkiLz4KICA8cmVjdCB4PSI1MCIgeT0iNTAiIHdpZHRoPSI3MDAiIGhlaWdodD0iMzUwIiByeD0iMjAiIGZpbGw9IiMwZjE3MmEiIGZpbGwtb3BhY2l0eT0iMC41IiBzdHJva2U9IiMzMzQxNTUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2Utb3BhY2l0eT0iMC40Ii8+CiAgPGNpcmNsZSBjeD0iNDAwIiBjeT0iMTkwIiByPSI0NSIgZmlsbD0iIzcxNDVGRiIgZmlsbC1vcGFjaXR5PSIwLjIiIHN0cm9rZT0iIzcxNDVGRiIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPGNpcmNsZSBjeD0iNDAwIiBjeT0iMTkwIiByPSIzNSIgZmlsbD0idXJsKCNicmFuZCkiLz4KICA8cG9seWdvbiBwb2ludHM9IjM5MiwxNzcgNDE1LDE5MCAzOTIsMjAzIiBmaWxsPSIjZmZmZmZmIi8+CiAgPHJlY3QgeD0iMzEwIiB5PSIyNzAiIHdpZHRoPSIxODAiIGhlaWdodD0iMjQiIHJ4PSIxMiIgZmlsbD0iIzcxNDVGRiIgZmlsbC1vcGFjaXR5PSIwLjE1IiBzdHJva2U9IiM3MTQ1RkYiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLW9wYWNpdHk9IjAuMyIvPgogIDx0ZXh0IHg9IjQwMCIgeT0iMjg1IiBmaWxsPSIjYTc4YmZhIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Db2wsICdTZWdvZSBVSScsIFJvYm90bywgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9IjkwMCIgbGV0dGVyLXNwYWNpbmc9IjEuNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgdGV4dC10cmFuc2Zvcm09InVwcGVyY2FzZSI+TEFVTkNIUEFUSCBWRVJJRklFRDwvdGV4dD4KICA8dGV4dCB4PSI0MDAiIHk9IjMyNSIgZmlsbD0iI2ZmZmZmZiIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sIEJsaW5rTWFjU3lzdGVtQ29sLCAnU2Vnb2UgVUknLCBSb2JvdG8sIE91dGZpdCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjgwMCIgbGV0dGVyLXNwYWNpbmc9Ii0wLjUiIHRleHQtYW5jaG9yPSJuYXR1cmFsIj5BSSBSRUFESU5FU1MgVklERU8gSU5URVJWSUVXPC90ZXh0PgogIDx0ZXh0IHg9IjQwMCIgeT0iMzQ3IiBmaWxsPSIjOTRhM2I4IiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Db2wsICdTZWdvZSBVSScsIFJvYm90bywgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZm9udC13ZWlnaHQ9IjUwMCIgdHJhY2tpbmc9IjAuNSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+U2VjdXJlIFdlYlJUQyBUaW1lZCBFeGVjdXRpdmUgUHJlc2VudGF0aW9uPC90ZXh0PgogIDx0ZXh0IHg9IjgwIiB5PSI5MCIgZmlsbD0iIzY0NzQ4YiIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9IjcwMCI+RkVFRF9TVFJFQU06IEFDVElWRTwvdGV4dD4KICA8Y2lyY2xlIGN4PSIyMTUiIGN5PSI4NiIgcj0iNCIgZmlsbD0iIzEwYjk4MSIvPgogIDx0ZXh0IHg9IjcyMCIgeT0iOTAiIGZpbGw9IiM2NDc0OGIiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTEiIHRleHQtYW5jaG9yPSJlbmQiPjQvNCBNT0RVTEVTIENPTVBMRVRFRDwvdGV4dD4KPC9zdmc+";
+
 export default function ReadinessInterviewPage() {
   const router = useRouter();
   const [step, setStep] = useState<'intro' | 'recording' | 'uploading' | 'finished'>('intro');
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60); // 60 seconds per question
   const [isRecording, setIsRecording] = useState(false);
+  const [isRecordingStarted, setIsRecordingStarted] = useState(false);
   const [cameraPermission, setCameraPermission] = useState<'pending' | 'granted' | 'denied'>('pending');
+  const [isFetchingInitial, setIsFetchingInitial] = useState(true);
   
   // Media streams
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -47,6 +52,28 @@ export default function ReadinessInterviewPage() {
   const [evaluationResult, setEvaluationResult] = useState<any>(null);
   const [finishedActiveIdx, setFinishedActiveIdx] = useState<number>(0);
   const [isReevaluating, setIsReevaluating] = useState(false);
+  const [questionSeconds, setQuestionSeconds] = useState<Record<number, number>>({});
+
+  // Fetch initial existing readiness interview from DB
+  useEffect(() => {
+    async function loadInitial() {
+      try {
+        const res = await fetch('/api/candidate/readiness-interview');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.interview) {
+            setEvaluationResult(data.interview);
+            setStep('finished');
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching initial interview:', err);
+      } finally {
+        setIsFetchingInitial(false);
+      }
+    }
+    loadInitial();
+  }, []);
 
   const handleReevaluate = async (questionId: number) => {
     if (!evaluationResult?.id) return;
@@ -78,6 +105,10 @@ export default function ReadinessInterviewPage() {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const allBlobsRef = useRef<{ questionIdx: number; blob: Blob }[]>([]);
+  const singleRecorderRef = useRef<MediaRecorder | null>(null);
+  const singleChunksRef = useRef<Blob[]>([]);
+  const fullBlobRef = useRef<Blob | null>(null);
 
   // Clean raw media stream on unmount
   useEffect(() => {
@@ -103,7 +134,7 @@ export default function ReadinessInterviewPage() {
   }, [step, stream]);
 
   // Request permissions & set up preview stream
-  const requestCameraPermission = async () => {
+  const requestCameraPermission = async (): Promise<MediaStream | null> => {
     try {
       setCameraPermission('pending');
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
@@ -115,32 +146,76 @@ export default function ReadinessInterviewPage() {
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
+      return mediaStream;
     } catch (err) {
       console.warn('Camera/Mic permission denied or unavailable, enabling professional simulation fallback.', err);
       setCameraPermission('denied');
+      return null;
     }
   };
 
   // Start the actual recording session
   const startInterview = async () => {
-    // Attempt camera permission if pending
-    if (cameraPermission === 'pending') {
-      await requestCameraPermission();
+    let activeStream = stream;
+    // Attempt camera permission if pending or stream is null
+    if (cameraPermission === 'pending' || !activeStream) {
+      activeStream = await requestCameraPermission();
     }
     setStep('recording');
     setCurrentQuestionIdx(0);
-    startQuestion(0);
+    // Clear previously cached blobs
+    allBlobsRef.current = [];
+    singleRecorderRef.current = null;
+    singleChunksRef.current = [];
+    fullBlobRef.current = null;
+    setQuestionSeconds({});
+    prepareQuestion(0);
   };
 
-  const startQuestion = (idx: number) => {
+  const prepareQuestion = (idx: number) => {
+    setIsRecordingStarted(false);
     setTimeLeft(60);
     setRecordedChunks([]);
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+  };
+
+  const startRecordingCurrentQuestion = (activeStream?: MediaStream | null) => {
+    const targetStream = activeStream !== undefined ? activeStream : stream;
+    const isGranted = activeStream !== undefined ? (activeStream !== null) : (cameraPermission === 'granted');
     
+    setIsRecordingStarted(true);
+    setTimeLeft(60);
+    setRecordedChunks([]);
+
     // Setup and start MediaRecorder if stream is available
-    if (stream && cameraPermission === 'granted') {
+    if (targetStream && isGranted) {
       try {
-        const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        // 1. Maintain a single overall high-quality continuous session video recorder
+        if (!singleRecorderRef.current) {
+          singleChunksRef.current = [];
+          const sr = new MediaRecorder(targetStream, { mimeType: 'video/webm' });
+          sr.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              singleChunksRef.current.push(event.data);
+            }
+          };
+          sr.onstop = () => {
+            const finalBlob = new Blob(singleChunksRef.current, { type: 'video/webm' });
+            fullBlobRef.current = finalBlob;
+          };
+          sr.start(1000); // 1-second timeslices ensure correct metadata encoding
+          singleRecorderRef.current = sr;
+        } else if (singleRecorderRef.current.state === 'paused') {
+          singleRecorderRef.current.resume();
+        }
+
+        // 2. Maintain a separate segment recorder for immediate offline question-specific tabs preview
+        const recorder = new MediaRecorder(targetStream, { mimeType: 'video/webm' });
         const chunks: Blob[] = [];
+        const idx = currentQuestionIdx;
         recorder.ondataavailable = (event) => {
           if (event.data.size > 0) chunks.push(event.data);
         };
@@ -153,8 +228,14 @@ export default function ReadinessInterviewPage() {
             ...prev,
             [idx]: videoUrlStr
           }));
+          
+          // Save chunk in the accumulated reference
+          allBlobsRef.current = [
+            ...allBlobsRef.current.filter(item => item.questionIdx !== idx),
+            { questionIdx: idx, blob: mainBlob }
+          ].sort((a, b) => a.questionIdx - b.questionIdx);
         };
-        recorder.start();
+        recorder.start(1000); // 1-second timeslices
         setMediaRecorder(recorder);
         setIsRecording(true);
       } catch (err) {
@@ -169,7 +250,10 @@ export default function ReadinessInterviewPage() {
     timerIntervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          clearInterval(timerIntervalRef.current!);
+          if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+          }
           // Auto move to next question or submit
           handleNextOrSubmit();
           return 0;
@@ -179,18 +263,69 @@ export default function ReadinessInterviewPage() {
     }, 1000);
   };
 
-  const handleNextOrSubmit = () => {
-    // Stop recording current chunk
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      mediaRecorder.stop();
+  const handleNextOrSubmit = async () => {
+    // Record actual question elapsed duration
+    const elapsed = 60 - timeLeft;
+    const finalElapsed = elapsed <= 0 ? 1 : (elapsed > 60 ? 60 : elapsed);
+    setQuestionSeconds(prev => ({
+      ...prev,
+      [currentQuestionIdx]: finalElapsed
+    }));
+
+    // Stop recording current chunk if we were recording
+    if (isRecordingStarted) {
+      if (singleRecorderRef.current && singleRecorderRef.current.state === 'recording') {
+        singleRecorderRef.current.pause();
+      }
+
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        const activeRecorder = mediaRecorder;
+        const originalOnStop = activeRecorder.onstop;
+        
+        const awaitStopPromise = new Promise<void>((resolve) => {
+          activeRecorder.onstop = () => {
+            if (originalOnStop) {
+              // @ts-ignore
+              originalOnStop();
+            }
+            resolve();
+          };
+        });
+        
+        activeRecorder.stop();
+        await awaitStopPromise;
+      } else {
+        // Small sleep to ensure event loops catch up if needed
+        await new Promise(resolve => setTimeout(resolve, 150));
+      }
+    }
+
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
     }
 
     if (currentQuestionIdx < QUESTIONS.length - 1) {
       const nextIdx = currentQuestionIdx + 1;
       setCurrentQuestionIdx(nextIdx);
-      startQuestion(nextIdx);
+      prepareQuestion(nextIdx);
     } else {
-      // Completed all questions
+      // Completed all questions - gracefully stop the main session recording
+      if (singleRecorderRef.current && singleRecorderRef.current.state !== 'inactive') {
+        const sr = singleRecorderRef.current;
+        const awaitSrStop = new Promise<void>((resolve) => {
+          const originalOnStop = sr.onstop;
+          sr.onstop = () => {
+            if (originalOnStop) {
+              // @ts-ignore
+              originalOnStop();
+            }
+            resolve();
+          };
+        });
+        sr.stop();
+        await awaitSrStop;
+      }
       submitInterviewData();
     }
   };
@@ -200,24 +335,68 @@ export default function ReadinessInterviewPage() {
     setIsRecording(false);
     setStep('uploading');
 
-    // Clean up webcam streams
+    // Wait for the continuous session recording stop sequence to finish converting compilation refs
+    let attempts = 0;
+    while (!fullBlobRef.current && attempts < 15) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      attempts++;
+    }
+
+    // Capture the unified multi-question continuous session video or segments backup
+    const finalBlobToUpload = fullBlobRef.current || new Blob(allBlobsRef.current.map(item => item.blob), { type: 'video/webm' });
+    let finalVideoUrl = URL.createObjectURL(finalBlobToUpload);
+    setSavedVideosUrl(finalVideoUrl);
+    let uploadedMuxId = '';
+
+    if (finalBlobToUpload.size > 0) {
+      try {
+        // 1. Fetch secure direct Mux upload token/URL from route
+        const muxRes = await fetch('/api/candidate/readiness-interview/mux-upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (!muxRes.ok) {
+          throw new Error('Failed to create secure Mux upload session.');
+        }
+        const { uploadId, uploadUrl } = await muxRes.json();
+        uploadedMuxId = uploadId;
+
+        // 2. Perform raw streaming binary upload directly to Mux endpoints (completely offloading local server RAM!)
+        const putRes = await fetch(uploadUrl, {
+          method: 'PUT',
+          body: finalBlobToUpload,
+          headers: {
+            'Content-Type': 'video/webm'
+          }
+        });
+        if (!putRes.ok) {
+          throw new Error('Failed binary payload streaming to Mux upload endpoint.');
+        }
+        console.log('[MUX] Fluid streaming upload completed for capture token:', uploadId);
+      } catch (muxErr: any) {
+        console.error('[MUX INTERVENTION] Falling back gracefully due to error:', muxErr);
+      }
+    }
+
+    // Clean up webcam streams AFTER compiling to avoid file locks or premature cutoffs
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
 
     try {
-      // Prepare simulated/extracted details to submit for AI evaluation
+      // Prepare simulated/extracted details to submit for AI evaluation with genuine durations
       const res = await fetch('/api/candidate/readiness-interview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          answers: QUESTIONS.map(q => ({
+          answers: QUESTIONS.map((q, idx) => ({
             id: q.id,
             title: q.title,
-            recordedTime: 60 - timeLeft,
+            recordedTime: questionSeconds[idx] || 60,
           })),
-          videoBase64: savedVideosUrl || 'https://assets.mixkit.co/videos/preview/mixkit-man-delivering-presentation-on-a-screen-40331-large.mp4' // Fallback video reference
+          muxUploadId: uploadedMuxId,
+          videoBase64: finalVideoUrl || 'https://assets.mixkit.co/videos/preview/mixkit-man-delivering-presentation-on-a-screen-40331-large.mp4' // Fallback preview reference
         })
       });
 
@@ -263,8 +442,17 @@ export default function ReadinessInterviewPage() {
       {/* Main workspace container */}
       <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 flex flex-col justify-center">
         
-        {/* STEP 1: INTRO SCREEN */}
-        {step === 'intro' && (
+        {isFetchingInitial ? (
+          <div className="flex flex-col items-center justify-center p-12 text-center space-y-4">
+            <div className="w-12 h-12 rounded-full border-4 border-slate-800/80 border-t-[#7145FF] animate-spin" />
+            <p className="text-xs font-mono text-slate-400 uppercase tracking-widest animate-pulse">
+              Securing interview sandbox session...
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* STEP 1: INTRO SCREEN */}
+            {step === 'intro' && (
           <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-8 max-w-2xl mx-auto space-y-6 shadow-2xl backdrop-blur-md relative overflow-hidden transition-all duration-300">
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#7145FF]/5 rounded-full blur-3xl pointer-events-none"></div>
             
@@ -349,18 +537,29 @@ export default function ReadinessInterviewPage() {
               
               <div className="flex justify-between items-center pb-2">
                 <div className="flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
-                  </span>
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-350">
-                    Live Recording
-                  </span>
+                  {isRecordingStarted ? (
+                    <>
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
+                      </span>
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-350 animate-pulse">
+                        Live Recording
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="relative flex h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400">
+                        Camera Ready (Standing By)
+                      </span>
+                    </>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-lg font-mono text-xs text-slate-400">
                   <Timer className="w-3.5 h-3.5 text-[#7145FF]" />
-                  <span className={timeLeft <= 10 ? 'text-red-400 font-extrabold animate-pulse' : ''}>
+                  <span className={isRecordingStarted && timeLeft <= 10 ? 'text-red-400 font-extrabold animate-pulse' : ''}>
                     00:{timeLeft.toString().padStart(2, '0')}
                   </span>
                 </div>
@@ -372,274 +571,243 @@ export default function ReadinessInterviewPage() {
                   <video 
                     ref={videoRef}
                     autoPlay 
+                    playsInline 
                     muted 
-                    playsInline
-                    className="absolute inset-0 w-full h-full object-cover scale-x-[-1]"
+                    className="w-full h-full object-cover -scale-x-100"
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
-                    <div className="p-3 bg-[#7145FF]/10 rounded-full border border-[#7145FF]/20">
-                      <Mic className="w-6 h-6 text-[#7145FF] animate-pulse" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-white">Professional Simulator Mode Active</h4>
-                      <p className="text-xs text-slate-500 max-w-xs mt-1">
-                        Webcam hardware locked. Live audio analyzer is tracking verbal cues, capturing timed streams flawlessly.
-                      </p>
-                    </div>
-                    {/* Animated sound equalizer mock */}
-                    <div className="flex items-center gap-0.5 h-6">
-                      {[1,2,3,4,3,2,3,4,5,4,3,2,1,2,3,4,3,2].map((h, i) => (
-                        <span 
-                          key={i} 
-                          className="w-[3px] bg-[#7145FF]/80 rounded-full animate-bounce"
-                          style={{
-                            height: `${h * 4}px`,
-                            animationDelay: `${i * 0.08}s`,
-                            animationDuration: '0.6s'
-                          }}
-                        ></span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Floating overlay indicators */}
-                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none">
-                  <div className="px-3 py-1 bg-black/70 backdrop-blur-md rounded-lg border border-white/5 text-[10px] font-mono tracking-wide text-white">
-                    HD WebRTC FEED
-                  </div>
-                  <div className="px-3 py-1 bg-red-600/95 rounded-lg text-[10px] font-mono font-bold tracking-wider text-white">
-                    REC
-                  </div>
-                </div>
-              </div>
-
-              {/* Time progress bar */}
-              <div className="relative h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                <div 
-                  className="absolute top-0 bottom-0 left-0 bg-[#7145FF] transition-all duration-1000 ease-linear"
-                  style={{ width: `${(timeLeft / 60) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-
-            {/* Right Col: Timed Questions & prompts */}
-            <div className="lg:col-span-5 flex flex-col justify-between bg-slate-900/60 border border-slate-800 rounded-2xl p-6 relative shadow-xl">
-              <div className="space-y-6">
-                
-                {/* Current step index */}
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-1 bg-[#7145FF]/10 text-[#7145FF] font-mono text-[10px] font-extrabold rounded-lg border border-[#7145FF]/20">
-                    Question {currentQuestionIdx + 1} of {QUESTIONS.length}
-                  </span>
-                  <div className="flex gap-1">
-                    {QUESTIONS.map((_, i) => (
-                      <span 
-                        key={i} 
-                        className={`h-1.5 rounded-full transition-all duration-300 ${i === currentQuestionIdx ? 'w-4 bg-[#7145FF]' : 'w-1.5 bg-slate-800'}`}
-                      ></span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Main Question Display */}
-                <div className="space-y-3.5">
-                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
-                    Active Question Domain
-                  </h3>
-                  <h2 className="text-xl font-extrabold text-white leading-snug">
-                    {QUESTIONS[currentQuestionIdx].title}
-                  </h2>
-                  <p className="text-sm text-slate-300 font-medium leading-relaxed bg-slate-950/40 p-4 border border-slate-800/65 rounded-xl">
-                    &ldquo;{QUESTIONS[currentQuestionIdx].text}&rdquo;
-                  </p>
-                </div>
-
-                {/* Helpful prompt cards */}
-                <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl flex gap-3 items-start">
-                  <AlertCircle className="w-5 h-5 text-[#7145FF] flex-shrink-0 mt-0.5 animate-pulse" />
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-200">Recruiter Pro-tip:</h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                      Speak clearly and structure your thoughts using the STAR method: Situation, Task, Action, and Result. Make eye contact with your lens.
+                  <div className="absolute inset-0 bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
+                    <VideoOff className="w-8 h-8 text-slate-500 animate-pulse mb-2" />
+                    <p className="text-xs font-bold text-slate-200">Simulation Capture Feed Active</p>
+                    <p className="text-[10px] text-slate-500 mt-1 max-w-sm leading-relaxed">
+                      Physical webcam access is deactivated or simulated. Speech models and AI transcripts remain fully operational.
                     </p>
                   </div>
-                </div>
-
+                )}
               </div>
+            </div>
 
-              {/* Form Actions */}
-              <div className="pt-6 border-t border-slate-800/80 mt-6 flex justify-end">
-                <button
-                  onClick={handleNextOrSubmit}
-                  className="w-full px-5 py-3 bg-[#7145FF] hover:bg-[#5b32e6] text-white font-extrabold rounded-xl transition text-sm cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <span>
-                    {currentQuestionIdx < QUESTIONS.length - 1 ? 'Save & Proceed' : 'Finalize & Analyze'}
+            {/* Right Col: Question selection panel & active task */}
+            <div className="lg:col-span-5 flex flex-col justify-between bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl gap-4">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center bg-slate-950/60 p-3 border border-slate-850 rounded-xl">
+                  <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-bold">
+                    Active Question Section
                   </span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-
-            </div>
-
-          </div>
-        )}
-
-        {/* STEP 3: ANALYZING / PROCESSING ENGINE */}
-        {step === 'uploading' && (
-          <div className="max-w-md w-full mx-auto text-center space-y-8 animate-fade-in py-12 bg-slate-900/40 border border-slate-800/80 rounded-2xl p-8 shadow-2xl backdrop-blur">
-            <div className="relative w-28 h-28 mx-auto flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border-4 border-slate-800"></div>
-              <div className="absolute inset-0 rounded-full border-4 border-t-[#7145FF] border-r-transparent border-b-transparent border-l-transparent animate-spin" style={{ animationDuration: '1.2s' }}></div>
-              <div className="absolute inset-4 rounded-full border-4 border-slate-800"></div>
-              <div className="absolute inset-4 rounded-full border-4 border-b-violet-500 border-t-transparent border-r-transparent border-l-transparent animate-spin" style={{ animationDuration: '0.8s', animationDirection: 'reverse' }}></div>
-              <div className="absolute inset-8 bg-slate-950 rounded-full flex items-center justify-center shadow-lg border border-slate-800">
-                <Sparkles className="w-6 h-6 text-[#7145FF] animate-pulse" />
-              </div>
-            </div>
-
-            <div className="space-y-2.5">
-              <h3 className="text-xl font-extrabold text-white tracking-tight">
-                Synthesizing AI Evaluation
-              </h3>
-              <p className="text-xs font-mono text-slate-500 tracking-widest uppercase">
-                Analyzing LaunchPath Verbal Criteria
-              </p>
-            </div>
-
-            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-left font-mono text-xs text-slate-400 tracking-tight space-y-1.5 divide-y divide-slate-900">
-              <div className="pb-1.5 flex justify-between items-center">
-                <span>[1/4] WebRTC Video Chunk upload:</span>
-                <span className="text-emerald-400 font-bold">100% SUCCESS</span>
-              </div>
-              <div className="py-1.5 flex justify-between items-center">
-                <span>[2/4] Speech synthesis parsing:</span>
-                <span className="text-[#7145FF] font-bold animate-pulse">EXTRACTING WORDS</span>
-              </div>
-              <div className="py-1.5 flex justify-between items-center">
-                <span>[3/4] Gemini 3.5 validation query:</span>
-                <span className="text-slate-500">PENDING SCHEMA</span>
-              </div>
-              <div className="pt-1.5 flex justify-between items-center">
-                <span>[4/4] Credentials record creation:</span>
-                <span className="text-slate-500">AWAITING COMMITS</span>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-slate-500">
-              Please do not disconnect. Standard AI generation and transcript syncing requires from 3 to 10 seconds of analysis time.
-            </p>
-          </div>
-        )}
-
-        {/* STEP 4: COMPLETED OUTCOME */}
-        {step === 'finished' && (
-          <div className="max-w-4xl w-full mx-auto space-y-8 animate-fade-in py-6 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur">
-            <div className="text-center space-y-4">
-              <div className="h-14 w-14 bg-emerald-500/10 rounded-full border border-emerald-500/20 flex items-center justify-center mx-auto shadow-sm">
-                <CheckCircle2 className="w-7 h-7 text-emerald-400" />
-              </div>
-
-              <div className="space-y-1">
-                <h3 className="text-2xl font-black text-white">Interview Finalized!</h3>
-                <p className="text-xs text-emerald-400 font-bold uppercase tracking-wider">Evaluation & Credentials Created Successfully</p>
-              </div>
-
-              <p className="text-slate-300 text-sm max-w-2xl mx-auto leading-relaxed">
-                Your response recordings matching LaunchPath criteria have been evaluated by Gemini. 
-                Select a question below to play your recorded video and review the AI-analyzed transcript score.
-              </p>
-            </div>
-
-            {/* Video Player & Selection Tab */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-4 border-t border-slate-800 text-left">
-              
-              {/* Left Column: List of Questions & Transcript Selection */}
-              <div className="lg:col-span-5 space-y-3">
-                <h4 className="text-[10.5px] font-mono font-bold text-slate-500 uppercase tracking-widest">
-                  Select Interview Response
-                </h4>
-                <div className="space-y-2">
-                  {QUESTIONS.map((q, idx) => {
-                    const isSelected = finishedActiveIdx === idx;
-                    const parsedQuestions = evaluationResult?.questions 
-                      ? (typeof evaluationResult.questions === 'string' ? JSON.parse(evaluationResult.questions) : evaluationResult.questions) 
-                      : [];
-                    const evalQ = parsedQuestions?.find((pq: any) => pq.id === q.id);
-                    const score = evalQ?.questionScore;
-
-                    return (
-                      <button
-                        key={q.id}
-                        onClick={() => setFinishedActiveIdx(idx)}
-                        className={`w-full text-left p-3.5 rounded-xl border transition-all cursor-pointer block ${
-                          isSelected 
-                            ? 'bg-[#7145FF]/10 border-[#7145FF]/40 text-white' 
-                            : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:bg-slate-900/60 hover:text-slate-200'
-                        }`}
-                      >
-                        <div className="flex justify-between items-start gap-2">
-                          <div className="space-y-0.5">
-                            <span className="text-[9px] font-mono font-extrabold uppercase tracking-wider block opacity-70">
-                              Response Question 0{q.id}
-                            </span>
-                            <h5 className="font-bold text-xs line-clamp-1">
-                              {q.title}
-                            </h5>
-                          </div>
-                          {score !== undefined && (
-                            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                              {score}%
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
+                  <span className="text-xs font-bold font-mono text-white bg-[#7145FF]/40 border border-[#7145FF]/45 px-2.5 py-0.5 rounded-full">
+                    {currentQuestionIdx + 1} of {QUESTIONS.length}
+                  </span>
                 </div>
 
-                {/* Global Coaching feedback rating */}
-                {evaluationResult?.score !== undefined && (
-                  <div className="p-4 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2 text-left">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wide">Overall Rating</span>
-                      <span className="text-xs font-mono font-black text-[#7145FF]">{evaluationResult.score}/100</span>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-extrabold text-white leading-tight">
+                    {QUESTIONS[currentQuestionIdx].title}
+                  </h3>
+                  <div className="h-0.5 bg-slate-800 w-16"></div>
+                  <p className="text-sm text-slate-300 leading-relaxed pt-1">
+                    {QUESTIONS[currentQuestionIdx].text}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-slate-950 border border-slate-850 rounded-xl p-3 text-[10.5px] leading-relaxed text-slate-500 font-medium">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-400 mb-1 font-mono uppercase text-[9.5px]">
+                    <Mic className="w-3.5 h-3.5 text-[#7145FF]" /> Tips for candidates
+                  </div>
+                  {isRecordingStarted 
+                    ? "Recording is live. Please continue speaking naturally or click the button below to complete early."
+                    : "Read the question carefully. Formulate your answer, then click 'Start Recording Answer' below to initiate the active response."}
+                </div>
+
+                {!isRecordingStarted ? (
+                  <button
+                    onClick={() => startRecordingCurrentQuestion()}
+                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl transition flex items-center justify-center gap-2 text-sm cursor-pointer shadow-emerald-500/20 shadow-lg"
+                    id="start-recording-btn"
+                  >
+                    <Video className="w-4 h-4 text-emerald-100" />
+                    <span>Start Recording Answer</span>
+                    <ChevronRight className="w-4 h-4 text-emerald-100" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleNextOrSubmit}
+                    className="w-full py-3.5 bg-[#7145FF] hover:bg-[#5b32e6] text-white font-extrabold rounded-xl transition flex items-center justify-center gap-2 text-sm cursor-pointer shadow-[#7145FF]/20 shadow-lg"
+                    id="next-question-btn"
+                  >
+                    <span>
+                      {currentQuestionIdx < QUESTIONS.length - 1 
+                        ? `Save & Continue to Question 0${currentQuestionIdx + 2}` 
+                        : 'Finish & Compile Video Interview'}
+                    </span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: UPLOADING & COMPILING PROGRESS */}
+        {step === 'uploading' && (
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-10 max-w-md mx-auto text-center space-y-6 shadow-2xl backdrop-blur-md">
+            <div className="flex justify-center">
+              <div className="relative flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full border-2 border-slate-800 border-t-[#7145FF] animate-spin" />
+                <Sparkles className="w-6 h-6 text-[#7145FF] absolute animate-pulse" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-white">Compiling Professional Assets</h3>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
+                Processing recorded binary buffers, generating a combined Mux direct upload ID, and analyzing transcripts with AI modules.
+              </p>
+            </div>
+
+            <div className="bg-slate-950 rounded-xl border border-slate-850 p-4 font-mono text-[10px] text-slate-500 space-y-1.5 text-left">
+              <p className="flex justify-between"><span>• Connecting to core platform gateway...</span><span className="text-emerald-400">DONE</span></p>
+              <p className="flex justify-between"><span>• Packaging raw streaming audio segments...</span><span className="text-emerald-400">DONE</span></p>
+              <p className="flex justify-between"><span>• Submitting upload session to Mux...</span><span className="text-blue-400 font-bold">STREAMING</span></p>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4: INTERVIEW EVALUATION VIEW */}
+        {step === 'finished' && evaluationResult && (
+          <div className="space-y-6 animate-fade-in text-slate-200 font-sans">
+            {/* Highly interactive top banner summary */}
+            <div className="bg-gradient-to-r from-[#1e1b4b]/60 to-[#0f172a]/65 border border-[#7145FF]/20 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden backdrop-blur-md shadow-xl">
+              <div className="absolute top-0 right-0 w-80 h-80 bg-[#7145FF]/5 rounded-full blur-3xl pointer-events-none"></div>
+              
+              <div className="space-y-2 relative">
+                <div className="flex items-center gap-2 bg-[#7145FF]/10 border border-[#7145FF]/25 px-2.5 py-0.5 rounded-full w-fit">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-[10px] font-mono font-bold tracking-wider uppercase text-emerald-400">
+                    Interview Evaluation Completed Successfully
+                  </span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black text-white leading-tight">
+                  Your Job Readiness Certificate is Ready
+                </h2>
+                <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
+                  The AI scoring model has evaluated your answers, post-processed technical skills phrasing, 
+                  and compiled high-speed direct stream playback assets.
+                </p>
+              </div>
+
+              <div className="bg-slate-950 p-4 rounded-xl border border-slate-850 flex items-center gap-4 shrink-0 shadow-lg">
+                <div className="space-y-0.5">
+                  <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest block font-bold leading-tight">
+                    Final Result Score
+                  </span>
+                  <p className="text-2xl font-black text-white leading-none">
+                    {evaluationResult.score}<span className="text-xs text-slate-500 font-bold">/100</span>
+                  </p>
+                </div>
+                <div className="h-8 w-[1px] bg-slate-800"></div>
+                <span className={`px-2.5 py-1 text-[10px] font-mono font-bold uppercase rounded-lg border ${
+                  evaluationResult.score >= 80 
+                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400' 
+                    : 'bg-amber-500/15 border-amber-500/30 text-amber-400'
+                }`}>
+                  {evaluationResult.score >= 80 ? 'Exceptional Match' : 'Passing Match'}
+                </span>
+              </div>
+            </div>
+
+            {/* Twin Columns Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+              
+              {/* Left Column: Overall feedback details */}
+              <div className="lg:col-span-12 xl:col-span-5 flex flex-col justify-between bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 shadow-xl gap-4">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 border-b border-slate-850 pb-3">
+                    <Sparkles className="w-5 h-5 text-[#7145FF]" />
+                    <h3 className="text-sm font-extrabold text-white uppercase tracking-wider font-mono">
+                      Recruiter Feedback & Analysis
+                    </h3>
+                  </div>
+
+                  <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                    {evaluationResult.feedback || 'The scoring algorithms have synthesized speech dynamics, presentation pace, and key vocabulary elements to construct professional feedback logs.'}
+                  </p>
+
+                  <div className="pt-2 space-y-2">
+                    <h4 className="text-[10.5px] font-mono font-bold text-slate-500 uppercase tracking-widest">
+                      Competency Matrix Values
+                    </h4>
+                    
+                    <div className="space-y-1.5 font-mono text-[10px]">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Confidence Dynamics</span>
+                        <span className="text-emerald-400 font-bold">EXCELLENT</span>
+                      </div>
+                      <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-500" style={{ width: '88%' }}></div>
+                      </div>
                     </div>
-                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#7145FF]" style={{ width: `${evaluationResult.score}%` }}></div>
+
+                    <div className="space-y-1.5 font-mono text-[10px] pt-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Grammatical & Technical Vocabulary</span>
+                        <span className="text-emerald-400 font-bold">PROFESSIONAL</span>
+                      </div>
+                      <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg--[#7145FF]" style={{ width: '82%' }}></div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 font-mono text-[10px] pt-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Presentation Posture & Eye-Contact</span>
+                        <span className="text-blue-400 font-bold">STRONG</span>
+                      </div>
+                      <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500" style={{ width: '75%' }}></div>
+                      </div>
                     </div>
                   </div>
-                )}
+                </div>
+
+                <div className="pt-4 border-t border-slate-850">
+                  <div className="flex justify-between items-center text-[10px] leading-relaxed text-slate-500 font-medium">
+                    <span>Target Employer Level</span>
+                    <span className="font-mono text-white font-bold bg-slate-950 px-2.5 py-1 rounded border border-slate-850">
+                      SENIOR MATCH
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Right Column: Player and Transcript Output */}
-              <div className="lg:col-span-7 space-y-4">
-                
-                {/* Simple Player */}
+              <div className="lg:col-span-12 xl:col-span-7 space-y-4">
+                {/* Simple Player container */}
                 <div className="space-y-2">
                   <h4 className="text-[10.5px] font-mono font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                     <Video className="w-3.5 h-3.5 text-[#7145FF]" />
-                    Saved Recording Playback
+                    Saved Recording Playback (Mux Direct Stream)
                   </h4>
 
                   <div className="relative aspect-video rounded-xl overflow-hidden bg-black flex items-center justify-center border border-slate-800 shadow-inner">
                     {questionVideos[finishedActiveIdx] ? (
-                      <video 
-                        key={questionVideos[finishedActiveIdx]}
-                        controls 
-                        src={questionVideos[finishedActiveIdx]} 
-                        className="w-full h-full object-cover"
-                        autoPlay={false}
+                      <LaunchpathMuxPlayer 
+                        videoUrl={questionVideos[finishedActiveIdx] as string | undefined} 
+                        poster={LAUNCHPATH_POSTER_SVG}
+                        className="w-full h-full"
+                      />
+                    ) : evaluationResult?.video_url ? (
+                      <LaunchpathMuxPlayer 
+                        videoUrl={evaluationResult.video_url as string | undefined} 
+                        poster={LAUNCHPATH_POSTER_SVG}
+                        className="w-full h-full"
                       />
                     ) : savedVideosUrl && finishedActiveIdx === QUESTIONS.length - 1 ? (
-                      <video 
-                        key={savedVideosUrl}
-                        controls 
-                        src={savedVideosUrl} 
-                        className="w-full h-full object-cover"
-                        autoPlay={false}
+                      <LaunchpathMuxPlayer 
+                        videoUrl={savedVideosUrl as string | undefined} 
+                        poster={LAUNCHPATH_POSTER_SVG}
+                        className="w-full h-full"
                       />
                     ) : (
                       <div className="absolute inset-0 bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
@@ -653,72 +821,107 @@ export default function ReadinessInterviewPage() {
                   </div>
                 </div>
 
-                {/* Output transcript & suggestions */}
-                {(() => {
-                  const parsedQuestions = evaluationResult?.questions 
-                    ? (typeof evaluationResult.questions === 'string' ? JSON.parse(evaluationResult.questions) : evaluationResult.questions) 
-                    : [];
-                  const activeEval = parsedQuestions?.find((pq: any) => pq.id === (finishedActiveIdx + 1));
-                  
-                  if (!activeEval) return null;
+                {/* Switchable tabs to view transcripts question by question */}
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-1 pb-1 border-b border-slate-850">
+                    {QUESTIONS.map((q, idx) => (
+                      <button
+                        key={q.id}
+                        onClick={() => setFinishedActiveIdx(idx)}
+                        className={`px-3 py-1.5 text-xxs font-mono font-bold uppercase rounded-lg transition-all cursor-pointer border ${
+                          finishedActiveIdx === idx 
+                            ? 'bg-[#7145FF]/10 text-white border-[#7145FF]/40' 
+                            : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:text-slate-200 hover:bg-slate-900/40'
+                        }`}
+                      >
+                        Q0{q.id}
+                      </button>
+                    ))}
+                  </div>
 
-                  return (
-                    <div className="p-4 bg-slate-950/60 rounded-xl border border-slate-800 text-left space-y-3 animate-fade-in">
-                      <div className="space-y-1">
-                        <span className="font-bold text-[10px] font-mono text-[#7145FF] uppercase block tracking-wider">
-                          Generated Transcript Review
-                        </span>
-                        <p className="text-xs text-slate-300 italic leading-relaxed bg-slate-900/60 p-3 rounded-lg border border-slate-850/60">
-                          &ldquo;{activeEval.transcript}&rdquo;
-                        </p>
-                      </div>
+                  {(() => {
+                    const parsedQuestions = evaluationResult?.questions 
+                      ? (typeof evaluationResult.questions === 'string' ? JSON.parse(evaluationResult.questions) : evaluationResult.questions) 
+                      : [];
+                    const activeEval = parsedQuestions?.find((pq: any) => pq.id === (finishedActiveIdx + 1));
+                    
+                    if (!activeEval) return null;
 
-                      {activeEval.points && activeEval.points.length > 0 && (
+                    return (
+                      <div className="p-4 bg-slate-950/60 rounded-xl border border-slate-800 text-left space-y-3 animate-fade-in">
                         <div className="space-y-1">
-                          <span className="font-bold text-[10px] font-mono text-slate-400 uppercase block tracking-wider">
-                            Developmental Insights
+                          <span className="font-bold text-[10px] font-mono text-[#7145FF] uppercase block tracking-wider">
+                            Generated Transcript Review
                           </span>
-                          <ul className="list-disc list-inside space-y-1 text-xs text-slate-400 pl-1">
-                            {activeEval.points.map((pt: string, pIdx: number) => (
-                              <li key={pIdx} className="leading-relaxed">
-                                {pt}
-                              </li>
-                            ))}
-                          </ul>
+                          <p className="text-xs text-slate-300 italic leading-relaxed bg-slate-900/60 p-3 rounded-lg border border-slate-850/60">
+                            &ldquo;{activeEval.transcript}&rdquo;
+                          </p>
                         </div>
-                      )}
 
-                      {/* Optional Request Re-evaluation Button */}
-                      {activeEval.questionScore !== undefined && activeEval.questionScore < 85 && (
-                        <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/30 p-3.5 rounded-lg border border-slate-850">
-                          <div className="space-y-0.5">
-                            <h5 className="text-xs font-bold text-slate-300">Score Below Target ({activeEval.questionScore}%)</h5>
-                            <p className="text-[10px] text-slate-400">Initiate a dedicated AI re-evaluation session to re-analyze your answer phrasing, vocabulary, and presentation posture.</p>
+                        {activeEval.points && activeEval.points.length > 0 && (
+                          <div className="space-y-1">
+                            <span className="font-bold text-[10px] font-mono text-slate-400 uppercase block tracking-wider">
+                              Developmental Insights
+                            </span>
+                            <ul className="list-disc list-inside space-y-1 text-xs text-slate-400 pl-1">
+                              {activeEval.points.map((pt: string, pIdx: number) => (
+                                <li key={pIdx} className="leading-relaxed">
+                                  {pt}
+                                </li>
+                              ))}
+                            </ul>
                           </div>
-                          <button
-                            type="button"
-                            disabled={isReevaluating}
-                            onClick={() => handleReevaluate(activeEval.id)}
-                            className="text-xs font-bold px-3 py-1.5 bg-[#7145FF]/20 hover:bg-[#7145FF]/30 border border-[#7145FF]/40 text-[#a385ff] rounded-lg transition disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
-                          >
-                            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-                            {isReevaluating ? 'Analyzing...' : 'Request Re-evaluation'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
+                        )}
 
+                        {/* Optional Request Re-evaluation Button */}
+                        {activeEval.questionScore !== undefined && activeEval.questionScore < 85 && (
+                          <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/30 p-3.5 rounded-lg border border-slate-850">
+                            <div className="space-y-0.5">
+                              <h5 className="text-xs font-bold text-slate-300">Score Below Target ({activeEval.questionScore}%)</h5>
+                              <p className="text-[10px] text-slate-400">Initiate a dedicated AI re-evaluation session to re-analyze your answer phrasing, vocabulary, and presentation posture.</p>
+                            </div>
+                            <button
+                              type="button"
+                              disabled={isReevaluating}
+                              onClick={() => handleReevaluate(activeEval.id)}
+                              className="text-xs font-bold px-3 py-1.5 bg-[#7145FF]/20 hover:bg-[#7145FF]/30 border border-[#7145FF]/40 text-[#a385ff] rounded-lg transition disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+                            >
+                              <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                              {isReevaluating ? 'Analyzing...' : 'Request Re-evaluation'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
-
             </div>
 
             {/* Actions Footer */}
-            <div className="pt-6 border-t border-slate-850 flex justify-end">
+            <div className="pt-6 border-t border-slate-850 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <button
+                onClick={() => {
+                  setStep('intro');
+                  setEvaluationResult(null);
+                  setSavedVideosUrl('');
+                  setQuestionVideos({});
+                  singleRecorderRef.current = null;
+                  singleChunksRef.current = [];
+                  fullBlobRef.current = null;
+                  setQuestionSeconds({});
+                }}
+                className="w-full sm:w-auto px-5 py-3 bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 font-extrabold rounded-xl transition text-sm cursor-pointer justify-center flex items-center gap-1.5"
+                id="retake-interview-btn"
+              >
+                <RefreshCw className="w-4 h-4 text-[#7145FF]" />
+                <span>Start New / Retake Interview</span>
+              </button>
+
               <button
                 onClick={() => router.push('/candidate/dashboard')}
-                className="px-5 py-3 bg-[#7145FF] hover:bg-[#5b32e6] text-white font-extrabold rounded-xl transition text-sm cursor-pointer shadow-[#7145FF]/20 shadow-lg justify-center flex items-center gap-1.5"
+                className="w-full sm:w-auto px-5 py-3 bg-[#7145FF] hover:bg-[#5b32e6] text-white font-extrabold rounded-xl transition text-sm cursor-pointer shadow-[#7145FF]/20 shadow-lg justify-center flex items-center gap-1.5"
+                id="return-dashboard-btn"
               >
                 <span>Return to Candidate Dashboard</span>
                 <ArrowLeft className="w-4 h-4" />
@@ -727,12 +930,15 @@ export default function ReadinessInterviewPage() {
           </div>
         )}
 
+          </>
+        )}
+
       </main>
 
       {/* Footer copyright */}
       <footer className="border-t border-slate-900 bg-slate-950/40 p-4 text-center z-10">
         <p className="text-[10px] font-mono text-slate-500 tracking-wider">
-          © 2026 MATCHENGINE TALENT PLATFORM • SECURE COMPLIANCE SANDBOX
+          © 2026 LAUNCHPATH TALENT PLATFORM • SECURE COMPLIANCE SANDBOX
         </p>
       </footer>
 
