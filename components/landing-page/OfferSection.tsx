@@ -30,7 +30,7 @@ export const OfferSection = () => {
             {/* Fixed: Swapped 'to="/contact"' with 'href="/contact"' */}
             <Link
               href="/contact"
-              className="shine group rounded-full bg-foreground px-7 py-3.5 text-[15px] font-semibold text-background transition-all duration-300 hover:scale-[1.04] hover:shadow-lg"
+              className="shine group rounded-full bg-[#5D3FD3] px-7 py-3.5 text-[15px] font-semibold text-white transition-all duration-300 hover:scale-[1.04] hover:shadow-lg"
             >
               <span className="relative z-10 inline-flex items-center gap-2">
                 Request Candidates

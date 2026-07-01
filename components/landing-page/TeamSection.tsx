@@ -40,7 +40,7 @@ export const TeamSection = () => {
 
         <Reveal>
           <h2 className="text-center text-[40px] font-bold leading-[1.1] text-foreground md:text-[56px]">
-           The hiring problem <span className="text-gradient"> nobody </span>is solving properly.
+           The hiring problem <span className="text-[#5D3FD3]"> nobody </span>is solving properly.
           </h2>
         </Reveal>
         <Reveal delay={120}>

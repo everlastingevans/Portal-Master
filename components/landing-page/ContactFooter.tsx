@@ -50,7 +50,7 @@ export const ContactFooter = () => {
             <div className="absolute inset-0 bg-black/35" aria-hidden />
             <div className="relative flex h-full min-h-[520px] flex-col justify-between p-8 md:p-10">
               <h2 className="max-w-[440px] text-[32px] font-bold leading-[1.15] text-white md:text-[40px]">
-                Tell us about your team — we'll line up your next great hire.
+                Tell us about your team and we will line up your next great hire.
               </h2>
               <div className="space-y-4">
                 <p className="text-[15px] font-medium text-white">Or reach us directly:</p>

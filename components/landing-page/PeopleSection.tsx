@@ -36,7 +36,7 @@ export const PeopleSection = () => {
           <div className="grid gap-10 pb-12 md:grid-cols-2 md:items-end">
             <h2 className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[44px] font-bold leading-[1.05] text-foreground md:text-[64px]">
               <span>When SMEs</span>
-              <span className={`transition-colors duration-500 ${!on ? "text-foreground" : "text-foreground/30"}`}>don't</span>
+              <span className={`transition-colors duration-500 ${!on ? "text-foreground" : "text-foreground/30"}`}>do not</span>
               <button
                 onClick={() => setOn(!on)}
                 role="switch"

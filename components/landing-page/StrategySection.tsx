@@ -23,12 +23,12 @@ export const StrategySection = () => {
               Hiring & growth options
             </h2>
             <p className="mt-5 max-w-[480px] text-[16px] leading-relaxed text-foreground/70">
-              Whether you're making your first hire, building a graduate programme, or scaling an early team — we tailor support so you move faster, hire better, and keep your people.
+              Whether you are making your first hire, building a graduate programme, or scaling an early team, we tailor support so you move faster, hire better, and keep your people.
             </p>
             {/* Fixed: Swapped 'to="/contact"' with 'href="/contact"' */}
             <Link
               href="/contact"
-              className="shine group mt-8 inline-block rounded-full bg-foreground px-7 py-3.5 text-[15px] font-semibold text-background transition-all duration-300 hover:scale-[1.04]"
+              className="shine group mt-8 inline-block rounded-full bg-[#5D3FD3] px-7 py-3.5 text-[15px] font-semibold text-white transition-all duration-300 hover:scale-[1.04]"
             >
               <span className="relative z-10">Talk to us</span>
             </Link>
@@ -44,7 +44,7 @@ export const StrategySection = () => {
                 <button
                   onClick={() => setOpen(isOpen ? null : i)}
                   className={`block w-full rounded-2xl bg-white p-6 text-left ring-1 transition-all duration-500 hover:-translate-y-0.5 hover:shadow-md ${
-                    isOpen ? "ring-foreground/30 shadow-md" : "ring-foreground/10 hover:ring-foreground/20"
+                    isOpen ? "ring-[#5D3FD3] shadow-md" : "ring-[#5D3FD3] hover:ring-foreground/20"
                   }`}
                 >
                   <div className="flex items-start gap-4">

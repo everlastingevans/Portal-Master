@@ -21,7 +21,7 @@ export const BrandsSection = () => {
           <div className="flex flex-col items-start justify-between gap-6 pb-10 md:flex-row md:items-end">
             <div className="max-w-[640px]">
               <h2 className="text-[40px] font-bold leading-[1.1] text-foreground md:text-[52px]">
-                Graduates {"we've"} helped <span className="text-gradient">launch</span>
+                Graduates {"we've"} helped <span className="text-[#5D3FD3]">launch</span>
               </h2>
               <p className="mt-5 text-[16px] leading-relaxed text-foreground/70">
                 Real careers, started with the right SME match. Here are a few graduates whose first job became a real launchpad.
@@ -30,7 +30,7 @@ export const BrandsSection = () => {
             {/* Fixed: Swapped 'to="/what-we-do"' with 'href="/what-we-do"' */}
             <Link
               href="/what-we-do"
-              className="shine rounded-full bg-foreground px-7 py-3.5 text-[15px] font-semibold text-background transition-all duration-300 hover:scale-[1.04]"
+              className="shine rounded-full bg-[#5D3FD3] px-7 py-3.5 text-[15px] font-semibold text-white transition-all duration-300 hover:scale-[1.04]"
             >
               <span className="relative z-10">Hire a graduate</span>
             </Link>
