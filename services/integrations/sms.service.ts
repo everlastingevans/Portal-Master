@@ -1,33 +1,39 @@
-import twilio from 'twilio';
-
-let twilioClient: twilio.Twilio | null = null;
-
 export class SMSService {
-  static getClient() {
-    if (!twilioClient) {
-      const accountSid = process.env.TWILIO_ACCOUNT_SID;
-      const authToken = process.env.TWILIO_AUTH_TOKEN;
-      if (!accountSid || !authToken) {
-        throw new Error('TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN are required');
-      }
-      twilioClient = twilio(accountSid, authToken);
-    }
-    return twilioClient;
-  }
-
   static async sendSMS(to: string, message: string) {
-    const client = this.getClient();
-    const fromPhone = process.env.TWILIO_PHONE_NUMBER;
+    const apiKey = process.env.BREVO_API_KEY;
+    const smsSender = process.env.BREVO_SMS_SENDER || 'LaunchPath';
+
+    if (!apiKey) {
+      throw new Error('BREVO_API_KEY is required for SMSService');
+    }
+
+    const cleanTo = to.replace(/[\s\-\(\)]/g, '');
 
     try {
-      const result = await client.messages.create({
-        body: message,
-        from: fromPhone,
-        to
+      const res = await fetch('https://api.brevo.com/v3/transactionalSMS/sms', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': apiKey,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          sender: smsSender.substring(0, 11),
+          recipient: cleanTo,
+          content: message,
+          type: 'transactional',
+        }),
       });
-      return result;
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`[SMSService] Brevo returned failed status (${res.status}): ${errText}`);
+      }
+
+      const data = await res.json();
+      return data;
     } catch (error) {
-      console.error('[SMSService] Error sending SMS via Twilio', error);
+      console.error('[SMSService] Error sending SMS via Brevo', error);
       throw error;
     }
   }

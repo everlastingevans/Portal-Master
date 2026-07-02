@@ -24,7 +24,10 @@ import {
   Search, 
   Sliders, 
   MapPin,
-  Video
+  Video,
+  Mail,
+  Send,
+  MessageSquare
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
@@ -92,6 +95,58 @@ export default function SuperadminDashboard({
 
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState('');
+
+  // Brevo Tester States
+  const [testChannel, setTestChannel] = useState<'email' | 'sms' | 'whatsapp'>('email');
+  const [testRecipient, setTestRecipient] = useState('');
+  const [testSubject, setTestSubject] = useState('LaunchPath Brevo Test');
+  const [testBody, setTestBody] = useState('This is a transactional test notification sent from the LaunchPath dashboard.');
+  const [testLoading, setTestLoading] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; isMock: boolean; message: string } | null>(null);
+
+  const handleRunTest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!testRecipient) {
+      alert('Please specify a recipient email or phone number');
+      return;
+    }
+    setTestLoading(true);
+    setTestResult(null);
+    try {
+      const res = await fetch('/api/superadmin/test-notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel: testChannel,
+          to: testRecipient,
+          subject: testSubject,
+          body: testBody,
+        }),
+      });
+      const resData = await res.json();
+      if (res.ok) {
+        setTestResult({
+          success: resData.success,
+          isMock: resData.isMock,
+          message: resData.message || 'Notification test completed successfully!',
+        });
+      } else {
+        setTestResult({
+          success: false,
+          isMock: false,
+          message: resData.error || 'Failed to dispatch test notification.',
+        });
+      }
+    } catch (err: any) {
+      setTestResult({
+        success: false,
+        isMock: false,
+        message: err.message || 'An error occurred during communication.',
+      });
+    } finally {
+      setTestLoading(false);
+    }
+  };
 
   // Handle Tab changes & state resets
   const handleTabChange = (tab: string) => {
@@ -441,6 +496,18 @@ export default function SuperadminDashboard({
               <span className="flex-1 text-left">Manual Matchmaker</span>
               <Sparkles className="w-3.5 h-3.5 text-yellow-500 animate-pulse" />
             </button>
+
+            <button 
+              onClick={() => handleTabChange('Tester')} 
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium cursor-pointer ${
+                activeTab === 'Tester' 
+                  ? 'bg-[#7145FF]/10 text-white border border-[#7145FF]/35 shadow-sm shadow-[#7145FF]/10' 
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <Mail className={`w-5 h-5 ${activeTab === 'Tester' ? 'text-violet-300' : ''}`} />
+              <span className="flex-1 text-left">Brevo Dispatch Tester</span>
+            </button>
           </nav>
         </div>
 
@@ -476,10 +543,11 @@ export default function SuperadminDashboard({
           <h1 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
             {activeTab === 'Analytics' && 'Platform Performance Dashboard'}
             {activeTab === 'Interviews' && 'Operational Interview Registry'}
-            {activeTab === 'Jobs' && 'Interactive Open Jobs Direct CRUD'}
+            {activeTab === 'Jobs' && 'Interactive Open Jobs Management'}
             {activeTab === 'Talent' && 'Registered Candidate Talent Directories'}
             {activeTab === 'Corporate' && 'Strategic Employer Tenant Directories'}
             {activeTab === 'Matcher' && 'Superadmin Candidate-Employer Matcher'}
+            {activeTab === 'Tester' && 'Brevo Multi-Channel Dispatch Tester'}
           </h1>
           <div className="flex items-center gap-6 select-none">
             <span className="px-2.5 py-0.5 bg-[#7145FF]/10 text-[#7145FF] text-[10px] font-mono font-bold rounded-md uppercase border border-[#7145FF]/25">
@@ -1386,6 +1454,202 @@ export default function SuperadminDashboard({
                   Confirm Manual System Link Match <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
+            </div>
+          )}
+
+          {/* TAB 7: BREVO MULTI-CHANNEL TESTER */}
+          {activeTab === 'Tester' && (
+            <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
+              <div className="bg-slate-950 border border-slate-800 p-8 rounded-2xl">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                  <div>
+                    <h3 className="text-base font-bold text-white flex items-center gap-2 font-sans">
+                      <Sparkles className="w-5 h-5 text-violet-400" />
+                      Brevo Dispatcher & Notification Test Bench
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1 max-w-xl">
+                      Superadmin diagnostic center to run interactive test runs across live or sandbox environments.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 bg-[#7145FF]/10 text-[#7145FF] border border-[#7145FF]/25 text-[10px] font-mono rounded-lg uppercase tracking-wider font-extrabold animate-pulse">
+                      Brevo Core Ready
+                    </span>
+                  </div>
+                </div>
+
+                {/* Tab layout inside tester */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTestChannel('email');
+                      setTestRecipient(testRecipient || user?.email || '');
+                      setTestSubject('LaunchPath Brevo Transactional Email Test');
+                      setTestBody('Hello! This is a successful transactional email dispatch verified directly through the LaunchPath Superadmin test bench.');
+                      setTestResult(null);
+                    }}
+                    className={`flex flex-col items-center gap-3 p-4 rounded-xl border text-center transition-all cursor-pointer ${
+                      testChannel === 'email'
+                        ? 'bg-[#7145FF]/10 border-[#7145FF] text-white'
+                        : 'bg-slate-900/40 border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800/40'
+                    }`}
+                  >
+                    <Mail className="w-6 h-6 text-violet-400" />
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider font-mono">Transactional Email</p>
+                      <p className="text-[10px] text-slate-500 mt-1">Brevo SMTP v3 Email</p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTestChannel('sms');
+                      setTestRecipient(testRecipient.includes('@') ? '' : testRecipient);
+                      setTestBody('LaunchPath Test: This is a verified Brevo transactional SMS notification.');
+                      setTestResult(null);
+                    }}
+                    className={`flex flex-col items-center gap-3 p-4 rounded-xl border text-center transition-all cursor-pointer ${
+                      testChannel === 'sms'
+                        ? 'bg-[#7145FF]/10 border-[#7145FF] text-white'
+                        : 'bg-slate-900/40 border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800/40'
+                    }`}
+                  >
+                    <Send className="w-6 h-6 text-emerald-400" />
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider font-mono">Transactional SMS</p>
+                      <p className="text-[10px] text-slate-500 mt-1">Brevo SMS API</p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTestChannel('whatsapp');
+                      setTestRecipient(testRecipient.includes('@') ? '' : testRecipient);
+                      setTestBody('LaunchPath Test: This is a verified Brevo transactional WhatsApp notification.');
+                      setTestResult(null);
+                    }}
+                    className={`flex flex-col items-center gap-3 p-4 rounded-xl border text-center transition-all cursor-pointer ${
+                      testChannel === 'whatsapp'
+                        ? 'bg-[#7145FF]/10 border-[#7145FF] text-white'
+                        : 'bg-slate-900/40 border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800/40'
+                    }`}
+                  >
+                    <MessageSquare className="w-6 h-6 text-cyan-400" />
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider font-mono">WhatsApp Message</p>
+                      <p className="text-[10px] text-slate-500 mt-1">Brevo WhatsApp API</p>
+                    </div>
+                  </button>
+                </div>
+
+                <form onSubmit={handleRunTest} className="space-y-6">
+                  {/* Recipient */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-404 font-mono block">
+                      {testChannel === 'email' ? 'Recipient Email Address' : 'Recipient Phone Number (e.164 International Format)'}
+                    </label>
+                    <input
+                      type={testChannel === 'email' ? 'email' : 'text'}
+                      className="w-full bg-slate-900 border border-slate-800/80 rounded-xl p-3.5 text-sm focus:outline-none focus:border-[#7145FF] text-white font-mono"
+                      placeholder={testChannel === 'email' ? 'e.g. evans@launchpath.co.za' : 'e.g. +27821234567 or +14155552671'}
+                      value={testRecipient}
+                      onChange={(e) => setTestRecipient(e.target.value)}
+                      required
+                    />
+                    <p className="text-[10px] text-slate-500 italic">
+                      {testChannel === 'email' 
+                        ? 'Enter a valid address where you want to receive the HTML formatted test message.' 
+                        : 'Include country code prefix (e.g. +1 for USA, +27 for South Africa, etc.) without spaces or symbols.'}
+                    </p>
+                  </div>
+
+                  {/* Subject (Email only) */}
+                  {testChannel === 'email' && (
+                    <div className="space-y-2 animate-fade-in">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-404 font-mono block">
+                        Email Subject Header
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full bg-slate-900 border border-slate-800/80 rounded-xl p-3.5 text-sm focus:outline-none focus:border-[#7145FF] text-white"
+                        placeholder="Enter custom test subject..."
+                        value={testSubject}
+                        onChange={(e) => setTestSubject(e.target.value)}
+                        required
+                      />
+                    </div>
+                  )}
+
+                  {/* Body Text */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-404 font-mono block">
+                      Message Payload Content
+                    </label>
+                    <textarea
+                      rows={4}
+                      className="w-full bg-slate-900 border border-slate-800/80 rounded-xl p-3.5 text-sm focus:outline-none focus:border-[#7145FF] text-white font-sans"
+                      placeholder="Write your diagnostic message here..."
+                      value={testBody}
+                      onChange={(e) => setTestBody(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Test button */}
+                  <button
+                    type="submit"
+                    disabled={testLoading}
+                    className="w-full bg-[#7145FF] hover:bg-[#5b32e6] disabled:bg-slate-800 disabled:text-slate-500 text-white p-4 rounded-xl text-xs font-extrabold uppercase tracking-widest transition shadow-lg shadow-[#7145FF]/10 cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    {testLoading ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" /> Dispatching Test Payload...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" /> Trigger Active Live Dispatch
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Results block */}
+                {testResult && (
+                  <div className={`mt-8 p-6 rounded-2xl border animate-fade-in ${
+                    testResult.success 
+                      ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-300' 
+                      : 'bg-rose-500/5 border-rose-500/20 text-rose-300'
+                  }`}>
+                    <div className="flex items-start gap-3">
+                      <div className={`p-2 rounded-lg mt-0.5 ${testResult.success ? 'bg-emerald-500/10' : 'bg-rose-500/10'}`}>
+                        <Sparkles className={`w-4 h-4 ${testResult.success ? 'text-emerald-400' : 'text-rose-400'}`} />
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <h4 className="font-bold text-sm text-white">
+                          Dispatch Status: {testResult.success ? 'Success' : 'Failed'}
+                        </h4>
+                        <p className="text-xs text-slate-300 leading-relaxed">
+                          {testResult.message}
+                        </p>
+
+                        {testResult.isMock && (
+                          <div className="mt-4 p-4 bg-amber-500/5 border border-amber-500/25 rounded-xl text-amber-300 space-y-1">
+                            <p className="text-xs font-bold uppercase tracking-wider font-mono flex items-center gap-1">
+                              ⚠️ Sandbox / Simulator Simulation
+                            </p>
+                            <p className="text-[10px] text-slate-300">
+                              Your <code className="bg-slate-900 px-1 py-0.5 rounded font-mono text-amber-200">BREVO_API_KEY</code> has not been specified in environment variables yet. Because of this, the message details were printed to the local console log instead of being broadcast live. Add the actual key to your credentials configuration to dispatch live messages.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
