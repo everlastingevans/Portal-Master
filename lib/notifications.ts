@@ -1,30 +1,3 @@
-import sgMail from '@sendgrid/mail';
-import twilio from 'twilio';
-
-/**
- * Lazy-initializes and returns the SendGrid client if configured.
- */
-function getSendGridClient(): typeof sgMail | null {
-  const apiKey = process.env.SENDGRID_API_KEY;
-  if (!apiKey) {
-    return null;
-  }
-  sgMail.setApiKey(apiKey);
-  return sgMail;
-}
-
-/**
- * Lazy-initializes and returns the Twilio client if configured.
- */
-function getTwilioClient(): twilio.Twilio | null {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  if (!accountSid || !authToken) {
-    return null;
-  }
-  return twilio(accountSid, authToken);
-}
-
 interface EmailOptions {
   to: string;
   subject: string;
@@ -33,41 +6,55 @@ interface EmailOptions {
 }
 
 /**
- * Sends a real SendGrid email if configured, else logs structured contents to console.
+ * Sends a real Brevo email if configured, else logs structured contents to console.
  */
 export async function sendEmail({ to, subject, html, text }: EmailOptions): Promise<boolean> {
-  console.log(`[Email Dispatcher] Initiating dispatch to: ${to}`);
-  const client = getSendGridClient();
-  const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'alerts@launchpath.com';
+  console.log(`[Email Dispatcher - Brevo] Initiating dispatch to: ${to}`);
+  const apiKey = process.env.BREVO_API_KEY;
+  const fromEmail = process.env.BREVO_SENDER_EMAIL || 'alerts@launchpath.com';
+  const fromName = process.env.BREVO_SENDER_NAME || 'LaunchPath Team';
 
-  const msg = {
-    to,
-    from: fromEmail,
-    subject,
-    html,
-    text: text || subject,
-  };
-
-  if (!client) {
+  if (!apiKey) {
     console.warn(
-      `[MOCK NOTIFICATION SENDER] SendGrid is not fully configured (SENDGRID_API_KEY missing). Email log details below:`
+      `[MOCK NOTIFICATION SENDER] Brevo is not fully configured (BREVO_API_KEY missing). Email log details below:`
     );
     console.warn(`--------------------------------------------------`);
-    console.warn(`FROM:    ${fromEmail}`);
+    console.warn(`FROM:    ${fromName} <${fromEmail}>`);
     console.warn(`TO:      ${to}`);
     console.warn(`SUBJECT: ${subject}`);
-    console.warn(`TEXT:    ${msg.text}`);
+    console.warn(`TEXT:    ${text || subject}`);
     console.warn(`HTML:    (Truncated in shell logs for spacing and styling)`);
     console.warn(`--------------------------------------------------`);
     return true;
   }
 
   try {
-    await client.send(msg);
-    console.log(`[Email Dispatcher] SendGrid successfully emailed: ${to}`);
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': apiKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        sender: { name: fromName, email: fromEmail },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+        textContent: text || subject,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(`[Email Dispatcher - Brevo] Failed response (${res.status}):`, errText);
+      return false;
+    }
+
+    console.log(`[Email Dispatcher - Brevo] Brevo successfully emailed: ${to}`);
     return true;
   } catch (err: any) {
-    console.error(`[Email Dispatcher] Failed to send email via SendGrid:`, err?.response?.body || err);
+    console.error(`[Email Dispatcher - Brevo] Failed to send email via Brevo:`, err);
     return false;
   }
 }
@@ -78,34 +65,54 @@ interface SmsOptions {
 }
 
 /**
- * Sends a real Twilio SMS if configured, else logs structured contents to console.
+ * Sends a real Brevo SMS if configured, else logs structured contents to console.
  */
 export async function sendSMS({ to, body }: SmsOptions): Promise<boolean> {
-  console.log(`[SMS Dispatcher] Initiating dispatch to: ${to}`);
-  const client = getTwilioClient();
-  const fromSMSNumber = process.env.TWILIO_PHONE_NUMBER;
+  console.log(`[SMS Dispatcher - Brevo] Initiating dispatch to: ${to}`);
+  const apiKey = process.env.BREVO_API_KEY;
+  const smsSender = process.env.BREVO_SMS_SENDER || 'LaunchPath';
 
-  if (!client || !fromSMSNumber) {
+  // Format recipient's phone number: clean characters but keep it standard for Brevo
+  const cleanTo = to.replace(/[\s\-\(\)]/g, ''); // strip spaces, dashes, parentheses
+
+  if (!apiKey) {
     console.warn(
-      `[MOCK NOTIFICATION SENDER] Twilio is not fully configured (TWILIO_ACCOUNT_SID/TWILIO_PHONE_NUMBER missing). SMS log details below:`
+      `[MOCK NOTIFICATION SENDER] Brevo is not fully configured (BREVO_API_KEY missing). SMS log details below:`
     );
     console.warn(`--------------------------------------------------`);
-    console.warn(`TO:   ${to}`);
+    console.warn(`FROM: ${smsSender}`);
+    console.warn(`TO:   ${cleanTo}`);
     console.warn(`BODY: ${body}`);
     console.warn(`--------------------------------------------------`);
     return true;
   }
 
   try {
-    const message = await client.messages.create({
-      body,
-      from: fromSMSNumber,
-      to,
+    const res = await fetch('https://api.brevo.com/v3/transactionalSMS/sms', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': apiKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        sender: smsSender.substring(0, 11), // Brevo max sender length is 11 alphanumeric characters
+        recipient: cleanTo,
+        content: body,
+        type: 'transactional',
+      }),
     });
-    console.log(`[SMS Dispatcher] Twilio successfully sent SMS (SID: ${message.sid}) to: ${to}`);
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(`[SMS Dispatcher - Brevo] Failed response (${res.status}):`, errText);
+      return false;
+    }
+
+    console.log(`[SMS Dispatcher - Brevo] Brevo successfully sent SMS to: ${cleanTo}`);
     return true;
   } catch (err: any) {
-    console.error(`[SMS Dispatcher] Failed to send SMS via Twilio:`, err);
+    console.error(`[SMS Dispatcher - Brevo] Failed to send SMS via Brevo:`, err);
     return false;
   }
 }
@@ -116,38 +123,53 @@ interface WhatsAppOptions {
 }
 
 /**
- * Sends a real Twilio WhatsApp if configured, else logs structured contents to console.
+ * Sends a real Brevo WhatsApp message if configured, else logs structured contents to console.
  */
 export async function sendWhatsApp({ to, body }: WhatsAppOptions): Promise<boolean> {
-  console.log(`[WhatsApp Dispatcher] Initiating dispatch to: ${to}`);
-  const client = getTwilioClient();
-  const fromWhatsAppNumber = process.env.TWILIO_WHATSAPP_NUMBER || 'whatsapp:+14155238886'; // Twilio Sandbox format
+  console.log(`[WhatsApp Dispatcher - Brevo] Initiating dispatch to: ${to}`);
+  const apiKey = process.env.BREVO_API_KEY;
+  const senderNumber = process.env.BREVO_WHATSAPP_SENDER_NUMBER;
 
-  // Format recipient's phone number as whatsapp equivalent
-  const formattedTo = to.startsWith('whatsapp:') ? to : `whatsapp:${to}`;
+  // Format recipient's phone number: strip whatsapp: prefix for Brevo compatibility
+  const cleanTo = to.replace('whatsapp:', '').trim();
 
-  if (!client) {
+  if (!apiKey || !senderNumber) {
     console.warn(
-      `[MOCK NOTIFICATION SENDER] Twilio is not fully configured (TWILIO_ACCOUNT_SID missing). WhatsApp log details below:`
+      `[MOCK NOTIFICATION SENDER] Brevo is not fully configured (BREVO_API_KEY/BREVO_WHATSAPP_SENDER_NUMBER missing). WhatsApp log details below:`
     );
     console.warn(`--------------------------------------------------`);
-    console.warn(`FROM: ${fromWhatsAppNumber}`);
-    console.warn(`TO:   ${formattedTo}`);
+    console.warn(`FROM: ${senderNumber || 'MISSING_SENDER_NUMBER'}`);
+    console.warn(`TO:   ${cleanTo}`);
     console.warn(`BODY: ${body}`);
     console.warn(`--------------------------------------------------`);
     return true;
   }
 
   try {
-    const message = await client.messages.create({
-      body,
-      from: fromWhatsAppNumber,
-      to: formattedTo,
+    const res = await fetch('https://api.brevo.com/v3/whatsapp/sendMessage', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': apiKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        senderNumber,
+        contactNumbers: [cleanTo],
+        text: body,
+      }),
     });
-    console.log(`[WhatsApp Dispatcher] Twilio successfully sent WhatsApp (SID: ${message.sid}) to: ${formattedTo}`);
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(`[WhatsApp Dispatcher - Brevo] Failed response (${res.status}):`, errText);
+      return false;
+    }
+
+    console.log(`[WhatsApp Dispatcher - Brevo] Brevo successfully sent WhatsApp to: ${cleanTo}`);
     return true;
   } catch (err: any) {
-    console.error(`[WhatsApp Dispatcher] Failed to send WhatsApp via Twilio:`, err);
+    console.error(`[WhatsApp Dispatcher - Brevo] Failed to send WhatsApp via Brevo:`, err);
     return false;
   }
 }
