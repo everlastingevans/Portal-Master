@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Sparkles, FileText, Upload, Briefcase, Eye, BadgeCheck, ShieldAlert, ArrowLeft, User, Bookmark, BookmarkCheck, Moon, Sun, CheckCircle2, XCircle, Clock, PlusCircle, Video, Mail, Heart, MapPin, ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { Search, Sparkles, FileText, Upload, Briefcase, Eye, BadgeCheck, ShieldAlert, ArrowLeft, User, Bookmark, BookmarkCheck, Moon, Sun, CheckCircle2, XCircle, Clock, PlusCircle, Video, Mail, Heart, MapPin, ChevronDown, SlidersHorizontal, X, ExternalLink, Calendar, DollarSign, Award, ThumbsUp, Building, ArrowUpRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import sanitizeHtml from 'sanitize-html';
 import { useTheme } from 'next-themes';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
@@ -834,7 +835,7 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <div className="flex-1 overflow-y-auto p-8">
         {/* TAB 1: JOB BROWSER & SAVED JOBS */}
-        {(activeTab === 'Jobs' || activeTab === 'Saved' || activeTab === 'AllJobs') && !selectedJob && (
+        {(activeTab === 'Jobs' || activeTab === 'Saved' || activeTab === 'AllJobs') && (
           <div className="max-w-6xl mx-auto space-y-8 pb-12">
             
             {/* Header Area */}
@@ -998,7 +999,7 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
         )}
 
         {/* TAB APPLICATIONS */}
-        {activeTab === 'Applications' && !selectedJob && (
+        {activeTab === 'Applications' && (
            <div className="max-w-6xl mx-auto space-y-6">
              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
                 <div className="p-6 border-b border-slate-200 dark:border-slate-800">
@@ -1052,78 +1053,281 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
            </div>
         )}
 
-        {/* JOB DETAIL PANEL (Slide-out/Modal simulation) */}
-        {(activeTab === 'Jobs' || activeTab === 'Saved' || activeTab === 'Applications' || activeTab === 'AllJobs') && selectedJob && (
-          <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden flex flex-col transition-colors">
-            <div className="bg-slate-900 dark:bg-slate-950 text-white p-6 flex flex-col items-start gap-4">
-               <button onClick={() => setSelectedJob(null)} className="text-slate-400 hover:text-white flex items-center gap-1.5 text-sm font-bold mb-2 cursor-pointer">
-                 <ArrowLeft className="w-4 h-4"/> Back
-               </button>
-               <div>
-                 <h2 className="text-2xl font-extrabold leading-snug">{selectedJob.title}</h2>
-                 <p className="text-slate-300 font-medium mt-1">{selectedJob.company} • {selectedJob.location}</p>
-                 <span className="inline-block bg-slate-800 dark:bg-slate-900 text-blue-300 px-3 py-1 rounded text-xs font-bold font-mono mt-2 border border-slate-700">{formatSalary(selectedJob.salary_min, selectedJob.salary_max)}</span>
-               </div>
-               <div className="w-full flex justify-between items-center gap-4 border-t border-slate-800 pt-4 mt-2">
-                 {selectedJob.match_score > 0 ? (
-                   <div className="bg-blue-500/20 text-blue-300 px-4 py-2 border border-blue-500/35 rounded-lg text-sm font-bold flex items-center gap-2">
-                     <Sparkles className="w-4 h-4 text-blue-400"/> AI Confidence Match: {selectedJob.match_score}%
-                   </div>
-                 ) : (
-                   <div className="bg-slate-500/20 text-slate-300 px-4 py-2 border border-slate-500/35 rounded-lg text-sm font-bold flex items-center gap-2">
-                     <Sparkles className="w-4 h-4 text-slate-400"/> Upload resume to run AI match analyzer
-                   </div>
-                 )}
-                 <button onClick={() => handleApply(selectedJob.job_id)} className="bg-blue-600 hover:bg-blue-550 active:scale-95 text-white px-6 py-2.5 rounded-lg font-bold transition shadow-lg text-sm cursor-pointer">
-                   Apply Now
-                 </button>
-               </div>
-            </div>
+        {/* JOB DETAIL PANEL (Upwork-style slide-over panel) */}
+        <AnimatePresence>
+          {selectedJob && (
+            <>
+              {/* Overlay Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedJob(null)}
+                className="fixed inset-0 bg-neutral-950/50 dark:bg-neutral-950/70 backdrop-blur-xs z-50 transition-opacity"
+              />
 
-            <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-               <div className="md:col-span-2 space-y-6">
-                 <div>
-                   <h3 className="text-xs font-bold text-slate-550 dark:text-slate-405 uppercase tracking-widest mb-3 border-b border-slate-100 dark:border-slate-800 pb-1">Job Description</h3>
-                   <div className="prose prose-sm dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 leading-relaxed text-sm" dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedJob.job_description || '<p>Description text unavailable.</p>') }}></div>
-                 </div>
-               </div>
-               
-               {/* Match Details Sidebar */}
-               <div className="space-y-6 bg-slate-50 dark:bg-slate-950 p-6 rounded-xl border border-slate-100 dark:border-slate-800">
-                 <div>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2 mb-3">
-                      <BadgeCheck className="w-4 h-4 text-green-600 dark:text-green-500"/> Matched Skills
-                    </h3>
-                    <div className="flex flex-wrap gap-1.5">
-                      {selectedJob.matched_skills?.map((skill: string, i: number) => (
-                        <span key={i} className="text-xs bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-900 text-green-800 dark:text-green-400 px-2 py-1 rounded font-bold">{skill}</span>
-                      ))}
-                      {(!selectedJob.matched_skills || selectedJob.matched_skills.length === 0) && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400 italic font-medium">None matched yet.</p>
-                      )}
+              {/* Slide-over Drawer Panel */}
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 28, stiffness: 220 }}
+                className="fixed inset-y-0 right-0 z-50 w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-5xl bg-white dark:bg-neutral-900 shadow-2xl flex flex-col h-screen overflow-hidden border-l border-neutral-200 dark:border-neutral-800 transition-colors"
+              >
+                {/* Drawer Sticky Header */}
+                <div className="sticky top-0 z-10 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4 flex items-center justify-between gap-4 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => setSelectedJob(null)} 
+                      className="p-2 -ml-2 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                      title="Close Panel"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                    <span className="text-xs font-black text-neutral-400 uppercase tracking-widest hidden sm:inline-block">Job Details</span>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    {/* Bookmark Toggle */}
+                    {(() => {
+                      const isSaved = !!savedJobsMap[selectedJob.job_id];
+                      return (
+                        <button 
+                          onClick={(e) => handleSaveJob(e, selectedJob.job_id)} 
+                          className={`p-2.5 rounded-xl border transition-all ${
+                            isSaved 
+                              ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/50' 
+                              : 'bg-neutral-50 text-neutral-400 border-neutral-200 hover:text-[#5D3FD3] hover:bg-violet-50 hover:border-violet-200 dark:bg-neutral-850 dark:text-neutral-500 dark:border-neutral-800 dark:hover:bg-violet-950/20 dark:hover:text-[#5D3FD3]/80 dark:hover:border-[#5D3FD3]/40'
+                          }`}
+                          title={isSaved ? 'Remove from Saved' : 'Save Job Opportunity'}
+                        >
+                          <Heart className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+                        </button>
+                      );
+                    })()}
+
+                    {/* Apply Button */}
+                    <button 
+                      onClick={() => handleApply(selectedJob.job_id)} 
+                      style={{ backgroundColor: '#5D3FD3' }}
+                      className="hover:opacity-90 active:scale-95 text-white px-5 py-2.5 rounded-xl font-bold transition shadow-lg shadow-[#5D3FD3]/10 text-sm flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>Apply Now</span>
+                      <ArrowUpRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Drawer Scrollable Content */}
+                <div className="flex-1 overflow-y-auto">
+                  {/* Job Header Info Block */}
+                  <div className="px-6 py-8 md:px-8 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-950/10">
+                    <div className="flex flex-col sm:flex-row gap-5 items-start justify-between">
+                      <div className="flex gap-4 items-start">
+                        <CompanyLogo companyName={selectedJob.company} />
+                        <div>
+                          <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-neutral-900 dark:text-white leading-tight uppercase font-sans tracking-tight">
+                            {selectedJob.title}
+                          </h2>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2 text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                            <span className="text-[#5D3FD3] dark:text-[#7d62ef] font-bold hover:underline cursor-pointer">{selectedJob.company}</span>
+                            <span className="text-neutral-300 dark:text-neutral-700">•</span>
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-4 h-4 text-neutral-400" />
+                              {selectedJob.location || 'Remote'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Experience & Salary badges */}
+                      <div className="flex flex-wrap gap-2 sm:self-start">
+                        <span className="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-bold uppercase tracking-wider">
+                          {selectedJob.years_experience !== undefined ? (selectedJob.years_experience <= 2 ? 'Entry Level' : selectedJob.years_experience <= 5 ? 'Mid Level' : 'Senior Level') : 'Full Time'}
+                        </span>
+                        <span className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-900/30 rounded-xl text-xs font-bold uppercase tracking-wider">
+                          {formatSalary(selectedJob.salary_min, selectedJob.salary_max)}
+                        </span>
+                      </div>
                     </div>
-                 </div>
-                 <div>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2 mb-3">
-                      <ShieldAlert className="w-4 h-4 text-red-500"/> Missing Requirements
-                    </h3>
-                    <div className="flex flex-wrap gap-1.5">
-                      {selectedJob.missing_skills?.map((skill: string, i: number) => (
-                        <span key={i} className="text-xs bg-red-50 dark:bg-red-955 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-400 px-2 py-1 rounded font-bold opacity-90">{skill}</span>
-                      ))}
-                      {(!selectedJob.missing_skills || selectedJob.missing_skills.length === 0) && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400 italic font-medium">None identified.</p>
-                      )}
+                  </div>
+
+                  {/* Split Layout Section */}
+                  <div className="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left Details Panel (Job description & Skills) */}
+                    <div className="lg:col-span-2 space-y-8">
+                      {/* Job Description */}
+                      <div className="space-y-4">
+                        <h3 className="text-xs font-black text-neutral-400 uppercase tracking-widest pb-1.5 border-b border-neutral-100 dark:border-neutral-800">
+                          Job Description
+                        </h3>
+                        <div 
+                          className="prose prose-sm dark:prose-invert max-w-none text-neutral-700 dark:text-neutral-300 leading-relaxed text-sm space-y-4"
+                          dangerouslySetInnerHTML={{ 
+                            __html: sanitizeHtml(selectedJob.job_description || '<p>Description text unavailable.</p>') 
+                          }} 
+                        />
+                      </div>
+
+                      {/* AI Fit Analysis Block */}
+                      <div className="space-y-5 bg-violet-50/20 dark:bg-violet-950/5 border border-violet-100/40 dark:border-violet-900/10 p-6 rounded-2xl">
+                        <div className="flex items-center justify-between gap-4 border-b border-violet-100/30 dark:border-violet-900/10 pb-4">
+                          <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                            <Sparkles className="w-5 h-5 text-[#5D3FD3]" />
+                            <span>AI Match Analytics</span>
+                          </h3>
+                          {selectedJob.match_score > 0 ? (
+                            <span 
+                              style={{ color: '#5D3FD3', backgroundColor: 'rgba(93, 63, 211, 0.1)' }}
+                              className="px-3 py-1 rounded-xl text-xs font-black"
+                            >
+                              {selectedJob.match_score}% Confidence Match
+                            </span>
+                          ) : (
+                            <span className="text-xs text-neutral-400 font-medium">
+                              Upload resume to view fit score
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Matched / Missing skills row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Matched Skills */}
+                          <div className="space-y-3">
+                            <h4 className="text-xs font-bold text-neutral-500 dark:text-neutral-400 flex items-center gap-2 uppercase tracking-wider">
+                              <BadgeCheck className="w-4 h-4 text-emerald-500" />
+                              <span>Matched Skills ({selectedJob.matched_skills?.length || 0})</span>
+                            </h4>
+                            <div className="flex flex-wrap gap-1.5">
+                              {selectedJob.matched_skills?.map((skill: string, i: number) => (
+                                <span 
+                                  key={i} 
+                                  className="text-xs bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-lg font-bold"
+                                >
+                                  {skill}
+                                </span>
+                              ))}
+                              {(!selectedJob.matched_skills || selectedJob.matched_skills.length === 0) && (
+                                <p className="text-xs text-neutral-400 italic">None matched yet.</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Missing Requirements */}
+                          <div className="space-y-3">
+                            <h4 className="text-xs font-bold text-neutral-500 dark:text-neutral-400 flex items-center gap-2 uppercase tracking-wider">
+                              <ShieldAlert className="w-4 h-4 text-rose-500" />
+                              <span>Missing Skills ({selectedJob.missing_skills?.length || 0})</span>
+                            </h4>
+                            <div className="flex flex-wrap gap-1.5">
+                              {selectedJob.missing_skills?.map((skill: string, i: number) => (
+                                <span 
+                                  key={i} 
+                                  className="text-xs bg-rose-50/80 dark:bg-rose-955/30 border border-rose-100 dark:border-rose-900/40 text-rose-700 dark:text-rose-400 px-2.5 py-1 rounded-lg font-bold"
+                                >
+                                  {skill}
+                                </span>
+                              ))}
+                              {(!selectedJob.missing_skills || selectedJob.missing_skills.length === 0) && (
+                                <p className="text-xs text-neutral-400 italic">None identified.</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Recruiter AI Fit Advice */}
+                        {selectedJob.fit_summary && (
+                          <div className="border-t border-violet-100/30 dark:border-violet-900/10 pt-4 mt-2">
+                            <h4 className="text-xs font-black text-neutral-400 uppercase tracking-wider mb-2">
+                              Recruiter Advice Summary
+                            </h4>
+                            <p className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed italic bg-white dark:bg-neutral-900 p-4 rounded-xl border border-neutral-100 dark:border-neutral-800 shadow-xs border-l-4 border-[#5D3FD3]">
+                              &ldquo;{selectedJob.fit_summary}&rdquo;
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                 </div>
-                 <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Recruiter AI Fit Advice</h3>
-                    <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed italic bg-white dark:bg-slate-900 p-3.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">{selectedJob.fit_summary}</p>
-                 </div>
-               </div>
-            </div>
-          </div>
-        )}
+
+                    {/* Right Side Sidebar Details */}
+                    <div className="lg:col-span-1 space-y-6 lg:border-l lg:border-neutral-200 dark:lg:border-neutral-800 lg:pl-8">
+                      <div>
+                        <h4 className="text-xs font-black text-neutral-400 uppercase tracking-widest pb-1.5 border-b border-neutral-100 dark:border-neutral-800 mb-4">
+                          Job Overview
+                        </h4>
+
+                        <div className="space-y-4">
+                          {/* Salary Item */}
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-violet-50 dark:bg-violet-950/40 rounded-lg text-[#5D3FD3]">
+                              <DollarSign className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">Salary Range</p>
+                              <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mt-0.5">
+                                {formatSalary(selectedJob.salary_min, selectedJob.salary_max)}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Experience Item */}
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-violet-50 dark:bg-violet-950/40 rounded-lg text-[#5D3FD3]">
+                              <Award className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">Experience Level</p>
+                              <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mt-0.5">
+                                {selectedJob.years_experience !== undefined ? `${selectedJob.years_experience} Years Required` : 'Not Specified'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Location Item */}
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-violet-50 dark:bg-violet-950/40 rounded-lg text-[#5D3FD3]">
+                              <MapPin className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">Location</p>
+                              <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mt-0.5">
+                                {selectedJob.location || 'Remote'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Company info */}
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-violet-50 dark:bg-violet-950/40 rounded-lg text-[#5D3FD3]">
+                              <Building className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">Company Profile</p>
+                              <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mt-0.5">
+                                {selectedJob.company}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Quick Tips / Info card */}
+                      <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-950/40 border border-neutral-100 dark:border-neutral-800 space-y-2.5">
+                        <h4 className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                          <ThumbsUp className="w-4 h-4 text-[#5D3FD3]" />
+                          <span>Candidate Tip</span>
+                        </h4>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                          Tailor your profile description and highlight matching skills on your resume to increase your AI Fit Score.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* TAB 2: PROFILE */}
         {activeTab === 'Profile' && (
