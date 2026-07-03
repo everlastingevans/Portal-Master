@@ -49,7 +49,15 @@ function CircularProgress({ score }: { score: number }) {
   );
 }
 
-function CompanyLogo({ companyName }: { companyName: string }) {
+function CompanyLogo({ companyName, logo }: { companyName: string; logo?: string | null }) {
+  if (logo) {
+    return (
+      <div className="w-11 h-11 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white flex items-center justify-center flex-shrink-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={logo} alt={`${companyName} Logo`} className="w-full h-full object-cover" />
+      </div>
+    );
+  }
   const name = companyName || 'Unknown';
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -150,7 +158,7 @@ function CategoryBreakdownChart({ questions }: { questions: any[] }) {
           />
           <Bar dataKey="score" radius={[0, 4, 4, 0]} barSize={11}>
             {data.map((entry, idx) => (
-              <Cell key={`cell-${idx}`} fill="#7145FF" />
+              <Cell key={`cell-${idx}`} fill="#5D3FD3" />
             ))}
           </Bar>
         </BarChart>
@@ -175,9 +183,9 @@ function ReadinessGauge({ score, status }: { score: number | null | undefined; s
 
   const displayScore = hasScore ? animatedScore : 0;
   
-  // LaunchPath theme: Premium violet #7145FF.
+  // LaunchPath theme: Premium violet #5D3FD3.
   const strokeColor = hasScore 
-    ? (score >= 80 ? '#7145FF' : score >= 50 ? '#a78bfa' : '#ef4444')
+    ? (score >= 80 ? '#5D3FD3' : score >= 50 ? '#a78bfa' : '#ef4444')
     : '#cbd5e1';
 
   const radius = 18;
@@ -642,7 +650,7 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
                 {/* Top card header */}
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
-                    <CompanyLogo companyName={match.company} />
+                    <CompanyLogo companyName={match.company} logo={match.tenantLogo} />
                     <div>
                       <h4 className="font-bold text-xs uppercase tracking-wider text-neutral-400 group-hover:text-neutral-500 transition-colors">{match.company}</h4>
                       <p className="text-[11px] text-neutral-400 font-medium flex items-center gap-1 mt-0.5">
@@ -1107,14 +1115,30 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
                     })()}
 
                     {/* Apply Button */}
-                    <button 
-                      onClick={() => handleApply(selectedJob.job_id)} 
-                      style={{ backgroundColor: '#5D3FD3' }}
-                      className="hover:opacity-90 active:scale-95 text-white px-5 py-2.5 rounded-xl font-bold transition shadow-lg shadow-[#5D3FD3]/10 text-sm flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <span>Apply Now</span>
-                      <ArrowUpRight className="w-4 h-4" />
-                    </button>
+                    {(() => {
+                      const hasApplied = (applications || []).some((app: any) => app.job?.id === selectedJob.job_id);
+                      if (hasApplied) {
+                        return (
+                          <button 
+                            disabled
+                            className="bg-neutral-100 dark:bg-neutral-800 text-neutral-450 dark:text-neutral-400 px-5 py-2.5 rounded-xl font-bold border border-neutral-250 dark:border-neutral-700 text-sm flex items-center gap-1.5 cursor-not-allowed"
+                          >
+                            <span>Applied</span>
+                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                          </button>
+                        );
+                      }
+                      return (
+                        <button 
+                          onClick={() => handleApply(selectedJob.job_id)} 
+                          style={{ backgroundColor: '#5D3FD3' }}
+                          className="hover:opacity-90 active:scale-95 text-white px-5 py-2.5 rounded-xl font-bold transition shadow-lg shadow-[#5D3FD3]/10 text-sm flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <span>Apply Now</span>
+                          <ArrowUpRight className="w-4 h-4" />
+                        </button>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -1124,7 +1148,7 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
                   <div className="px-6 py-8 md:px-8 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-950/10">
                     <div className="flex flex-col sm:flex-row gap-5 items-start justify-between">
                       <div className="flex gap-4 items-start">
-                        <CompanyLogo companyName={selectedJob.company} />
+                        <CompanyLogo companyName={selectedJob.company} logo={selectedJob.tenantLogo} />
                         <div>
                           <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-neutral-900 dark:text-white leading-tight uppercase font-sans tracking-tight">
                             {selectedJob.title}
@@ -1345,7 +1369,7 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
                       <h2 className="text-2xl font-bold dark:text-white">{user?.name || 'Talent'}</h2>
                       <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">{user?.professional_title || 'No professional title set'}</p>
                       <div className="flex flex-wrap items-center gap-2 mt-2.5">
-                        <span className="inline-block text-xs font-bold text-[#7145FF] dark:text-violet-405 bg-violet-100 dark:bg-[#7145FF]/20 px-3 py-1 rounded-full uppercase tracking-wider">
+                        <span className="inline-block text-xs font-bold text-[#5D3FD3] dark:text-violet-405 bg-violet-100 dark:bg-[#5D3FD3]/20 px-3 py-1 rounded-full uppercase tracking-wider">
                           {user?.experience_level || 'Entry-Level'}
                         </span>
                         {user?.linkedin_url && (
@@ -1781,7 +1805,7 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
                 {notifications.some(n => !n.is_read) && (
                   <button
                     onClick={markAllAsRead}
-                    className="text-xs font-bold text-[#7145FF] dark:text-violet-400 hover:underline bg-[#7145FF]/5 hover:bg-[#7145FF]/10 dark:bg-violet-955/20 dark:hover:bg-violet-955/40 px-3.5 py-2 rounded-lg border border-[#7145FF]/10 cursor-pointer self-start sm:self-center transition-all"
+                    className="text-xs font-bold text-[#5D3FD3] dark:text-violet-400 hover:underline bg-[#5D3FD3]/5 hover:bg-[#5D3FD3]/10 dark:bg-violet-955/20 dark:hover:bg-violet-955/40 px-3.5 py-2 rounded-lg border border-[#5D3FD3]/10 cursor-pointer self-start sm:self-center transition-all"
                   >
                     Mark All as Read
                   </button>
@@ -1806,7 +1830,7 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
                       onClick={() => !n.is_read && markAsRead(n.id)}
                       className={`py-4 first:pt-0 last:pb-0 flex gap-4 transition-all duration-200 cursor-pointer ${
                         !n.is_read 
-                          ? 'bg-indigo-50/20 dark:bg-indigo-950/10 px-3 rounded-lg border-l-4 border-[#7145FF] ml-[-4px]' 
+                          ? 'bg-indigo-50/20 dark:bg-indigo-950/10 px-3 rounded-lg border-l-4 border-[#5D3FD3] ml-[-4px]' 
                           : 'opacity-85 hover:opacity-100'
                       }`}
                     >
@@ -1820,7 +1844,7 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
                             📅
                           </div>
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-[#7145FF]/10 text-[#7145FF] flex items-center justify-center text-sm font-bold">
+                          <div className="w-8 h-8 rounded-full bg-[#5D3FD3]/10 text-[#5D3FD3] flex items-center justify-center text-sm font-bold">
                             🔔
                           </div>
                         )}

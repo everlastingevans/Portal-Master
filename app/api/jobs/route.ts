@@ -51,6 +51,12 @@ export async function POST(req: Request) {
     const salaryMinVal = salary_min && !isNaN(parseInt(String(salary_min), 10)) ? parseInt(String(salary_min), 10) : null;
     const salaryMaxVal = salary_max && !isNaN(parseInt(String(salary_max), 10)) ? parseInt(String(salary_max), 10) : null;
 
+    // Fetch employer's tenant_id to link it to the job posting
+    const userWithTenant = await db.user.findUnique({
+      where: { id: session.userId },
+      select: { tenant_id: true }
+    });
+
     const job = await db.job.create({
       data: {
         title,
@@ -58,6 +64,7 @@ export async function POST(req: Request) {
         location: location || 'Remote',
         description: sanitizedDescription,
         employer_id: session.userId,
+        tenant_id: userWithTenant?.tenant_id || null,
         years_experience: yearsExp,
         mandatory_skills: mandatorySkillsArr,
         tech_stack: techStackArr,
@@ -70,6 +77,99 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Job Creation Error:', error);
     // We send a generic error rather than the stack trace
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+export async function PUT(req: Request) {
+  try {
+    const session = await getSession();
+    if (!session || (session.role !== 'CLIENT' && session.role !== 'EMPLOYER')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { 
+      id,
+      title, 
+      company, 
+      location, 
+      description,
+      years_experience,
+      mandatory_skills,
+      tech_stack,
+      salary_min,
+      salary_max,
+      status
+    } = await req.json();
+
+    if (!id) {
+      return NextResponse.json({ error: 'Job ID required' }, { status: 400 });
+    }
+
+    const job = await db.job.findUnique({
+      where: { id: Number(id) }
+    });
+
+    if (!job) {
+      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    }
+
+    // Security check: ensure this employer owns this job
+    if (job.employer_id !== session.userId) {
+      return NextResponse.json({ error: 'Forbidden. You do not own this job post.' }, { status: 403 });
+    }
+
+    // Sanitize description if provided
+    let sanitizedDescription = job.description;
+    if (description) {
+      sanitizedDescription = sanitizeHtml(description, {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat(['h1', 'h2', 'p', 'br', 'ul', 'ol', 'li', 'strong', 'em', 'u', 'span']),
+        allowedAttributes: false,
+      });
+    }
+
+    // Parse skills and tools cleanly
+    const parseStringArray = (val: any): string[] => {
+      if (!val) return [];
+      if (Array.isArray(val)) {
+        return val.map(s => String(s).trim()).filter(Boolean);
+      }
+      if (typeof val === 'string') {
+        return val.split(',').map(s => s.trim()).filter(Boolean);
+      }
+      return [];
+    };
+
+    const yearsExp = years_experience !== undefined ? (years_experience ? String(years_experience).trim() : null) : job.years_experience;
+    const mandatorySkillsArr = mandatory_skills !== undefined ? parseStringArray(mandatory_skills) : job.mandatory_skills;
+    const techStackArr = tech_stack !== undefined ? parseStringArray(tech_stack) : job.tech_stack;
+
+    const salaryMinVal = salary_min !== undefined 
+      ? (salary_min && !isNaN(parseInt(String(salary_min), 10)) ? parseInt(String(salary_min), 10) : null)
+      : job.salary_min;
+    const salaryMaxVal = salary_max !== undefined
+      ? (salary_max && !isNaN(parseInt(String(salary_max), 10)) ? parseInt(String(salary_max), 10) : null)
+      : job.salary_max;
+
+    const updatedJob = await db.job.update({
+      where: { id: Number(id) },
+      data: {
+        title: title || job.title,
+        company: company || job.company,
+        location: location !== undefined ? location : job.location,
+        description: sanitizedDescription,
+        years_experience: yearsExp,
+        mandatory_skills: mandatorySkillsArr,
+        tech_stack: techStackArr,
+        salary_min: salaryMinVal,
+        salary_max: salaryMaxVal,
+        status: status || job.status
+      }
+    });
+
+    return NextResponse.json({ success: true, job: updatedJob });
+  } catch (error) {
+    console.error('Job Update Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
