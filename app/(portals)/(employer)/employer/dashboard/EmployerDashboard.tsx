@@ -5,7 +5,7 @@ import LaunchpathMuxPlayer from '@/components/LaunchpathMuxPlayer';
 const LAUNCHPATH_POSTER_SVG = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgNDUwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ2xvdyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxZTFiNGIiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI0MCUiIHN0b3AtY29sb3I9IiMwZjE3MmEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDIwNjE3Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJicmFuZCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNzE0NUZGIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzhiNWNmNiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI0NTAiIGZpbGw9InVybCgjZ2xvdykiLz4KICAKICA8IS0tIFN1YnRsZSBmdXR1cmlzdGljIGxpbmVzIC0tPgogIDxnIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9IjAuMDMiIHN0cm9rZS13aWR0aD0iMSI+CiAgICA8bGluZSB4MT0iMTAwIiB5MT0iMCIgeDI9IjEwMCIgeTI9IjQ1MCIvPgogICAgPGxpbmUgeDE9IjIwMCIgeTE9IjAiIHgyPSIyMDAiIHkyPSI0NTAiLz4KICAgIDxsaW5lIHgxPSIzMDAiIHkxPSIwIiB4Mj0iMzAwIiB5Mj0iNDUwIi8+CiAgICA8bGluZSB4MT0iNDAwIiB5MT0iMCIgeDI9IjQwMCIgeTI9IjQ1MCIvPgogICAgPGxpbmUgeDE9IjUwMCIgeTE9IjAiIHgyPSI1MDAiIHkyPSI0NTAiLz4KICAgIDxsaW5lIHgxPSI2MDAiIHkxPSIwIiB4Mj0iNjAwIiB5Mj0iNDUwIi8+CiAgICA8bGluZSB4MT0iNzAwIiB5MT0iMCIgeDI9IjcwMCIgeTI9IjQ1MCIvPgogICAgPGxpbmUgeDE9IjAiIHkxPSIxMDAiIHgyPSI4MDAiIHkyPSIxMDAiLz4KICAgIDxsaW5lIHgxPSIwIiB5MT0iMjAwIiB4Mj0iODAwIiB5Mj0iMjAwIi8+CiAgICA8bGluZSB4PSIwIiB5MT0iMzAwIiB4Mj0iODAwIiB5Mj0iMzAwIi8+CiAgICA8bGluZSB4PSIwIiB5MT0iNDAwIiB4Mj0iODAwIiB5Mj0iNDAwIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjQwMCIgY3k9IjIyNSIgcj0iMTQwIiBmaWxsPSIjNzE0NUZGIiBmaWxsLW9wYWNpdHk9IjAuMTUiIGZpbHRlcj0iYmx1cig2MHB4KSIvPgogIDxjaXJjbGUgY3g9IjIwMCIgY3k9IjE1MCIgcj0iODAiIGZpbGw9IiMzYjgyZjYiIGZpbGwtb3BhY2l0eT0iMC4xIiBmaWx0ZXI9ImJsdXIoNDBweCkiLz4KICA8cmVjdCB4PSI1MCIgeT0iNTAiIHdpZHRoPSI3MDAiIGhlaWdodD0iMzUwIiByeD0iMjAiIGZpbGw9IiMwZjE3MmEiIGZpbGwtb3BhY2l0eT0iMC41IiBzdHJva2U9IiMzMzQxNTUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2Utb3BhY2l0eT0iMC40Ii8+CiAgPGNpcmNsZSBjeD0iNDAwIiBjeT0iMTkwIiByPSI0NSIgZmlsbD0iIzcxNDVGRiIgZmlsbC1vcGFjaXR5PSIwLjIiIHN0cm9rZT0iIzcxNDVGRiIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPGNpcmNsZSBjeD0iNDAwIiBjeT0iMTkwIiByPSIzNSIgZmlsbD0idXJsKCNicmFuZCkiLz4KICA8cG9seWdvbiBwb2ludHM9IjM5MiwxNzcgNDE1LDE5MCAzOTIsMjAzIiBmaWxsPSIjZmZmZmZmIi8+CiAgPHJlY3QgeD0iMzEwIiB5PSIyNzAiIHdpZHRoPSIxODAiIGhlaWdodD0iMjQiIHJ4PSIxMiIgZmlsbD0iIzcxNDVGRiIgZmlsbC1vcGFjaXR5PSIwLjE1IiBzdHJva2U9IiM3MTQ1RkYiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLW9wYWNpdHk9IjAuMyIvPgogIDx0ZXh0IHg9IjQwMCIgeT0iMjg1IiBmaWxsPSIjYTc4YmZhIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Db2wsICdTZWdvZSBVSScsIFJvYm90bywgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9IjkwMCIgbGV0dGVyLXNwYWNpbmc9IjEuNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgdGV4dC10cmFuc2Zvcm09InVwcGVyY2FzZSI+TEFVTkNIUEFUSCBWRVJJRklFRDwvdGV4dD4KICA8dGV4dCB4PSI0MDAiIHk9IjMyNSIgZmlsbD0iI2ZmZmZmZiIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sIEJsaW5rTWFjU3lzdGVtQ29sLCAnU2Vnb2UgVUknLCBSb2JvdG8sIE91dGZpdCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjgwMCIgbGV0dGVyLXNwYWNpbmc9Ii0wLjUiIHRleHQtYW5jaG9yPSJuYXR1cmFsIj5BSSBSRUFESU5FU1MgVklERU8gSU5URVJWSUVXPC90ZXh0PgogIDx0ZXh0IHg9IjQwMCIgeT0iMzQ3IiBmaWxsPSIjOTRhM2I4IiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Db2wsICdTZWdvZSBVSScsIFJvYm90bywgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZm9udC13ZWlnaHQ9IjUwMCIgdHJhY2tpbmc9IjAuNSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+U2VjdXJlIFdlYlJUQyBUaW1lZCBFeGVjdXRpdmUgUHJlc2VudGF0aW9uPC90ZXh0PgogIDx0ZXh0IHg9IjgwIiB5PSI5MCIgZmlsbD0iIzY0NzQ4YiIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9IjcwMCI+RkVFRF9TVFJFQU06IEFDVElWRTwvdGV4dD4KICA8Y2lyY2xlIGN4PSIyMTUiIGN5PSI4NiIgcj0iNCIgZmlsbD0iIzEwYjk4MSIvPgogIDx0ZXh0IHg9IjcyMCIgeT0iOTAiIGZpbGw9IiM2NDc0OGIiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTEiIHRleHQtYW5jaG9yPSJlbmQiPjQvNCBNT0RVTEVTIENPTVBMRVRFRDwvdGV4dD4KPC9zdmc+";
 
 import Link from 'next/link';
-import { Clock, Search, Sun, Moon, PlusCircle, Briefcase, Users, CheckCircle, ShieldAlert, Video, Sparkles, Play, Lock } from 'lucide-react';
+import { Clock, Search, Sun, Moon, PlusCircle, Briefcase, Users, CheckCircle, ShieldAlert, Video, Sparkles, Play, Lock, Building, CheckCircle2, XCircle } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 import RichTextEditor from '@/components/RichTextEditor';
@@ -42,6 +42,198 @@ export default function EmployerDashboard({ data, user, onRefresh, onLogout }: {
   const [filterExperience, setFilterExperience] = useState<string>('All');
   const [filterSkill, setFilterSkill] = useState<string>('All');
   const [sortBy, setSortBy] = useState<string>('applied_at_desc');
+
+  // URL search parameter synchronization for active tab deep linking
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab');
+      if (tab) {
+        setActiveTab(tab);
+      }
+    }
+  }, []);
+
+  // Company Profile states
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileName, setProfileName] = useState('');
+  const [profileTitle, setProfileTitle] = useState('');
+  const [profilePhone, setProfilePhone] = useState('');
+  const [profileCompanyName, setProfileCompanyName] = useState('');
+  const [profileWebsite, setProfileWebsite] = useState('');
+  const [profileDescription, setProfileDescription] = useState('');
+  const [profileLocation, setProfileLocation] = useState('');
+  const [profileLogo, setProfileLogo] = useState('');
+  const [profileSaving, setProfileSaving] = useState(false);
+
+  const fetchProfile = async () => {
+    try {
+      setProfileLoading(true);
+      const res = await fetch('/api/employer/profile');
+      if (res.ok) {
+        const p = await res.json();
+        setProfileName(p.name || '');
+        setProfileTitle(p.professional_title || '');
+        setProfilePhone(p.phone || '');
+        if (p.company) {
+          setProfileCompanyName(p.company.name || '');
+          setProfileWebsite(p.company.features?.website || '');
+          setProfileDescription(p.company.features?.description || '');
+          setProfileLocation(p.company.features?.location || '');
+          setProfileLogo(p.company.features?.logo || '');
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching profile:', e);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileSaving(true);
+    try {
+      const res = await fetch('/api/employer/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: profileName,
+          professional_title: profileTitle,
+          phone: profilePhone,
+          companyName: profileCompanyName,
+          website: profileWebsite,
+          description: profileDescription,
+          location: profileLocation,
+          logo: profileLogo
+        })
+      });
+      if (res.ok) {
+        alert('Profile updated successfully!');
+        onRefresh();
+      } else {
+        alert('Failed to update profile.');
+      }
+    } catch (err: any) {
+      alert('Error saving profile: ' + err.message);
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const handleUpdateApplicationStatus = async (applicationId: number, status: 'Accepted' | 'Rejected') => {
+    try {
+      const res = await fetch('/api/employer/application', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applicationId, status }),
+      });
+      if (res.ok) {
+        alert(`Candidate successfully ${status.toLowerCase()}!`);
+        if (selectedApplicant && selectedApplicant.id === applicationId) {
+          setSelectedApplicant((prev: any) => ({ ...prev, status }));
+        }
+        onRefresh();
+      } else {
+        const d = await res.json();
+        alert(d.error || `Failed to update status to ${status}.`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error updating candidate application status.');
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'Profile') {
+      fetchProfile();
+    }
+  }, [activeTab]);
+
+  // Job Editing states
+  const [editingJob, setEditingJob] = useState<any | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editCompany, setEditCompany] = useState('');
+  const [editLocation, setEditLocation] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editYearsExperience, setEditYearsExperience] = useState('');
+  const [editMandatorySkills, setEditMandatorySkills] = useState('');
+  const [editTechStack, setEditTechStack] = useState('');
+  const [editSalaryMin, setEditSalaryMin] = useState('');
+  const [editSalaryMax, setEditSalaryMax] = useState('');
+  const [editStatus, setEditStatus] = useState('ACTIVE');
+  const [updatingJob, setUpdatingJob] = useState(false);
+
+  const handleStartEdit = (job: any) => {
+    setEditingJob(job);
+    setEditTitle(job.title || '');
+    setEditCompany(job.company || '');
+    setEditLocation(job.location || '');
+    
+    // Clean description to remove appended company block
+    let rawDesc = job.description || '';
+    const breakIndex = rawDesc.indexOf('\n\n**Company:**');
+    if (breakIndex !== -1) {
+      rawDesc = rawDesc.substring(0, breakIndex);
+    }
+    setEditDescription(rawDesc.trim());
+    setEditYearsExperience(job.years_experience || '');
+    setEditMandatorySkills(Array.isArray(job.mandatory_skills) ? job.mandatory_skills.join(', ') : String(job.mandatory_skills || ''));
+    setEditTechStack(Array.isArray(job.tech_stack) ? job.tech_stack.join(', ') : String(job.tech_stack || ''));
+    setEditSalaryMin(job.salary_min ? String(job.salary_min) : '');
+    setEditSalaryMax(job.salary_max ? String(job.salary_max) : '');
+    setEditStatus(job.status || 'ACTIVE');
+  };
+
+  const handleUpdateJobSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingJob) return;
+    setUpdatingJob(true);
+    try {
+      // Structure full description nicely with custom formatting
+      const fullDesc = `
+${editDescription}
+
+**Company:** ${editCompany || 'My Company'}
+**Location:** ${editLocation || 'Remote'}
+**Salary Range:** ${editSalaryMin && editSalaryMax ? `R${editSalaryMin} - R${editSalaryMax}` : editSalaryMin ? `From R${editSalaryMin}` : editSalaryMax ? `Up to R${editSalaryMax}` : 'Negotiable'}
+**Years of Experience Required:** ${editYearsExperience}
+**Mandatory Skills:** ${editMandatorySkills}
+**Tech Stack:** ${editTechStack}
+      `.trim();
+
+      const res = await fetch('/api/jobs', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingJob.id,
+          title: editTitle,
+          company: editCompany,
+          location: editLocation,
+          description: fullDesc,
+          years_experience: editYearsExperience,
+          mandatory_skills: editMandatorySkills,
+          tech_stack: editTechStack,
+          salary_min: editSalaryMin,
+          salary_max: editSalaryMax,
+          status: editStatus
+        })
+      });
+
+      if (res.ok) {
+        alert('Job posting updated successfully!');
+        setEditingJob(null);
+        onRefresh();
+      } else {
+        const err = await res.json();
+        alert('Failed to update job: ' + (err.error || 'Unknown error'));
+      }
+    } catch (err: any) {
+      alert('Error updating job: ' + err.message);
+    } finally {
+      setUpdatingJob(false);
+    }
+  };
 
   const filteredApplicants = (applications || [])
     .filter((app: any) => {
@@ -321,8 +513,8 @@ ${description}
         <header className="bg-white dark:bg-slate-900 h-16 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between pl-14 pr-4 md:px-8 flex-shrink-0 transition-colors">
           <h1 className="text-xl font-bold dark:text-white">{activeTab === 'Overview' ? 'Job Posts Overview' : 'Review Applicants'}</h1>
           <div className="flex items-center gap-6">
-            <div className="hidden sm:flex items-center gap-2 bg-[#7145FF]/10 dark:bg-[#7145FF]/20 text-[#7145FF] dark:text-violet-300 px-3 py-1 rounded-full text-sm font-semibold border border-[#7145FF]/20 dark:border-[#7145FF]/30">
-              <span className="w-2 h-2 bg-[#7145FF] dark:bg-[#7145FF] rounded-full animate-pulse"></span>
+            <div className="hidden sm:flex items-center gap-2 bg-[#5D3FD3]/10 dark:bg-[#5D3FD3]/20 text-[#5D3FD3] dark:text-violet-300 px-3 py-1 rounded-full text-sm font-semibold border border-[#5D3FD3]/20 dark:border-[#5D3FD3]/30">
+              <span className="w-2 h-2 bg-[#5D3FD3] dark:bg-[#5D3FD3] rounded-full animate-pulse"></span>
               {user?.role || 'EMPLOYER'}
             </div>
             <ThemeToggle />
@@ -341,7 +533,7 @@ ${description}
               </div>
               <Link 
                 href="/employer/new" 
-                className="bg-[#7145FF] hover:bg-[#5b32e6] dark:bg-[#7145FF] dark:hover:bg-[#5b32e6] text-white font-bold px-5 py-2.5 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2 self-start md:self-auto"
+                className="bg-[#5D3FD3] hover:bg-[#5b32e6] dark:bg-[#5D3FD3] dark:hover:bg-[#5b32e6] text-white font-bold px-5 py-2.5 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2 self-start md:self-auto"
               >
                 <PlusCircle className="w-4 h-4" />
                 Create New Post
@@ -401,7 +593,7 @@ ${description}
                     Clear Search
                   </button>
                 ) : (
-                  <Link href="/employer/new" className="bg-[#7145FF] hover:bg-[#5b32e6] text-white font-bold px-5 py-2.5 rounded-lg text-sm transition shadow-sm flex items-center gap-2">
+                  <Link href="/employer/new" className="bg-[#5D3FD3] hover:bg-[#5b32e6] text-white font-bold px-5 py-2.5 rounded-lg text-sm transition shadow-sm flex items-center gap-2">
                     <PlusCircle className="w-4 h-4" />
                     Create New Post
                   </Link>
@@ -493,7 +685,7 @@ ${description}
                           {((job.mandatory_skills && job.mandatory_skills.length > 0) || (typeof job.mandatory_skills === 'string' && job.mandatory_skills)) && (
                             <div className="space-y-1.5">
                               <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Mandatory Skills</span>
-                              {renderBadges(job.mandatory_skills, 'bg-[#7145FF]/10 dark:bg-[#7145FF]/20', 'text-[#7145FF] dark:text-violet-300', 'border-[#7145FF]/10 dark:border-[#7145FF]/20')}
+                              {renderBadges(job.mandatory_skills, 'bg-[#5D3FD3]/10 dark:bg-[#5D3FD3]/20', 'text-[#5D3FD3] dark:text-violet-300', 'border-[#5D3FD3]/10 dark:border-[#5D3FD3]/20')}
                             </div>
                           )}
                           {((job.tech_stack && job.tech_stack.length > 0) || (typeof job.tech_stack === 'string' && job.tech_stack)) && (
@@ -519,11 +711,17 @@ ${description}
                         {/* Action buttons */}
                         <div className="flex flex-wrap gap-2 justify-end">
                           <button 
+                            onClick={() => handleStartEdit(job)}
+                            className="bg-[#5D3FD3]/10 hover:bg-[#5D3FD3]/20 text-[#5D3FD3] dark:text-[#a385ff] dark:bg-[#5D3FD3]/20 dark:hover:bg-[#5D3FD3]/30 font-bold text-xs px-3.5 py-1.5 rounded-lg transition cursor-pointer border-none"
+                          >
+                            Edit Posting
+                          </button>
+                          <button 
                             onClick={() => {
                               setSelectedJobFilter(job.id);
                               setActiveTab('Applicants');
                             }}
-                            className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 font-bold text-xs text-slate-700 dark:text-slate-300 px-3.5 py-1.5 rounded-lg transition"
+                            className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 font-bold text-xs text-slate-700 dark:text-slate-300 px-3.5 py-1.5 rounded-lg transition cursor-pointer border-none"
                           >
                             View Applicants
                           </button>
@@ -553,7 +751,7 @@ ${description}
                   const appCount = (applications || []).filter((a: any) => a.job_id === j.id).length;
                   const unlocked = isJobUnlocked(j.id);
                   return (
-                    <div key={j.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between hover:border-[#7145FF]/30 transition-all">
+                    <div key={j.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between hover:border-[#5D3FD3]/30 transition-all">
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider ${unlocked ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-405'}`}>
@@ -566,7 +764,7 @@ ${description}
                       </div>
                       <button
                         onClick={() => setSelectedJobFilter(j.id)}
-                        className="mt-6 w-full text-center bg-slate-100 hover:bg-[#7145FF] hover:text-white dark:bg-slate-800 dark:hover:bg-[#7145FF] text-slate-700 dark:text-slate-350 font-bold py-2 rounded-lg text-xs transition cursor-pointer"
+                        className="mt-6 w-full text-center bg-slate-100 hover:bg-[#5D3FD3] hover:text-white dark:bg-slate-800 dark:hover:bg-[#5D3FD3] text-slate-700 dark:text-slate-350 font-bold py-2 rounded-lg text-xs transition cursor-pointer"
                       >
                         View Applicants
                       </button>
@@ -579,8 +777,8 @@ ${description}
             <div className="max-w-3xl mx-auto py-8">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden p-8 md:p-12 text-center space-y-6 transition-all">
                 
-                <div className="mx-auto w-20 h-20 bg-[#7145FF]/10 dark:bg-[#7145FF]/20 rounded-full flex items-center justify-center animate-pulse">
-                  <Lock className="w-10 h-10 text-[#7145FF]" />
+                <div className="mx-auto w-20 h-20 bg-[#5D3FD3]/10 dark:bg-[#5D3FD3]/20 rounded-full flex items-center justify-center animate-pulse">
+                  <Lock className="w-10 h-10 text-[#5D3FD3]" />
                 </div>
 
                 <div className="space-y-3">
@@ -588,10 +786,10 @@ ${description}
                     Candidate Pipeline Locked 🔒
                   </h2>
                   <p className="text-slate-500 dark:text-slate-400 text-xs uppercase font-extrabold tracking-wider">
-                    Role: <span className="text-[#7145FF] dark:text-violet-400">{(jobs || []).find((j: any) => j.id === selectedJobFilter)?.title || 'Selected Role'}</span>
+                    Role: <span className="text-[#5D3FD3] dark:text-violet-400">{(jobs || []).find((j: any) => j.id === selectedJobFilter)?.title || 'Selected Role'}</span>
                   </p>
                   <p className="text-slate-600 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-md leading-relaxed">
-                    Great news! You have <span className="font-extrabold text-[#7145FF] dark:text-violet-400">{(applications || []).filter((a: any) => a.job_id === selectedJobFilter).length} matched candidates</span> aligned and waiting for this specific role. Unlock this pipeline to review matches, view assessment details, and schedule interviews.
+                    Great news! You have <span className="font-extrabold text-[#5D3FD3] dark:text-violet-400">{(applications || []).filter((a: any) => a.job_id === selectedJobFilter).length} matched candidates</span> aligned and waiting for this specific role. Unlock this pipeline to review matches, view assessment details, and schedule interviews.
                   </p>
                 </div>
 
@@ -604,7 +802,7 @@ ${description}
                     </div>
                   </div>
                   <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-955 border border-slate-100 dark:border-slate-800">
-                    <Sparkles className="w-5 h-5 text-[#7145FF] mt-0.5 flex-shrink-0" />
+                    <Sparkles className="w-5 h-5 text-[#5D3FD3] mt-0.5 flex-shrink-0" />
                     <div>
                       <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">AI Role-Fit Index</h4>
                       <p className="text-[11px] text-slate-500">See direct matching score, tool breakdown, and AI recruiter analysis.</p>
@@ -631,7 +829,7 @@ ${description}
                     <button
                       onClick={() => handleUnlock('checkout', selectedJobFilter)}
                       disabled={unlocking}
-                      className="w-full sm:w-auto bg-[#7145FF] hover:bg-[#5b32e6] text-white font-extrabold px-8 py-3 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full sm:w-auto bg-[#5D3FD3] hover:bg-[#5b32e6] text-white font-extrabold px-8 py-3 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2 cursor-pointer"
                     >
                       {unlocking ? 'Connecting...' : 'Unlock Candidate Pipeline (R499.00 once-off)'}
                     </button>
@@ -650,7 +848,7 @@ ${description}
                   {(jobs || []).length > 1 && (
                     <button
                       onClick={() => setSelectedJobFilter(null)}
-                      className="text-xs text-slate-500 hover:text-[#7145FF] hover:underline font-bold flex items-center gap-1 mx-auto mt-4 cursor-pointer"
+                      className="text-xs text-slate-500 hover:text-[#5D3FD3] hover:underline font-bold flex items-center gap-1 mx-auto mt-4 cursor-pointer"
                     >
                       ← Back to Job Postings
                     </button>
@@ -674,7 +872,7 @@ ${description}
                     setFilterSkill('All');
                     setSortBy('applied_at_desc');
                   }}
-                  className="text-xs text-[#7145FF] hover:underline font-bold cursor-pointer"
+                  className="text-xs text-[#5D3FD3] hover:underline font-bold cursor-pointer"
                 >
                   Reset All
                 </button>
@@ -686,7 +884,7 @@ ${description}
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent dark:bg-slate-900 focus:ring-2 focus:ring-[#7145FF] focus:border-transparent outline-none transition"
+                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent dark:bg-slate-900 focus:ring-2 focus:ring-[#5D3FD3] focus:border-transparent outline-none transition"
                 >
                   <option value="applied_at_desc">Applied Date (Newest)</option>
                   <option value="score_desc">AI Match Score (High-Low)</option>
@@ -706,7 +904,7 @@ ${description}
                       onClick={() => setFilterScore(s as any)}
                       className={`px-2 py-1.5 rounded-lg text-center text-xs font-semibold border transition cursor-pointer ${
                         filterScore === s
-                          ? 'bg-[#7145FF]/10 border-[#7145FF] text-[#7145FF]'
+                          ? 'bg-[#5D3FD3]/10 border-[#5D3FD3] text-[#5D3FD3]'
                           : 'border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                       }`}
                     >
@@ -727,12 +925,12 @@ ${description}
                       onClick={() => setFilterExperience(level)}
                       className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium border transition flex items-center justify-between cursor-pointer ${
                         filterExperience === level
-                          ? 'bg-[#7145FF]/10 border-[#7145FF]/30 text-[#7145FF] font-bold'
+                          ? 'bg-[#5D3FD3]/10 border-[#5D3FD3]/30 text-[#5D3FD3] font-bold'
                           : 'border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850'
                       }`}
                     >
                       <span>{level === 'All' ? 'Any Experience' : `${level} Level`}</span>
-                      {filterExperience === level && <span className="h-1.5 w-1.5 bg-[#7145FF] rounded-full"></span>}
+                      {filterExperience === level && <span className="h-1.5 w-1.5 bg-[#5D3FD3] rounded-full"></span>}
                     </button>
                   ))}
                 </div>
@@ -749,7 +947,7 @@ ${description}
                       onClick={() => setFilterSkill(skill === 'NodeJS' ? 'Node' : skill)}
                       className={`px-2.5 py-1 rounded-full text-xs font-bold border transition cursor-pointer ${
                         (skill === 'NodeJS' && filterSkill === 'Node') || (skill !== 'NodeJS' && filterSkill === skill)
-                          ? 'bg-[#7145FF]/15 border-[#7145FF]/40 text-[#7145FF]'
+                          ? 'bg-[#5D3FD3]/15 border-[#5D3FD3]/40 text-[#5D3FD3]'
                           : 'border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                       }`}
                     >
@@ -779,7 +977,7 @@ ${description}
               </div>
 
               {selectedJobFilter && (
-                <div className="px-6 py-3 bg-[#7145FF]/5 dark:bg-[#7145FF]/10 border-b border-[#7145FF]/15 dark:border-[#7145FF]/25 flex items-center justify-between text-xs text-[#7145FF] dark:text-violet-300">
+                <div className="px-6 py-3 bg-[#5D3FD3]/5 dark:bg-[#5D3FD3]/10 border-b border-[#5D3FD3]/15 dark:border-[#5D3FD3]/25 flex items-center justify-between text-xs text-[#5D3FD3] dark:text-violet-300">
                   <span>
                     Filtering applicants for role: <span className="font-bold underline">{(jobs || []).find((j: any) => j.id === selectedJobFilter)?.title || 'Selected Job'}</span>
                   </span>
@@ -817,7 +1015,7 @@ ${description}
                            <p className="text-xs text-slate-500 mt-0.5">{app.candidate.professional_title} • <span className="italic">{app.candidate.experience_level || 'General'}</span></p>
                          </td>
                          <td className="px-6 py-4">
-                           <span className="bg-[#7145FF]/10 text-[#7145FF] dark:text-violet-300 px-2.5 py-1 rounded-md text-xs font-semibold border border-[#7145FF]/20">
+                           <span className="bg-[#5D3FD3]/10 text-[#5D3FD3] dark:text-violet-300 px-2.5 py-1 rounded-md text-xs font-semibold border border-[#5D3FD3]/20">
                              {app.job.title}
                            </span>
                          </td>
@@ -839,7 +1037,7 @@ ${description}
                            </p>
                          </td>
                          <td className="px-6 py-4 text-right">
-                           <button onClick={() => setSelectedApplicant(app)} className="text-[#7145FF] hover:text-[#5b32e6] font-bold text-xs bg-[#7145FF]/10 hover:bg-[#7145FF]/20 dark:bg-[#7145FF]/20 dark:hover:bg-[#7145FF]/30 px-3.5 py-1.5 rounded transition cursor-pointer">
+                           <button onClick={() => setSelectedApplicant(app)} className="text-[#5D3FD3] hover:text-[#5b32e6] font-bold text-xs bg-[#5D3FD3]/10 hover:bg-[#5D3FD3]/20 dark:bg-[#5D3FD3]/20 dark:hover:bg-[#5D3FD3]/30 px-3.5 py-1.5 rounded transition cursor-pointer">
                              Manage
                            </button>
                          </td>
@@ -864,7 +1062,7 @@ ${description}
                                   <span>📧</span> {selectedApplicant.candidate.email}
                                 </span>
                                 {selectedApplicant.candidate.phone && (
-                                  <span className="flex items-center gap-1 font-bold text-[#7145FF] dark:text-[#a385ff]">
+                                  <span className="flex items-center gap-1 font-bold text-[#5D3FD3] dark:text-[#a385ff]">
                                     <span>📞</span> {selectedApplicant.candidate.phone}
                                   </span>
                                 )}
@@ -889,6 +1087,50 @@ ${description}
                            
                            {/* Left column: Scheduling & Actions */}
                            <div className="space-y-6">
+                             {/* Application Decision Actions */}
+                             <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3 mb-6">
+                               <div className="flex items-center justify-between">
+                                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Application Status</span>
+                                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border ${
+                                   selectedApplicant.status === 'Accepted'
+                                     ? 'bg-emerald-50 text-emerald-700 border-emerald-250 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/60'
+                                     : selectedApplicant.status === 'Rejected'
+                                     ? 'bg-rose-50 text-rose-700 border-rose-250 dark:bg-rose-950/20 dark:text-rose-455 dark:border-rose-800/60'
+                                     : 'bg-amber-50 text-amber-700 border-amber-250 dark:bg-amber-950/20 dark:text-amber-455 dark:border-amber-800/60'
+                                 }`}>
+                                   {selectedApplicant.status || 'Pending'}
+                                 </span>
+                                </div>
+                               
+                               <div className="grid grid-cols-2 gap-3.5 pt-1.5">
+                                 <button
+                                   onClick={() => handleUpdateApplicationStatus(selectedApplicant.id, 'Accepted')}
+                                   disabled={selectedApplicant.status === 'Accepted'}
+                                   className={`w-full font-bold py-2 px-3 rounded-lg text-xs transition cursor-pointer text-center flex items-center justify-center gap-1.5 border-none ${
+                                     selectedApplicant.status === 'Accepted'
+                                       ? 'bg-slate-150 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                                       : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                                   }`}
+                                 >
+                                   <CheckCircle2 className="w-3.5 h-3.5" />
+                                   Accept
+                                 </button>
+                                 
+                                 <button
+                                   onClick={() => handleUpdateApplicationStatus(selectedApplicant.id, 'Rejected')}
+                                   disabled={selectedApplicant.status === 'Rejected'}
+                                   className={`w-full font-bold py-2 px-3 rounded-lg text-xs transition cursor-pointer text-center flex items-center justify-center gap-1.5 border-none ${
+                                     selectedApplicant.status === 'Rejected'
+                                       ? 'bg-slate-150 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                                       : 'bg-rose-600 hover:bg-rose-700 text-white'
+                                   }`}
+                                 >
+                                   <XCircle className="w-3.5 h-3.5" />
+                                   Reject
+                                 </button>
+                               </div>
+                             </div>
+
                          {selectedApplicant.interviews && selectedApplicant.interviews.length > 0 ? (
                            <div>
                              <h4 className="font-bold text-sm text-slate-800 dark:text-white mb-3">Scheduled Interviews</h4>
@@ -896,7 +1138,7 @@ ${description}
                                {selectedApplicant.interviews.map((iv: any) => (
                                  <div key={iv.id} className="p-3 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950">
                                    <p className="font-bold text-sm">{new Date(iv.proposed_time).toLocaleString()}</p>
-                                   <p className="text-xs text-slate-500 mt-1">Status: <span className="font-bold text-[#7145FF]">{iv.status}</span></p>
+                                   <p className="text-xs text-slate-500 mt-1">Status: <span className="font-bold text-[#5D3FD3]">{iv.status}</span></p>
                                  </div>
                                ))}
                              </div>
@@ -921,7 +1163,7 @@ ${description}
                               <label className="block text-xs font-bold text-slate-500 mb-1">Notes / Video Link</label>
                               <input type="text" value={interviewNotes} onChange={e => setInterviewNotes(e.target.value)} placeholder="Zoom/Meet link or instructions" className="w-full text-sm p-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded" />
                            </div>
-                           <button onClick={() => scheduleInterview(selectedApplicant)} className="w-full bg-[#7145FF] hover:bg-[#5b32e6] text-white font-bold py-2 rounded transition cursor-pointer border-none">
+                           <button onClick={() => scheduleInterview(selectedApplicant)} className="w-full bg-[#5D3FD3] hover:bg-[#5b32e6] text-white font-bold py-2 rounded transition cursor-pointer border-none">
                              Send Invite
                            </button>
                          </div>
@@ -993,6 +1235,212 @@ ${description}
           )
         )}
 
+        {/* PROFILE TAB */}
+        {activeTab === 'Profile' && (
+          <div className="max-w-3xl mx-auto bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors mb-12">
+            <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-5 mb-6">
+              <div className="p-2.5 bg-[#5D3FD3]/10 text-[#5D3FD3] rounded-xl">
+                <Building className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold dark:text-white">Company Profile</h2>
+                <p className="text-xs text-slate-500">Update your company details, website, overview, and branding logo.</p>
+              </div>
+            </div>
+
+            {profileLoading ? (
+              <div className="py-12 text-center text-slate-500">Loading company profile details...</div>
+            ) : (
+              <form onSubmit={handleProfileSubmit} className="space-y-6">
+                
+                <h3 className="text-sm font-bold text-[#5D3FD3] uppercase tracking-wider">Contact Person Info</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Full Name</label>
+                    <input 
+                      type="text" 
+                      value={profileName} 
+                      onChange={e => setProfileName(e.target.value)} 
+                      className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                      placeholder="e.g. John Doe"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Job Title</label>
+                    <input 
+                      type="text" 
+                      value={profileTitle} 
+                      onChange={e => setProfileTitle(e.target.value)} 
+                      className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                      placeholder="e.g. Talent Acquisition Lead"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Email Address (Read-only)</label>
+                    <input 
+                      type="email" 
+                      value={user?.email || ''} 
+                      disabled 
+                      className="w-full text-sm p-2.5 border border-slate-100 dark:border-slate-800 dark:bg-slate-900 text-slate-400 rounded-xl cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Contact Phone</label>
+                    <input 
+                      type="text" 
+                      value={profilePhone} 
+                      onChange={e => setProfilePhone(e.target.value)} 
+                      className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                      placeholder="e.g. +27 11 123 4567"
+                    />
+                  </div>
+                </div>
+
+                <hr className="border-slate-100 dark:border-slate-800" />
+                <h3 className="text-sm font-bold text-[#5D3FD3] uppercase tracking-wider">Company Brand & Details</h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Company Name</label>
+                    <input 
+                      type="text" 
+                      value={profileCompanyName} 
+                      onChange={e => setProfileCompanyName(e.target.value)} 
+                      className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                      placeholder="e.g. LaunchPath Inc."
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Company Website</label>
+                    <input 
+                      type="text" 
+                      value={profileWebsite} 
+                      onChange={e => setProfileWebsite(e.target.value)} 
+                      className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                      placeholder="e.g. https://launchpath.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Location / Headquarters</label>
+                    <input 
+                      type="text" 
+                      value={profileLocation} 
+                      onChange={e => setProfileLocation(e.target.value)} 
+                      className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                      placeholder="e.g. Rosebank, Johannesburg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Logo URL (Optional)</label>
+                    <input 
+                      type="text" 
+                      value={profileLogo} 
+                      onChange={e => setProfileLogo(e.target.value)} 
+                      className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                      placeholder="e.g. https://domain.com/logo.png"
+                    />
+                  </div>
+                </div>
+
+                {/* DRAG AND DROP FILE UPLOADER FOR LOGO */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-2">Upload Company Logo</label>
+                  <div 
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const file = e.dataTransfer.files?.[0];
+                      if (file && file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          if (event.target?.result) {
+                            setProfileLogo(event.target.result as string);
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-[#5D3FD3] dark:hover:border-[#5D3FD3] rounded-2xl p-6 text-center cursor-pointer bg-slate-50/50 dark:bg-slate-950/20 transition-all flex flex-col items-center justify-center gap-3"
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*';
+                      input.onchange = (e: any) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            if (event.target?.result) {
+                              setProfileLogo(event.target.result as string);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      };
+                      input.click();
+                    }}
+                  >
+                    {profileLogo ? (
+                      <div className="flex items-center gap-4 text-left justify-center">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={profileLogo} alt="Logo preview" className="w-16 h-16 rounded-xl object-cover border border-slate-200 dark:border-slate-800 bg-white" />
+                        <div>
+                          <p className="text-xs font-bold text-slate-700 dark:text-slate-300">Logo Selected & Loaded</p>
+                          <p className="text-[10px] text-slate-400 mt-1">Click or drag another image to replace.</p>
+                          <button 
+                            type="button" 
+                            onClick={(e) => { e.stopPropagation(); setProfileLogo(''); }} 
+                            className="text-red-500 hover:text-red-600 text-xs font-bold mt-2"
+                          >
+                            Remove Logo
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-450 text-xl font-bold">
+                          📁
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-700 dark:text-slate-300">Drag & drop your company logo here</p>
+                          <p className="text-[10px] text-slate-400 mt-1">Supports PNG, JPG, or SVG up to 2MB (converts to Base64 data)</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Company Description</label>
+                  <textarea 
+                    value={profileDescription} 
+                    onChange={e => setProfileDescription(e.target.value)} 
+                    rows={4}
+                    className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                    placeholder="Provide a brief description of what your company does, its culture, and mission..."
+                  />
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={profileSaving}
+                  className="w-full bg-[#5D3FD3] hover:bg-[#5b32e6] text-white font-bold py-3.5 rounded-xl transition cursor-pointer"
+                >
+                  {profileSaving ? 'Saving Changes...' : 'Save Company Profile'}
+                </button>
+              </form>
+            )}
+          </div>
+        )}
+
         {/* SETTINGS TAB */}
         {activeTab === 'Settings' && (
           <div className="max-w-xl mx-auto bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
@@ -1019,6 +1467,160 @@ ${description}
         )}
       </div>
       </main>
+
+      {/* EDIT JOB POSTING MODAL */}
+      {editingJob && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 border border-slate-100 dark:border-slate-800">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
+              <div>
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-[#5D3FD3]" />
+                  Edit Job Posting: {editingJob.title}
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">Update specifications and requirements for this role.</p>
+              </div>
+              <button 
+                onClick={() => setEditingJob(null)} 
+                className="text-slate-400 hover:text-slate-650 dark:hover:text-slate-300 text-2xl font-bold leading-none cursor-pointer border-none bg-transparent"
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateJobSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">Job Title</label>
+                <input 
+                  type="text" 
+                  value={editTitle} 
+                  onChange={e => setEditTitle(e.target.value)} 
+                  className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl font-sans"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">Job Description (Rich Text Builder)</label>
+                <RichTextEditor 
+                  content={editDescription}
+                  onChange={setEditDescription}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Company Name</label>
+                  <input 
+                    type="text" 
+                    value={editCompany} 
+                    onChange={e => setEditCompany(e.target.value)} 
+                    className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Job Location</label>
+                  <input 
+                    type="text" 
+                    value={editLocation} 
+                    onChange={e => setEditLocation(e.target.value)} 
+                    className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Minimum Salary (R)</label>
+                  <input 
+                    type="number" 
+                    value={editSalaryMin} 
+                    onChange={e => setEditSalaryMin(e.target.value)} 
+                    className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                    placeholder="e.g. 450000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Maximum Salary (R)</label>
+                  <input 
+                    type="number" 
+                    value={editSalaryMax} 
+                    onChange={e => setEditSalaryMax(e.target.value)} 
+                    className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                    placeholder="e.g. 750000"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Years of Experience Required</label>
+                  <input 
+                    type="text" 
+                    value={editYearsExperience} 
+                    onChange={e => setEditYearsExperience(e.target.value)} 
+                    className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                    placeholder="e.g. 3-5 years"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Role Status</label>
+                  <select 
+                    value={editStatus} 
+                    onChange={e => setEditStatus(e.target.value)}
+                    className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                  >
+                    <option value="ACTIVE">Active</option>
+                    <option value="CLOSED">Closed / Filled</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Mandatory Skills (Comma separated)</label>
+                  <input 
+                    type="text" 
+                    value={editMandatorySkills} 
+                    onChange={e => setEditMandatorySkills(e.target.value)} 
+                    className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                    placeholder="e.g. React, Node, SQL"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Tech Stack (Comma separated)</label>
+                  <input 
+                    type="text" 
+                    value={editTechStack} 
+                    onChange={e => setEditTechStack(e.target.value)} 
+                    className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                    placeholder="e.g. GitHub, GCP, Prisma"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => setEditingJob(null)} 
+                  className="px-5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={updatingJob}
+                  className="px-6 py-2.5 bg-[#5D3FD3] hover:bg-[#5b32e6] text-white font-bold rounded-xl text-sm transition cursor-pointer disabled:opacity-50"
+                >
+                  {updatingJob ? 'Saving...' : 'Save Job Posting'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -16,7 +16,8 @@ import {
   PlusCircle, 
   ShieldAlert,
   Menu,
-  X
+  X,
+  Building
 } from 'lucide-react';
 
 export interface PortalSidebarProps {
@@ -76,43 +77,62 @@ export default function PortalSidebar({
             Hiring Pipeline
           </span>
           <nav className="space-y-1">
-            {/* Job Posts Tab/Link */}
+            {/* Job Postings Tab/Link */}
             {isDashboard && setActiveTab ? (
               <button
                 onClick={() => handleTabClick('Overview')}
-                className={`w-full flex items-center gap-3 py-2.5 rounded-lg transition-all text-left font-semibold text-sm ${getActiveClasses(activeTab === 'Overview')}`}
+                className={`w-full flex items-center gap-3 py-2.5 rounded-lg transition-all text-left font-semibold text-sm cursor-pointer ${getActiveClasses(activeTab === 'Overview')}`}
               >
                 <Briefcase className="w-4 h-4 flex-shrink-0 text-slate-400" />
-                <span className="flex-1 truncate">Job Posts</span>
+                <span className="flex-1 truncate">Job Postings</span>
                 <span className="bg-[#7145FF]/20 text-[#a385ff] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#7145FF]/30 mr-2">{jobsCount}</span>
               </button>
             ) : (
               <Link
-                href="/employer/dashboard"
-                className={`w-full flex items-center gap-3 py-2.5 rounded-lg transition-all font-semibold text-sm ${getActiveClasses(pathname === '/employer/dashboard')}`}
+                href="/employer/dashboard?tab=Overview"
+                className={`w-full flex items-center gap-3 py-2.5 rounded-lg transition-all font-semibold text-sm ${getActiveClasses(pathname === '/employer/dashboard' && activeTab === 'Overview')}`}
               >
                 <Briefcase className="w-4 h-4 flex-shrink-0 text-slate-400" />
-                <span className="flex-1 truncate">Job Posts Dashboard</span>
+                <span className="flex-1 truncate">Job Postings</span>
               </Link>
             )}
 
-            {/* Applicants Tab/Link */}
+            {/* Review Proposals Tab/Link */}
             {isDashboard && setActiveTab ? (
               <button
                 onClick={() => handleTabClick('Applicants')}
-                className={`w-full flex items-center gap-3 py-2.5 rounded-lg transition-all text-left font-semibold text-sm ${getActiveClasses(activeTab === 'Applicants')}`}
+                className={`w-full flex items-center gap-3 py-2.5 rounded-lg transition-all text-left font-semibold text-sm cursor-pointer ${getActiveClasses(activeTab === 'Applicants')}`}
               >
                 <Users className="w-4 h-4 flex-shrink-0 text-slate-400" />
-                <span className="flex-1 truncate">Applicants</span>
+                <span className="flex-1 truncate">Review Proposals</span>
                 <span className="bg-[#7145FF]/20 text-[#a385ff] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#7145FF]/30 mr-2">{applicationsCount}</span>
               </button>
             ) : (
               <Link
-                href="/employer/dashboard"
+                href="/employer/dashboard?tab=Applicants"
                 className="w-full flex items-center gap-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all font-semibold text-sm pl-4"
               >
                 <Users className="w-4 h-4 flex-shrink-0 text-slate-400" />
-                <span className="flex-1 truncate">Applicants List</span>
+                <span className="flex-1 truncate font-sans">Review Proposals</span>
+              </Link>
+            )}
+
+            {/* Company Profile Tab/Link */}
+            {isDashboard && setActiveTab ? (
+              <button
+                onClick={() => handleTabClick('Profile')}
+                className={`w-full flex items-center gap-3 py-2.5 rounded-lg transition-all text-left font-semibold text-sm cursor-pointer ${getActiveClasses(activeTab === 'Profile')}`}
+              >
+                <Building className="w-4 h-4 flex-shrink-0 text-slate-400" />
+                <span className="flex-1 truncate">Company Profile</span>
+              </button>
+            ) : (
+              <Link
+                href="/employer/dashboard?tab=Profile"
+                className="w-full flex items-center gap-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all font-semibold text-sm pl-4"
+              >
+                <Building className="w-4 h-4 flex-shrink-0 text-slate-400" />
+                <span className="flex-1 truncate">Company Profile</span>
               </Link>
             )}
           </nav>
@@ -123,31 +143,31 @@ export default function PortalSidebar({
             Hiring Controls
           </span>
           <nav className="space-y-1">
-            {/* Create New Post Link */}
+            {/* Post a New Job Link */}
             <Link
               href="/employer/new"
               className={`w-full flex items-center gap-3 py-2.5 rounded-lg transition-all font-semibold text-sm ${getActiveClasses(pathname === '/employer/new')}`}
             >
               <PlusCircle className="w-4 h-4 flex-shrink-0 text-slate-400" />
-              <span className="truncate">New Job (Post Role)</span>
+              <span className="truncate">Post a New Job</span>
             </Link>
 
-            {/* Update Link */}
+            {/* Interviews & Scheduling Link */}
             <Link
               href="/employer/update"
               className={`w-full flex items-center gap-3 py-2.5 rounded-lg transition-all font-semibold text-sm ${getActiveClasses(pathname === '/employer/update')}`}
             >
               <Settings className="w-4 h-4 flex-shrink-0 text-slate-400" />
-              <span className="truncate">Update & Schedule</span>
+              <span className="truncate">Interviews & Scheduling</span>
             </Link>
 
-            {/* Delete Link */}
+            {/* Close Job Postings Link */}
             <Link
               href="/employer/delete"
               className={`w-full flex items-center gap-3 py-2.5 rounded-lg transition-all font-semibold text-sm ${getActiveClasses(pathname === '/employer/delete')}`}
             >
               <ShieldAlert className="w-4 h-4 flex-shrink-0 text-slate-400" />
-              <span className="truncate">Delete / Close Postings</span>
+              <span className="truncate">Close Job Postings</span>
             </Link>
           </nav>
         </div>

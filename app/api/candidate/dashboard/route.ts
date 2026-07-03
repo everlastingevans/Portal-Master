@@ -41,26 +41,39 @@ export async function GET() {
           job: { status: 'ACTIVE' }
         },
         include: {
-          job: true
+          job: {
+            include: {
+              tenant: true
+            }
+          }
         },
         orderBy: { match_score: 'desc' }
       });
 
-      matches = rawMatches.map(m => ({
-        ...m,
-        title: m.job.title,
-        company: m.job.company,
-        location: m.job.location,
-        description: m.job.description,
-        job_description: m.job.description,
-        salary_min: m.job.salary_min,
-        salary_max: m.job.salary_max,
-        years_experience: m.job.years_experience,
-        mandatory_skills_db: m.job.mandatory_skills,
-        tech_stack_db: m.job.tech_stack,
-        missing_skills: JSON.parse(m.missing_skills || '[]'),
-        matched_skills: JSON.parse(m.matched_skills || '[]')
-      }));
+      matches = rawMatches.map(m => {
+        let logo = null;
+        if (m.job.tenant?.features) {
+          try {
+            logo = JSON.parse(m.job.tenant.features).logo || null;
+          } catch (e) {}
+        }
+        return {
+          ...m,
+          title: m.job.title,
+          company: m.job.company,
+          location: m.job.location,
+          description: m.job.description,
+          job_description: m.job.description,
+          salary_min: m.job.salary_min,
+          salary_max: m.job.salary_max,
+          years_experience: m.job.years_experience,
+          mandatory_skills_db: m.job.mandatory_skills,
+          tech_stack_db: m.job.tech_stack,
+          missing_skills: JSON.parse(m.missing_skills || '[]'),
+          matched_skills: JSON.parse(m.matched_skills || '[]'),
+          tenantLogo: logo
+        };
+      });
 
       const rawSaved = await db.savedJob.findMany({
         where: { candidate_id: session.userId }
@@ -70,37 +83,60 @@ export async function GET() {
       const rawApplications = await db.jobApplication.findMany({
         where: { candidate_id: session.userId },
         include: {
-          job: true,
+          job: {
+            include: {
+              tenant: true
+            }
+          },
           interviews: true
         },
         orderBy: { applied_at: 'desc' }
       });
-      applications = rawApplications.map(a => ({
-        id: a.id,
-        status: a.status,
-        applied_at: a.applied_at.toISOString(),
-        job: {
-          id: a.job.id,
-          title: a.job.title,
-          company: a.job.company,
-          location: a.job.location,
-        },
-        interviews: a.interviews
-      }));
+      applications = rawApplications.map(a => {
+        let logo = null;
+        if (a.job.tenant?.features) {
+          try {
+            logo = JSON.parse(a.job.tenant.features).logo || null;
+          } catch (e) {}
+        }
+        return {
+          id: a.id,
+          status: a.status,
+          applied_at: a.applied_at.toISOString(),
+          job: {
+            id: a.job.id,
+            title: a.job.title,
+            company: a.job.company,
+            location: a.job.location,
+            tenantLogo: logo
+          },
+          interviews: a.interviews
+        };
+      });
 
       // Fetch all active jobs from all employers
       const rawAllJobs = await db.job.findMany({
         where: { status: 'ACTIVE' },
+        include: {
+          tenant: true
+        },
         orderBy: { id: 'desc' }
       });
 
       allJobs = rawAllJobs.map(j => {
+        let logo = null;
+        if (j.tenant?.features) {
+          try {
+            logo = JSON.parse(j.tenant.features).logo || null;
+          } catch (e) {}
+        }
         const existingMatch = matches.find((m: any) => m.job_id === j.id);
         if (existingMatch) {
           return {
             ...existingMatch,
             id: `all_${j.id}`,
             job_id: j.id,
+            tenantLogo: logo
           };
         } else {
           // Fallback fit summary or description excerpt
@@ -122,7 +158,8 @@ export async function GET() {
             mandatory_skills_db: j.mandatory_skills || [],
             tech_stack_db: j.tech_stack || [],
             missing_skills: j.mandatory_skills || [],
-            matched_skills: []
+            matched_skills: [],
+            tenantLogo: logo
           };
         }
       });
