@@ -49,6 +49,107 @@ function CircularProgress({ score }: { score: number }) {
   );
 }
 
+const getResumeStrength = (text: string | null | undefined) => {
+  if (!text || text.trim().length === 0) {
+    return {
+      score: 0,
+      label: 'No CV Uploaded',
+      color: 'text-neutral-400 dark:text-neutral-500',
+      textColor: 'text-neutral-500',
+      barColor: 'bg-neutral-200 dark:bg-neutral-850',
+      tips: [
+        'Upload your PDF resume below to trigger AI analysis and get job matches.',
+        'Ensure your document is in standard single-column PDF format for best parse rates.'
+      ],
+      checks: {
+        contact: false,
+        skills: false,
+        experience: false,
+        education: false,
+        metrics: false,
+      }
+    };
+  }
+
+  const lowercase = text.toLowerCase();
+  const checks = {
+    contact: /email|@|\+?\d[\d\s-]{7,}/i.test(lowercase) || lowercase.includes('phone') || lowercase.includes('contact'),
+    skills: /skills|technologies|proficiencies|languages/i.test(lowercase) && lowercase.split(/skills|technologies/i)[1]?.length > 15,
+    experience: /experience|work history|employment|career|history/i.test(lowercase),
+    education: /education|degree|university|college|school|academic/i.test(lowercase),
+    metrics: /%|\d+\s*%/i.test(lowercase) || /achieved|managed|led|increased|saved|reduced|budget/i.test(lowercase),
+  };
+
+  let score = 25; // Base score for having text
+  if (checks.contact) score += 15;
+  if (checks.skills) score += 15;
+  if (checks.experience) score += 15;
+  if (checks.education) score += 15;
+  if (checks.metrics) score += 15;
+
+  const wordCount = text.trim().split(/\s+/).length;
+  if (wordCount > 300) score += 5;
+  
+  if (score > 100) score = 100;
+
+  let label = 'Needs Improvement';
+  let color = 'text-rose-500 dark:text-rose-400';
+  let textColor = 'text-rose-700 dark:text-rose-300';
+  let barColor = 'from-rose-500 to-rose-400';
+  
+  if (score >= 80) {
+    label = 'Excellent / Industry Standard';
+    color = 'text-[#22c55e] dark:text-[#22c55e]';
+    textColor = 'text-emerald-700 dark:text-emerald-300';
+    barColor = 'from-emerald-500 to-teal-400';
+  } else if (score >= 60) {
+    label = 'Good Strength';
+    color = 'text-[#5D3FD3] dark:text-violet-400';
+    textColor = 'text-indigo-700 dark:text-indigo-300';
+    barColor = 'from-indigo-500 to-violet-500';
+  } else if (score >= 40) {
+    label = 'Average';
+    color = 'text-amber-500 dark:text-amber-400';
+    textColor = 'text-amber-700 dark:text-amber-300';
+    barColor = 'from-amber-500 to-orange-400';
+  }
+
+  const tips: string[] = [];
+  if (!checks.contact) {
+    tips.push('Include professional contact information (such as an email, phone number, and LinkedIn URL) in the top section.');
+  }
+  if (!checks.skills) {
+    tips.push('Add a dedicated "Skills" or "Technologies" section cleanly list out your toolstack to pass automated keyword screens.');
+  }
+  if (!checks.experience) {
+    tips.push('Flesh out your professional timeline, mentioning detailed technical roles, major projects, and precise durations.');
+  }
+  if (!checks.education) {
+    tips.push('Ensure your formal degrees, diplomas, or vocational certifications are structured cleanly under "Education".');
+  }
+  if (!checks.metrics) {
+    tips.push('Quantify your contributions! Use dynamic action verbs and numeric metrics (e.g., "Led team of 4", "Boosted speeds by 25%").');
+  }
+  if (wordCount < 150) {
+    tips.push('Your CV content is very short. Expand on your projects, certifications, or specific tech tools to demonstrate full depth.');
+  }
+
+  if (tips.length === 0) {
+    tips.push('Excellent CV format! Your resume contains all standard structures needed for candidate match calculations.');
+    tips.push('You can tailor specific keywords to match the "Missing Skills" listed on jobs to push match percentages even higher.');
+  }
+
+  return {
+    score,
+    label,
+    color,
+    textColor,
+    barColor,
+    tips,
+    checks
+  };
+};
+
 function CompanyLogo({ companyName, logo }: { companyName: string; logo?: string | null }) {
   if (logo) {
     return (
@@ -258,6 +359,25 @@ function ReadinessGauge({ score, status }: { score: number | null | undefined; s
   );
 }
 
+const getProfileCompletion = (u: any) => {
+  const items = [
+    { label: 'Full Name', filled: !!u?.name, weight: 10 },
+    { label: 'Professional Title', filled: !!u?.professional_title, weight: 10 },
+    { label: 'Contact Phone', filled: !!u?.phone, weight: 10 },
+    { label: 'Qualifications & Academics', filled: !!u?.qualifications, weight: 15 },
+    { label: 'Skills & Interests', filled: !!u?.skills, weight: 15 },
+    { label: 'Work & Volunteer Experience', filled: !!u?.work_experience, weight: 15 },
+    { label: 'CV / Resume Uploaded', filled: !!u?.resume_text, weight: 15 },
+    { label: 'LinkedIn & Portfolio Link', filled: !!u?.linkedin_url || !!u?.github_url || !!u?.portfolio_url, weight: 10 }
+  ];
+
+  const totalScore = items.reduce((sum, item) => sum + (item.filled ? item.weight : 0), 0);
+  return {
+    score: totalScore,
+    items
+  };
+};
+
 export default function CandidateDashboard({ data, user, onRefresh, onLogout }: { data: any, user: any, onRefresh: () => void, onLogout: () => void }) {
   const { matches = [], savedJobs: initialSaved = [], applications = [], allJobs = [], readinessInterview = null } = data || {};
   const [activeTab, setActiveTab ] = useState('Jobs');
@@ -420,6 +540,13 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
   const [profileLinkedin, setProfileLinkedin] = useState(user?.linkedin_url || '');
   const [profileGithub, setProfileGithub] = useState(user?.github_url || '');
   const [profilePhone, setProfilePhone] = useState(user?.phone || '');
+  const [profileQualifications, setProfileQualifications] = useState(user?.qualifications || '');
+  const [profileSkills, setProfileSkills] = useState(user?.skills || '');
+  const [profileInterests, setProfileInterests] = useState(user?.interests || '');
+  const [profileCareerDirection, setProfileCareerDirection] = useState(user?.career_direction || '');
+  const [profileWorkExperience, setProfileWorkExperience] = useState(user?.work_experience || '');
+  const [profilePortfolioUrl, setProfilePortfolioUrl] = useState(user?.portfolio_url || '');
+  const [profileCvUrl, setProfileCvUrl] = useState(user?.cv_url || '');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isEditingResume, setIsEditingResume] = useState(false);
@@ -434,6 +561,13 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
       setProfileGithub(user.github_url || '');
       setProfilePhone(user.phone || '');
       setEmail(user.email || '');
+      setProfileQualifications(user.qualifications || '');
+      setProfileSkills(user.skills || '');
+      setProfileInterests(user.interests || '');
+      setProfileCareerDirection(user.career_direction || '');
+      setProfileWorkExperience(user.work_experience || '');
+      setProfilePortfolioUrl(user.portfolio_url || '');
+      setProfileCvUrl(user.cv_url || '');
     }
   }, [user]);
 
@@ -595,6 +729,13 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
           linkedin_url: profileLinkedin,
           github_url: profileGithub,
           phone: profilePhone,
+          qualifications: profileQualifications,
+          skills: profileSkills,
+          interests: profileInterests,
+          career_direction: profileCareerDirection,
+          work_experience: profileWorkExperience,
+          portfolio_url: profilePortfolioUrl,
+          cv_url: profileCvUrl,
         }),
       });
 
@@ -693,6 +834,59 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
                   </p>
                 </div>
               </div>
+
+              {/* Match Score Progress Bar */}
+              {match.match_score > 0 ? (() => {
+                const score = match.match_score;
+                let barColorClass = "from-rose-500 to-rose-400";
+                let textColorClass = "text-rose-600 dark:text-rose-400";
+                let bgBadgeClass = "bg-rose-50 dark:bg-rose-950/20";
+                let labelText = "Low Match";
+
+                if (score >= 80) {
+                  barColorClass = "from-emerald-500 to-teal-500";
+                  textColorClass = "text-emerald-600 dark:text-[#22c55e]";
+                  bgBadgeClass = "bg-emerald-50 dark:bg-emerald-950/20";
+                  labelText = "Excellent Match";
+                } else if (score >= 60) {
+                  barColorClass = "from-indigo-500 to-violet-500";
+                  textColorClass = "text-[#5D3FD3] dark:text-violet-400";
+                  bgBadgeClass = "bg-violet-50 dark:bg-violet-950/20";
+                  labelText = "Strong Match";
+                } else if (score >= 40) {
+                  barColorClass = "from-amber-500 to-orange-500";
+                  textColorClass = "text-amber-600 dark:text-amber-400";
+                  bgBadgeClass = "bg-amber-50 dark:bg-amber-950/20";
+                  labelText = "Fair Match";
+                }
+
+                return (
+                  <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800/40">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-[#5D3FD3] dark:text-violet-400 animate-pulse" />
+                        <span>{labelText}</span>
+                      </span>
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider ${textColorClass} ${bgBadgeClass}`}>
+                        {score}% Match
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden p-[1px]">
+                      <div 
+                        className={`h-full bg-gradient-to-r ${barColorClass} rounded-full transition-all duration-700 ease-out`} 
+                        style={{ width: `${score}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })() : (
+                <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800/40 flex items-center justify-between">
+                  <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">No Match Score</span>
+                  <span className="text-[9px] font-bold text-[#5D3FD3] bg-violet-50 dark:bg-violet-950/20 px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+                    Upload CV
+                  </span>
+                </div>
+              )}
 
               {/* Bottom stats footer */}
               <div className="mt-6 pt-4 border-t border-neutral-100 dark:border-neutral-800 flex justify-end items-center">
@@ -1195,7 +1389,7 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
 
                       {/* AI Fit Analysis Block */}
                       <div className="space-y-5 bg-violet-50/20 dark:bg-violet-950/5 border border-violet-100/40 dark:border-violet-900/10 p-6 rounded-2xl">
-                        <div className="flex items-center justify-between gap-4 border-b border-violet-100/30 dark:border-violet-900/10 pb-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-violet-100/30 dark:border-violet-900/10 pb-4">
                           <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                             <Sparkles className="w-5 h-5 text-[#5D3FD3]" />
                             <span>AI Match Analytics</span>
@@ -1203,16 +1397,31 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
                           {selectedJob.match_score > 0 ? (
                             <span 
                               style={{ color: '#5D3FD3', backgroundColor: 'rgba(93, 63, 211, 0.1)' }}
-                              className="px-3 py-1 rounded-xl text-xs font-black"
+                              className="px-3 py-1 rounded-xl text-xs font-black self-start sm:self-center"
                             >
                               {selectedJob.match_score}% Confidence Match
                             </span>
                           ) : (
-                            <span className="text-xs text-neutral-400 font-medium">
+                            <span className="text-xs text-neutral-400 font-medium self-start sm:self-center">
                               Upload resume to view fit score
                             </span>
                           )}
                         </div>
+
+                        {selectedJob.match_score > 0 && (
+                          <div className="space-y-1.5">
+                            <div className="flex justify-between items-center text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                              <span>Resume Match Bar</span>
+                              <span className="text-[#5D3FD3] dark:text-violet-400 font-extrabold">{selectedJob.match_score}% Match</span>
+                            </div>
+                            <div className="w-full h-2 bg-neutral-100 dark:bg-neutral-850 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gradient-to-r from-violet-500 to-[#5D3FD3] rounded-full transition-all duration-700 ease-out"
+                                style={{ width: `${selectedJob.match_score}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
 
                         {/* Matched / Missing skills row */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1356,54 +1565,223 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
         {/* TAB 2: PROFILE */}
         {activeTab === 'Profile' && (
           <div className="max-w-3xl mx-auto space-y-6">
+
+            {/* PROFILE COMPLETION DASHBOARD CARD */}
+            {(() => {
+              const completion = getProfileCompletion(user);
+              return (
+                <div className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors space-y-4">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                        Profile Completion Status
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Complete your profile details to stand out to employers and qualify for our AI recommendation matching index.
+                      </p>
+                    </div>
+                    <div className="text-right flex items-center gap-2 sm:flex-col sm:items-end">
+                      <span className="text-2xl font-black text-[#5D3FD3] dark:text-violet-400">{completion.score}%</span>
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Complete</span>
+                    </div>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
+                    <div 
+                      className="h-full bg-gradient-to-r from-violet-500 via-indigo-500 to-emerald-500 transition-all duration-500" 
+                      style={{ width: `${completion.score}%` }}
+                    />
+                  </div>
+
+                  {/* Checklist summary */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+                    {completion.items.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2 text-xs font-semibold p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-150 dark:border-slate-800">
+                        {item.filled ? (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                        ) : (
+                          <div className="w-4 h-4 rounded-full border border-dashed border-slate-300 dark:border-slate-700 flex-shrink-0" />
+                        )}
+                        <span className={item.filled ? 'text-slate-800 dark:text-slate-200 truncate' : 'text-slate-400 dark:text-slate-500 line-through decoration-slate-250 dark:decoration-slate-800/50 truncate'}>
+                          {item.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
             
             {/* Header / Profile card */}
             <div className="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
               {!isEditingProfile ? (
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                  <div className="flex items-center gap-6">
-                    <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/50 rounded-full flex flex-shrink-0 items-center justify-center border-4 border-white dark:border-slate-800 shadow">
-                      <User className="text-blue-600 dark:text-blue-400 w-8 h-8" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold dark:text-white">{user?.name || 'Talent'}</h2>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">{user?.professional_title || 'No professional title set'}</p>
-                      <div className="flex flex-wrap items-center gap-2 mt-2.5">
-                        <span className="inline-block text-xs font-bold text-[#5D3FD3] dark:text-violet-405 bg-violet-100 dark:bg-[#5D3FD3]/20 px-3 py-1 rounded-full uppercase tracking-wider">
-                          {user?.experience_level || 'Entry-Level'}
-                        </span>
-                        {user?.linkedin_url && (
-                          <a href={user.linkedin_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 px-3 py-1 rounded-full hover:underline transition-all">
-                            LinkedIn
-                          </a>
-                        )}
-                        {user?.github_url && (
-                          <a href={user.github_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full hover:underline transition-all">
-                            GitHub
-                          </a>
-                        )}
-                        {user?.phone && (
-                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/45 px-3 py-1 rounded-full">
-                            📞 {user.phone}
+                <div className="space-y-8">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-6">
+                      <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/50 rounded-full flex flex-shrink-0 items-center justify-center border-4 border-white dark:border-slate-800 shadow">
+                        <User className="text-blue-600 dark:text-blue-400 w-8 h-8" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold dark:text-white">{user?.name || 'Talent'}</h2>
+                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">{user?.professional_title || 'No professional title set'}</p>
+                        <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                          <span className="inline-block text-xs font-bold text-[#5D3FD3] dark:text-violet-405 bg-violet-100 dark:bg-[#5D3FD3]/20 px-3 py-1 rounded-full uppercase tracking-wider">
+                            {user?.experience_level || 'Entry-Level'}
                           </span>
+                          {user?.linkedin_url && (
+                            <a href={user.linkedin_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 px-3 py-1 rounded-full hover:underline transition-all">
+                              LinkedIn
+                            </a>
+                          )}
+                          {user?.github_url && (
+                            <a href={user.github_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full hover:underline transition-all">
+                              GitHub
+                            </a>
+                          )}
+                          {user?.phone && (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/45 px-3 py-1 rounded-full">
+                              📞 {user.phone}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setProfileName(user?.name || '');
+                        setProfileTitle(user?.professional_title || '');
+                        setProfileExp(user?.experience_level || 'Junior');
+                        setProfileLinkedin(user?.linkedin_url || '');
+                        setProfileGithub(user?.github_url || '');
+                        setProfilePhone(user?.phone || '');
+                        setProfileQualifications(user?.qualifications || '');
+                        setProfileSkills(user?.skills || '');
+                        setProfileInterests(user?.interests || '');
+                        setProfileCareerDirection(user?.career_direction || '');
+                        setProfileWorkExperience(user?.work_experience || '');
+                        setProfilePortfolioUrl(user?.portfolio_url || '');
+                        setProfileCvUrl(user?.cv_url || '');
+                        setIsEditingProfile(true);
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 font-bold text-xs transition cursor-pointer"
+                    >
+                      Edit Details
+                    </button>
+                  </div>
+
+                  {/* Additional profile details segments */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                    {/* Qualifications */}
+                    <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60">
+                      <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
+                        Qualifications & Academic Background
+                      </h4>
+                      {user?.qualifications ? (
+                        <p className="text-sm text-slate-800 dark:text-slate-200 whitespace-pre-line leading-relaxed font-medium">
+                          {user.qualifications}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-slate-405 dark:text-slate-500 italic">
+                          No qualification or academic background added yet. Click &quot;Edit Details&quot; to include them.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Skills & Interests */}
+                    <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60 space-y-4">
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
+                          Key Skills & Interests
+                        </h4>
+                        {user?.skills ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {user.skills.split(',').map((sk: string, idx: number) => (
+                              <span key={idx} className="text-xs font-semibold px-2.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/40">
+                                {sk.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-slate-405 dark:text-slate-500 italic">No skills listed yet.</p>
                         )}
+                        {user?.interests && (
+                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 font-medium">
+                            <strong className="text-slate-500 dark:text-slate-500">Interests:</strong> {user.interests}
+                          </p>
+                        )}
+                      </div>
+
+                      {user?.career_direction && (
+                        <div className="pt-2.5 border-t border-slate-100 dark:border-slate-900">
+                          <h5 className="text-[10.5px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
+                            Career Direction
+                          </h5>
+                          <p className="text-xs text-slate-705 dark:text-slate-300 font-medium">
+                            {user.career_direction}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Work Experience */}
+                    <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60 md:col-span-2">
+                      <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
+                        Work Experience, Internships, Projects & Volunteering
+                      </h4>
+                      {user?.work_experience ? (
+                        <p className="text-sm text-slate-800 dark:text-slate-200 whitespace-pre-line leading-relaxed font-medium">
+                          {user.work_experience}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-slate-405 dark:text-slate-500 italic">
+                          No work or volunteer experience described yet. Click &quot;Edit Details&quot; to include them.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* LinkedIn & Portfolio Links */}
+                    <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60 md:col-span-2">
+                      <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
+                        LinkedIn, GitHub & Portfolio Links
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-lg flex flex-col justify-between">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">LinkedIn URL</span>
+                          {user?.linkedin_url ? (
+                            <a href={user.linkedin_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 dark:text-blue-400 font-bold hover:underline truncate mt-1 block">
+                              {user.linkedin_url}
+                            </a>
+                          ) : (
+                            <span className="text-xs text-slate-405 italic mt-1">Not linked</span>
+                          )}
+                        </div>
+
+                        <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-lg flex flex-col justify-between">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">GitHub URL</span>
+                          {user?.github_url ? (
+                            <a href={user.github_url} target="_blank" rel="noreferrer" className="text-xs text-slate-700 dark:text-slate-300 font-bold hover:underline truncate mt-1 block">
+                              {user.github_url}
+                            </a>
+                          ) : (
+                            <span className="text-xs text-slate-405 italic mt-1">Not linked</span>
+                          )}
+                        </div>
+
+                        <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-lg flex flex-col justify-between">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Portfolio Website</span>
+                          {user?.portfolio_url ? (
+                            <a href={user.portfolio_url} target="_blank" rel="noreferrer" className="text-xs text-[#5D3FD3] dark:text-violet-400 font-bold hover:underline truncate mt-1 block">
+                              {user.portfolio_url}
+                            </a>
+                          ) : (
+                            <span className="text-xs text-slate-450 italic mt-1">Not linked</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      setProfileName(user?.name || '');
-                      setProfileTitle(user?.professional_title || '');
-                      setProfileExp(user?.experience_level || 'Junior');
-                      setProfileLinkedin(user?.linkedin_url || '');
-                      setProfileGithub(user?.github_url || '');
-                      setProfilePhone(user?.phone || '');
-                      setIsEditingProfile(true);
-                    }}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 font-bold text-xs transition cursor-pointer"
-                  >
-                    Edit Details
-                  </button>
                 </div>
               ) : (
                 <form onSubmit={handleSaveProfile} className="space-y-4">
@@ -1456,7 +1834,7 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">LinkedIn Profile URL</label>
                       <input
@@ -1477,8 +1855,83 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
                         className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                       />
                     </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Portfolio Link URL</label>
+                      <input
+                        type="url"
+                        value={profilePortfolioUrl}
+                        onChange={(e) => setProfilePortfolioUrl(e.target.value)}
+                        placeholder="https://myportfolio.com"
+                        className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                      />
+                    </div>
                   </div>
-                  <div className="flex justify-end gap-2 pt-2">
+
+                  <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-2">
+                    <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Qualifications & Academic Background</h4>
+                    <div>
+                      <textarea
+                        value={profileQualifications}
+                        onChange={(e) => setProfileQualifications(e.target.value)}
+                        placeholder="e.g. B.Sc in Computer Science, Stanford University (2020-2024). Specializations in Software Engineering."
+                        rows={3}
+                        className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-4">
+                    <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Skills, Interests & Career Direction</h4>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Key Skills (comma separated)</label>
+                        <input
+                          type="text"
+                          value={profileSkills}
+                          onChange={(e) => setProfileSkills(e.target.value)}
+                          placeholder="TypeScript, React, Node.js, Next.js, PostgreSQL"
+                          className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Interests</label>
+                          <input
+                            type="text"
+                            value={profileInterests}
+                            onChange={(e) => setProfileInterests(e.target.value)}
+                            placeholder="e.g. Artificial Intelligence, fintech, biotech"
+                            className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Career Direction</label>
+                          <input
+                            type="text"
+                            value={profileCareerDirection}
+                            onChange={(e) => setProfileCareerDirection(e.target.value)}
+                            placeholder="Seeking lead full stack positions, managing agile teams"
+                            className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-2">
+                    <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Work Experience, Internships, Projects & Volunteering</h4>
+                    <div>
+                      <textarea
+                        value={profileWorkExperience}
+                        onChange={(e) => setProfileWorkExperience(e.target.value)}
+                        placeholder="Detail your work experience, internships, core projects, or volunteer work..."
+                        rows={4}
+                        className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <button
                       type="button"
                       onClick={() => setIsEditingProfile(false)}
@@ -1524,150 +1977,85 @@ export default function CandidateDashboard({ data, user, onRefresh, onLogout }: 
               </div>
             </div>
 
-            {/* 30-Day Practice Heatmap Section */}
-            <PracticeHeatmap />
 
-             {/* Job Readiness Interview Credentials Section */}
-             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-colors">
-               <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex justify-between items-center">
-                 <h3 className="font-bold flex items-center gap-2 text-slate-900 dark:text-white">
-                   <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400"/> Job Readiness Interview Credentials
-                 </h3>
-                 <Link
-                   href="/candidate/readiness-interview"
-                   className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white border border-transparent rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow"
-                 >
-                   <Sparkles className="w-3.5 h-3.5" />
-                   <span>{readinessInterview ? 'Retake Interview' : 'Initiate Interview'}</span>
-                 </Link>
-               </div>
 
-               <div className="p-6">
-                 {readinessInterview ? (
-                   <div className="space-y-6">
-                     
-                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                       
-                       <div className="md:col-span-3 flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-                         <span className="text-[10px] font-mono font-bold tracking-widest text-slate-405 dark:text-slate-500 uppercase mb-2">Overall Score</span>
-                         <div className="relative h-20 w-20 flex items-center justify-center">
-                           <svg className="w-full h-full transform -rotate-90">
-                             <circle cx="40" cy="40" r="34" stroke="currentColor" className="text-slate-250 dark:text-slate-800" strokeWidth="6" fill="transparent" />
-                             <circle cx="40" cy="40" r="34" stroke="currentColor" className="text-blue-500 dark:text-blue-400" strokeWidth="6" fill="transparent"
-                               strokeDasharray={2 * Math.PI * 34}
-                               strokeDashoffset={2 * Math.PI * 34 * (1 - (readinessInterview.status === 'PENDING_REVIEW' ? 0 : readinessInterview.score) / 100)} />
-                           </svg>
-                           <span className="absolute text-[11px] font-black uppercase text-amber-500 animate-pulse">{readinessInterview.status === 'PENDING_REVIEW' ? 'PENDING' : `${readinessInterview.score}%`}</span>
-                         </div>
-                         <span className={`text-[10px] font-bold mt-2.5 px-3 py-0.5 rounded-full uppercase tracking-wider ${
-                           readinessInterview.status === 'PENDING_REVIEW'
-                             ? 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30'
-                             : 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30'
-                         }`}>
-                           {readinessInterview.status === 'PENDING_REVIEW' ? 'Under Review' : 'Job Ready'}
-                         </span>
+             {/* AI CV / Resume Optimizer & Strength Index Section */}
+             {(() => {
+               const strength = getResumeStrength(user?.resume_text);
+               return (
+                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-colors">
+                   <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex justify-between items-center">
+                     <h3 className="font-bold flex items-center gap-2 text-slate-900 dark:text-white font-heading uppercase text-xs tracking-wider">
+                       <Sparkles className="w-4 h-4 text-[#5D3FD3] dark:text-violet-400"/> AI CV Optimizer & Strength Index
+                     </h3>
+                     <span className={`text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full ${strength.textColor} bg-slate-100 dark:bg-slate-800`}>
+                       {strength.label}
+                     </span>
+                   </div>
+
+                   <div className="p-6 space-y-6">
+                     {/* Strength meter progress bar */}
+                     <div className="space-y-2">
+                       <div className="flex justify-between items-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                         <span>Overall CV Strength</span>
+                         <span className={`font-black text-sm ${strength.color}`}>{strength.score}% Score</span>
                        </div>
-
-                       <div className="md:col-span-5 flex flex-col justify-center p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white">
-                         <h4 className="text-[10px] font-mono font-bold text-slate-405 dark:text-slate-500 uppercase tracking-widest mb-1 pl-1">
-                           Performance Breakdown
-                         </h4>
-                         <CategoryBreakdownChart 
-                           questions={
-                             typeof readinessInterview.questions === 'string' 
-                               ? JSON.parse(readinessInterview.questions) 
-                               : (readinessInterview.questions || [])
-                           } 
+                       <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-[2px]">
+                         <div 
+                           className={`h-full bg-gradient-to-r ${strength.barColor} rounded-full transition-all duration-1000 ease-out`}
+                           style={{ width: `${strength.score}%` }}
                          />
                        </div>
-
-                       <div className="md:col-span-4 flex flex-col justify-center space-y-2">
-                         <h4 className="text-xs font-mono font-bold text-slate-500 uppercase tracking-wider">Recruiter Coaching Summary</h4>
-                         <p className="text-xs text-slate-705 dark:text-slate-300 leading-relaxed font-medium">
-                           {readinessInterview.feedback}
-                         </p>
-                       </div>
-
                      </div>
 
-                     <div className="p-4 bg-slate-950 rounded-xl border border-slate-800/80 space-y-2">
-                       <h4 className="text-[10.5px] font-mono font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5 justify-center sm:justify-start">
-                         <Video className="w-3.5 h-3.5 text-blue-400" />
-                         Candidate Video Stream Output Playback
-                       </h4>
-                       <div className="relative aspect-video rounded-lg overflow-hidden bg-black flex items-center justify-center border border-slate-800 max-w-lg mx-auto">
-                         <LaunchpathMuxPlayer 
-                            videoUrl={readinessInterview.video_url as string | undefined}
-                            poster={LAUNCHPATH_POSTER_SVG}
-                            className="w-full h-full"
-                          />
-                       </div>
+                     {/* Breakdown of Checks */}
+                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3.5 pt-2">
+                       {[
+                         { label: 'Contact Info', filled: strength.checks.contact },
+                         { label: 'Key Skills', filled: strength.checks.skills },
+                         { label: 'Work History', filled: strength.checks.experience },
+                         { label: 'Education', filled: strength.checks.education },
+                         { label: 'Action Metrics', filled: strength.checks.metrics },
+                       ].map((check, idx) => (
+                         <div 
+                           key={idx} 
+                           className="flex items-center gap-2 text-xs font-semibold p-2.5 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-100 dark:border-slate-800"
+                         >
+                           {check.filled ? (
+                             <BadgeCheck className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                           ) : (
+                             <ShieldAlert className="w-4 h-4 text-rose-500 flex-shrink-0 animate-pulse" />
+                           )}
+                           <span className={check.filled ? 'text-slate-700 dark:text-slate-300 truncate' : 'text-slate-405 dark:text-slate-500 truncate'}>
+                             {check.label}
+                           </span>
+                         </div>
+                       ))}
                      </div>
 
-                     <div className="space-y-4">
-                       <h4 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">
-                         Speech Transcripts & Structured Question Feedback
+                     {/* Tips and improvements list */}
+                     <div className="space-y-3 bg-violet-50/10 dark:bg-violet-955/5 p-4 sm:p-5 rounded-xl border border-violet-100/30 dark:border-violet-900/10">
+                       <h4 className="text-xs font-black text-[#5D3FD3] dark:text-violet-400 uppercase tracking-wider flex items-center gap-1.5">
+                         <Sparkles className="w-4 h-4 text-yellow-500" />
+                         <span>How to Improve Your CV Score</span>
                        </h4>
-                       <div className="space-y-3">
-                         {(typeof readinessInterview.questions === 'string' 
-                           ? JSON.parse(readinessInterview.questions) 
-                           : (readinessInterview.questions || [])
-                         ).map((q: any) => (
-                           <div key={q.id} className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl space-y-3">
-                             <div className="flex justify-between items-start gap-4">
-                               <div className="space-y-1">
-                                 <span className="px-2 py-0.5 bg-slate-200 dark:bg-slate-800 text-[9px] font-mono rounded font-bold uppercase text-slate-500">
-                                   Question 0{q.id}
-                                 </span>
-                                 <h5 className="font-extrabold text-sm text-slate-900 dark:text-white mt-1">
-                                   {q.title}
-                                 </h5>
-                               </div>
-                               <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2.5 py-1 rounded">
-                                 Readiness: {q.questionScore}%
-                               </span>
-                             </div>
-
-                             <div className="p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-650 dark:text-slate-300 text-xs italic leading-relaxed">
-                               <span className="font-bold text-[10px] font-mono not-italic text-blue-550 uppercase block mb-1">AUTOMATED SPEECH TRANSCRIPT:</span>
-                               &ldquo;{q.transcript}&rdquo;
-                             </div>
-
-                             <div className="space-y-1.5">
-                               <span className="text-[10px] font-mono font-bold text-slate-400 uppercase block">Expert Coaching Points:</span>
-                               <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 dark:text-slate-400">
-                                 {q.points?.map((p: string, idx: number) => (
-                                   <li key={idx} className="leading-relaxed">{p}</li>
-                                 ))}
-                               </ul>
-                             </div>
-
-                           </div>
+                       
+                       <ul className="space-y-2.5 mt-3">
+                         {strength.tips.map((tip, idx) => (
+                           <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                             <span className="h-5 w-5 bg-violet-100/80 dark:bg-violet-900/30 rounded-full flex items-center justify-center text-[10px] text-[#5D3FD3] dark:text-violet-300 font-bold flex-shrink-0 mt-0.5">
+                               {idx + 1}
+                             </span>
+                             <span>{tip}</span>
+                           </li>
                          ))}
-                       </div>
+                       </ul>
                      </div>
 
                    </div>
-                 ) : (
-                   <div className="text-center py-8 space-y-4 max-w-sm mx-auto">
-                     <Video className="w-10 h-10 text-slate-400 dark:text-slate-500 mx-auto" />
-                     <div>
-                       <h4 className="font-bold text-slate-800 dark:text-slate-205 text-sm">No Readiness Interview Completed</h4>
-                       <p className="text-xs text-slate-500 mt-1">
-                         Obtain simulated real-time visual credentials using standard timed questions to showcase communication proficiency to employers.
-                       </p>
-                     </div>
-                     <Link
-                       href="/candidate/readiness-interview"
-                       className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-lg text-xs transition cursor-pointer shadow-indigo-500/10 shadow hover:-translate-y-0.5"
-                     >
-                       <Sparkles className="w-3.5 h-3.5" />
-                       <span>Start Timed Evaluation</span>
-                     </Link>
-                   </div>
-                 )}
-               </div>
-             </div>
+                 </div>
+               );
+             })()}
 
              {/* Resume viewer and editor */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-colors">

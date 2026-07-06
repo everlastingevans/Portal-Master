@@ -20,6 +20,13 @@ export async function GET() {
         github_url: true,
         phone: true,
         role: true,
+        qualifications: true,
+        skills: true,
+        interests: true,
+        career_direction: true,
+        work_experience: true,
+        portfolio_url: true,
+        cv_url: true,
       }
     });
     
