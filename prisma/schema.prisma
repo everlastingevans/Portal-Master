@@ -38,6 +38,13 @@ model User {
   linkedin_url            String?
   github_url              String?
   phone                   String?
+  qualifications          String?
+  skills                  String?
+  interests               String?
+  career_direction        String?
+  work_experience         String?
+  portfolio_url           String?
+  cv_url                  String?
   reset_token             String?
   reset_token_expiry      DateTime?
   job_matches             JobMatch[]
