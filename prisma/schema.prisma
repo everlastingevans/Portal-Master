@@ -56,6 +56,7 @@ model User {
   interviews_as_candidate Interview[]      @relation("InterviewCandidate")
   video_interviews        VideoInterview[]
   notifications           Notification[]
+  attachments             Attachment[]
 
   @@map("users")
 }
@@ -188,3 +189,20 @@ model Interview {
 
   @@map("interviews")
 }
+
+model Attachment {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  s3Key      String   @unique
+  url        String
+  name       String
+  size       Int
+  type       String   // e.g. "videos", "documents", "resumes"
+  mimeType   String   // e.g. "application/pdf"
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("attachments")
+}
+
