@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import EmployerDashboard from './EmployerDashboard';
+import PortalLoader from '@/components/PortalLoader';
 
 export default function EmployerDashboardPage() {
   const [data, setData] = useState<any>(null);
@@ -43,7 +44,10 @@ export default function EmployerDashboardPage() {
     router.push('/');
   };
 
-  if (loading || !data) return <div className="h-screen bg-slate-50 flex items-center justify-center">Loading dashboard...</div>;
+  if (loading || !data) {
+    return <PortalLoader portal="EMPLOYER" title="Loading Employer Workspace" />;
+  }
+
 
   return <EmployerDashboard data={data} user={data.user} onRefresh={fetchDashboardData} onLogout={handleLogout} />;
 }

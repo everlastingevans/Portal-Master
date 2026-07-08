@@ -7,6 +7,7 @@ import { Calendar, ArrowLeft, Users } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import PortalSidebar from '@/components/PortalSidebar';
 import ThemeToggle from '@/components/ThemeToggle';
+import PortalLoader from '@/components/PortalLoader';
 
 export default function EmployerUpdatePage() {
   const [user, setUser] = useState<any>(null);
@@ -106,11 +107,7 @@ export default function EmployerUpdatePage() {
   };
 
   if (loading || !user) {
-    return (
-      <div className="h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-800 dark:text-slate-200">
-        Loading pipeline updates...
-      </div>
-    );
+    return <PortalLoader portal="EMPLOYER" title="Loading Pipeline Updates" />;
   }
 
   return (
@@ -128,8 +125,8 @@ export default function EmployerUpdatePage() {
         <header className="bg-white dark:bg-slate-900 h-16 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between pl-14 pr-4 md:px-8 flex-shrink-0 transition-colors">
           <h1 className="text-xl font-bold dark:text-white">Schedule & Pipeline Management</h1>
           <div className="flex items-center gap-6">
-            <div className="hidden sm:flex items-center gap-2 bg-[#7145FF]/10 dark:bg-[#7145FF]/20 text-[#7145FF] dark:text-violet-300 px-3 py-1 rounded-full text-sm font-semibold border border-[#7145FF]/20 dark:border-[#7145FF]/30">
-              <span className="w-2 h-2 bg-[#7145FF] dark:bg-violet-400 rounded-full animate-pulse"></span>
+            <div className="hidden sm:flex items-center gap-2 bg-[#5D3FD3]/10 dark:bg-[#5D3FD3]/20 text-[#5D3FD3] dark:text-violet-300 px-3 py-1 rounded-full text-sm font-semibold border border-[#5D3FD3]/20 dark:border-[#5D3FD3]/30">
+              <span className="w-2 h-2 bg-[#5D3FD3] dark:bg-violet-400 rounded-full animate-pulse"></span>
               {user?.role || 'EMPLOYER'}
             </div>
             <ThemeToggle />
@@ -187,7 +184,7 @@ export default function EmployerUpdatePage() {
                 <button 
                   type="submit" 
                   disabled={scheduling}
-                  className="w-full bg-[#7145FF] hover:bg-[#5b32e6] text-white font-bold py-3 rounded-xl transition disabled:opacity-50 mt-4"
+                  className="w-full bg-[#5D3FD3] hover:bg-[#5b32e6] text-white font-bold py-3 rounded-xl transition disabled:opacity-50 mt-4"
                 >
                   {scheduling ? 'Dispatching...' : 'Dispatch Proposal Invitation'}
                 </button>
@@ -197,7 +194,7 @@ export default function EmployerUpdatePage() {
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
               <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50">
                 <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                  <Users className="w-5 h-5 text-[#7145FF]" />
+                  <Users className="w-5 h-5 text-[#5D3FD3]" />
                   Update Candidate Pipelines & Interviews
                 </h2>
               </div>
@@ -220,7 +217,7 @@ export default function EmployerUpdatePage() {
                              <p className="text-xs text-slate-500">{app.candidate.professional_title}</p>
                            </td>
                            <td className="px-6 py-4">
-                             <span className="bg-[#7145FF]/10 dark:bg-[#7145FF]/20 text-[#7145FF] dark:text-violet-300 px-2.5 py-1 rounded-md text-xs font-semibold border border-[#7145FF]/20 dark:border-[#7145FF]/30">
+                             <span className="bg-[#5D3FD3]/10 dark:bg-[#5D3FD3]/20 text-[#5D3FD3] dark:text-violet-300 px-2.5 py-1 rounded-md text-xs font-semibold border border-[#5D3FD3]/20 dark:border-[#5D3FD3]/30">
                                {app.job.title}
                              </span>
                            </td>
@@ -230,7 +227,7 @@ export default function EmployerUpdatePage() {
                            <td className="px-6 py-4 text-right">
                              <button 
                                onClick={() => setSelectedApplicant(app)} 
-                               className="text-[#7145FF] hover:text-[#5b32e6] dark:text-violet-300 dark:hover:text-white font-bold text-xs bg-[#7145FF]/10 hover:bg-[#7145FF]/20 dark:bg-[#7145FF]/20 dark:hover:bg-[#7145FF]/30 px-3.5 py-1.5 rounded-lg transition"
+                               className="text-[#5D3FD3] hover:text-[#5b32e6] dark:text-violet-300 dark:hover:text-white font-bold text-xs bg-[#5D3FD3]/10 hover:bg-[#5D3FD3]/20 dark:bg-[#5D3FD3]/20 dark:hover:bg-[#5D3FD3]/30 px-3.5 py-1.5 rounded-lg transition"
                              >
                                Assign Interview
                              </button>
