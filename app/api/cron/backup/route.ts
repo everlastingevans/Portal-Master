@@ -10,25 +10,40 @@ import db from '@/lib/db';
  */
 export async function GET(req: NextRequest) {
   try {
+    // Helper to sanitize any surrounding quotes from credentials
+    const sanitizeToken = (token?: string | null) => {
+      if (!token) return '';
+      let t = token.trim();
+      if (t.startsWith('"') && t.endsWith('"')) {
+        t = t.slice(1, -1);
+      }
+      if (t.startsWith("'") && t.endsWith("'")) {
+        t = t.slice(1, -1);
+      }
+      return t.trim();
+    };
+
     // 1. Validate Cron Secret for Authentication (Vercel standard or custom query params)
     const authHeader = req.headers.get('authorization');
-    const isProduction = process.env.NODE_ENV === 'production';
-    const cronSecret = process.env.CRON_SECRET?.trim();
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+    const rawCronSecret = process.env.CRON_SECRET;
+    const cronSecret = sanitizeToken(rawCronSecret);
 
     const searchParams = req.nextUrl.searchParams;
-    const querySecret = searchParams.get('key')?.trim() || searchParams.get('secret')?.trim() || searchParams.get('cron_secret')?.trim();
+    const querySecret = searchParams.get('key') || searchParams.get('secret') || searchParams.get('cron_secret');
 
-    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7).trim() : null;
-    const incomingToken = headerToken || querySecret;
+    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
+    const incomingToken = sanitizeToken(headerToken || querySecret);
 
     // Log diagnostic information to the server logs to assist in troubleshooting
     console.info('[CRON BACKUP AUTH DIAGNOSTIC]', {
       isProduction,
       hasServerSecret: !!cronSecret,
-      serverSecretLength: cronSecret?.length || 0,
+      serverSecretLength: cronSecret.length,
+      rawServerSecretLength: rawCronSecret?.length || 0,
       hasHeaderAuth: !!authHeader,
       hasQueryAuth: !!querySecret,
-      incomingTokenLength: incomingToken?.length || 0,
+      incomingTokenLength: incomingToken.length,
       match: incomingToken && cronSecret ? incomingToken === cronSecret : false,
     });
 

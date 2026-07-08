@@ -7,6 +7,7 @@ import { Trash2, ShieldAlert } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import PortalSidebar from '@/components/PortalSidebar';
 import ThemeToggle from '@/components/ThemeToggle';
+import PortalLoader from '@/components/PortalLoader';
 
 export default function EmployerDeletePage() {
   const [user, setUser] = useState<any>(null);
@@ -85,11 +86,7 @@ export default function EmployerDeletePage() {
   };
 
   if (loading || !user) {
-    return (
-      <div className="h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-800 dark:text-slate-200">
-        Loading...
-      </div>
-    );
+    return <PortalLoader portal="EMPLOYER" title="Loading Employer Workspace" />;
   }
 
   return (
@@ -107,8 +104,8 @@ export default function EmployerDeletePage() {
         <header className="bg-white dark:bg-slate-900 h-16 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between pl-14 pr-4 md:px-8 flex-shrink-0 transition-colors">
           <h1 className="text-xl font-bold dark:text-white">Delete Job Postings & Context</h1>
           <div className="flex items-center gap-6">
-            <div className="hidden sm:flex items-center gap-2 bg-[#7145FF]/10 dark:bg-[#7145FF]/20 text-[#7145FF] dark:text-violet-300 px-3 py-1 rounded-full text-sm font-semibold border border-[#7145FF]/20 dark:border-[#7145FF]/30">
-              <span className="w-2 h-2 bg-[#7145FF] dark:bg-violet-400 rounded-full animate-pulse"></span>
+            <div className="hidden sm:flex items-center gap-2 bg-[#5D3FD3]/10 dark:bg-[#5D3FD3]/20 text-[#5D3FD3] dark:text-violet-300 px-3 py-1 rounded-full text-sm font-semibold border border-[#5D3FD3]/20 dark:border-[#5D3FD3]/30">
+              <span className="w-2 h-2 bg-[#5D3FD3] dark:bg-violet-400 rounded-full animate-pulse"></span>
               {user?.role || 'EMPLOYER'}
             </div>
             <ThemeToggle />
