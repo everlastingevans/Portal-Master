@@ -90,7 +90,7 @@ export async function middleware(req: NextRequest) {
 
   // 3. AUTHENTICATION & ROUTE GUARDS
   // Public routes to bypass auth
-  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/api/auth');
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron');
   const isPublicAsset = pathname.startsWith('/_next') || pathname.includes('.');
 
   if (isAuthRoute || isPublicAsset) {

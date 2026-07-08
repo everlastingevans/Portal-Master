@@ -101,7 +101,6 @@ export async function GET(req: NextRequest) {
           github_url: true,
           portfolio_url: true,
           cv_url: true,
-          created_at: true, // If fields exist
         } as any, // dynamic bypass in case some columns differ
       }),
       db.job.findMany(),
