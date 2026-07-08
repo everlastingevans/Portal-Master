@@ -17,13 +17,25 @@ export async function GET(req: NextRequest) {
 
     if (isProduction) {
       if (!cronSecret) {
+        console.error('[CRON BACKUP] Failure: CRON_SECRET is not configured in Vercel environment variables.');
         return NextResponse.json(
           { error: 'CRON_SECRET is not configured on the server.' },
           { status: 500 }
         );
       }
+      if (!authHeader) {
+        console.warn('[CRON BACKUP] Warning: Attempted access without Authorization header.');
+        return NextResponse.json(
+          { error: 'Unauthorized. Missing Authorization header.' },
+          { status: 401 }
+        );
+      }
       if (authHeader !== `Bearer ${cronSecret}`) {
-        return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
+        console.warn('[CRON BACKUP] Warning: Mismatched Authorization token.');
+        return NextResponse.json(
+          { error: 'Unauthorized. Invalid bearer token.' },
+          { status: 401 }
+        );
       }
     }
 
