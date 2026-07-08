@@ -10,10 +10,27 @@ import db from '@/lib/db';
  */
 export async function GET(req: NextRequest) {
   try {
-    // 1. Validate Cron Secret for Authentication (Vercel standard)
+    // 1. Validate Cron Secret for Authentication (Vercel standard or custom query params)
     const authHeader = req.headers.get('authorization');
     const isProduction = process.env.NODE_ENV === 'production';
-    const cronSecret = process.env.CRON_SECRET;
+    const cronSecret = process.env.CRON_SECRET?.trim();
+
+    const searchParams = req.nextUrl.searchParams;
+    const querySecret = searchParams.get('key')?.trim() || searchParams.get('secret')?.trim() || searchParams.get('cron_secret')?.trim();
+
+    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7).trim() : null;
+    const incomingToken = headerToken || querySecret;
+
+    // Log diagnostic information to the server logs to assist in troubleshooting
+    console.info('[CRON BACKUP AUTH DIAGNOSTIC]', {
+      isProduction,
+      hasServerSecret: !!cronSecret,
+      serverSecretLength: cronSecret?.length || 0,
+      hasHeaderAuth: !!authHeader,
+      hasQueryAuth: !!querySecret,
+      incomingTokenLength: incomingToken?.length || 0,
+      match: incomingToken && cronSecret ? incomingToken === cronSecret : false,
+    });
 
     if (isProduction) {
       if (!cronSecret) {
@@ -23,17 +40,17 @@ export async function GET(req: NextRequest) {
           { status: 500 }
         );
       }
-      if (!authHeader) {
-        console.warn('[CRON BACKUP] Warning: Attempted access without Authorization header.');
+      if (!incomingToken) {
+        console.warn('[CRON BACKUP] Warning: Attempted access without an authorization token (header or query param).');
         return NextResponse.json(
-          { error: 'Unauthorized. Missing Authorization header.' },
+          { error: 'Unauthorized. Missing authorization token (provide Bearer header or ?secret= query parameter).' },
           { status: 401 }
         );
       }
-      if (authHeader !== `Bearer ${cronSecret}`) {
-        console.warn('[CRON BACKUP] Warning: Mismatched Authorization token.');
+      if (incomingToken !== cronSecret) {
+        console.warn('[CRON BACKUP] Warning: Mismatched authorization token.');
         return NextResponse.json(
-          { error: 'Unauthorized. Invalid bearer token.' },
+          { error: 'Unauthorized. Invalid bearer token or query secret.' },
           { status: 401 }
         );
       }
