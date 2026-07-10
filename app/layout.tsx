@@ -27,7 +27,12 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata = {
   title: "LaunchPath Recruitment",
   description: "AI-Powered Recruitment and Job Readiness Platform",
+  verification: {
+    google: "iRvE4kw0JqCBgqSbF94O2MnA3AEvflXSUDvdYVCx9YM",
+  },
 };
+
+
 
 export default function RootLayout({
   children,

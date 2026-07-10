@@ -76,16 +76,24 @@ model Notification {
 }
 
 model VideoInterview {
-  id             Int      @id @default(autoincrement())
-  candidate_id   Int
-  candidate      User     @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
-  video_url      String   @default("") // holds base64 or url reference
-  questions      String   // JSON string of questions, user answers metadata, etc.
-  score          Int      @default(0)
-  feedback       String   @default("")
-  status         String   @default("COMPLETED") // COMPLETED, IN_PROGRESS
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  candidate_id    Int
+  candidate       User     @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+  video_url       String   @default("") // holds base64, S3 url, or streaming reference
+  questions       String   // JSON string of questions, user answers metadata, etc.
+  score           Int      @default(0)
+  feedback        String   @default("")
+  status          String   @default("COMPLETED") // COMPLETED, PENDING_RECORDING, PROCESSING, FAILED
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  // Custom fields for the 10-step flow
+  job_id          Int?
+  job             Job?     @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  mux_upload_id   String?
+  mux_asset_id    String?
+  mux_playback_id String?
+  transcript      String?
 
   @@map("video_interviews")
 }
@@ -106,6 +114,7 @@ model Job {
   matches      JobMatch[]
   applications JobApplication[]
   saved_by     SavedJob[]
+  video_interviews VideoInterview[]
 
   years_experience String?
   mandatory_skills String[]         @default([])
@@ -205,4 +214,3 @@ model Attachment {
 
   @@map("attachments")
 }
-
