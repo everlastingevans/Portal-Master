@@ -5,6 +5,7 @@ import { ToastProvider } from "@/components/ToastNotification";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,6 +28,9 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata = {
   title: "LaunchPath Recruitment",
   description: "AI-Powered Recruitment and Job Readiness Platform",
+  icons: {
+    icon: "/icon.svg",
+  },
   verification: {
     google: "iRvE4kw0JqCBgqSbF94O2MnA3AEvflXSUDvdYVCx9YM",
   },
@@ -50,6 +54,7 @@ export default function RootLayout({
             <POPIAConsent />
           </ToastProvider>
         </ThemeProvider>
+        <GoogleAnalytics gaId="G-PM0PE0XNEW" />
       </body>
     </html>
   );
