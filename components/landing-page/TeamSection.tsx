@@ -21,7 +21,7 @@ const tags = [
 
 export const TeamSection = () => {
   return (
-    <section className="bg-page px-6 py-24 md:py-32">
+    <section id="about-us" className="bg-page px-6 py-24 md:py-32">
       <div className="mx-auto max-w-[1100px]">
         <div className="mb-20 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
           <div className="flex w-max animate-marquee whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.2em] text-foreground/70">

@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image"; // Optimized Image utility
-import yoga from "@/assets/testimonials/test1.jpg";
-import hoodie from "@/assets/testimonials/test2.jpg";
-import menswear from "@/assets/testimonials/test3.jpg";
+import yoga from "@/assets/case-yoga.jpg";
+import hoodie from "@/assets/case-hoodie.jpg";
+import menswear from "@/assets/case-menswear.jpg";
 import { Reveal } from "./Reveal";
 
 const cases = [
@@ -27,9 +27,9 @@ export const BrandsSection = () => {
                 Real careers, started with the right SME match. Here are a few graduates whose first job became a real launchpad.
               </p>
             </div>
-            {/* Fixed: Swapped 'to="/what-we-do"' with 'href="/what-we-do"' */}
+            {/* Fixed: Swapped 'to="/what-we-do"' with 'href="/#what-we-do"' */}
             <Link
-              href="/what-we-do"
+              href="/#what-we-do"
               className="shine rounded-full bg-[#5D3FD3] px-7 py-3.5 text-[15px] font-semibold text-white transition-all duration-300 hover:scale-[1.04]"
             >
               <span className="relative z-10">Hire a graduate</span>
@@ -47,6 +47,7 @@ export const BrandsSection = () => {
                   alt={c.title} 
                   fill
                   sizes="(max-w-768px) 100vw, 33vw"
+                  referrerPolicy="no-referrer"
                   className="image-zoom absolute inset-0 h-full w-full object-cover" 
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

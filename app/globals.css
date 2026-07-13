@@ -34,6 +34,10 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   font-family: var(--LexendDecaBold), "Space Grotesk", var(--font-inter), sans-serif !important;
 }
 
+p, span {
+  font-family: var(--LexendDeca), "Space Grotesk", var(--font-inter), sans-serif !important;
+}
+
 .font-mono {
   font-family: var(--LexendDeca), Helvetica, Arial, sans-serif !important;
 }

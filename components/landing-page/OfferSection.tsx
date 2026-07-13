@@ -3,20 +3,20 @@
 import Link from "next/link";
 import Image from "next/image"; // Optimized Image utility
 import { GraduationCap, Briefcase, Target, Rocket, Users } from "lucide-react";
-import o1 from "@/assets/models/models1.jpg";
-import o2 from "@/assets/models/models2.jpg";
-import o3 from "@/assets/models/models3.jpg";
+import o1 from "@/assets/offer-1.jpg";
+import o2 from "@/assets/offer-2.jpg";
+import o3 from "@/assets/offer-3.jpg";
 import { Reveal } from "./Reveal";
 
 const cards = [
   { img: o1, title: "We vet", desc: "Every candidate is screened by a real person, not just an algorithm. We check skills, attitude, communication, and readiness to work.", tag: "Graduate-first", icon: GraduationCap },
   { img: o2, title: "We Match", desc: "You tell us what you actually need. We send a shortlist of candidates who fit — usually within five working days.", tag: "SME-friendly", icon: Briefcase },
-  { img: o3, title: "We make it affodable", desc: " Our pricing is built for SMEs, not corporate recruitment budgets.", tag: "Skills-matched", icon: Target },
+  { img: o3, title: "We make it affordable", desc: " Our pricing is built for SMEs, not corporate recruitment budgets.", tag: "Skills-matched", icon: Target },
 ];
 
 export const OfferSection = () => {
   return (
-    <section id="what-we-do" className="bg-page px-6 pb-24 md:pb-32">
+    <section id="features" className="bg-page px-6 pb-24 md:pb-32">
       <div className="mx-auto max-w-[1400px]">
         <Reveal>
           <div className="flex flex-col items-start justify-between gap-6 pb-10 md:flex-row md:items-end">
@@ -55,6 +55,7 @@ export const OfferSection = () => {
                     alt={c.title}
                     fill
                     sizes="(max-w-768px) 100vw, 33vw"
+                    referrerPolicy="no-referrer"
                     className="image-zoom absolute inset-0 h-full w-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent transition-opacity duration-500 group-hover:from-black/90" />

@@ -1,16 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image"; 
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import LaunchPathLogo from "../../assets/logo/launchpath.png";
+import LaunchPathLogo from "@/assets/logo/launchpath2.png";
 import { useState, useEffect } from "react";
 
 export const Logo = ({ color = "white" }: { color?: string }) => {
   const isLightText = color === "white";
   return (
     <Link href="/" className="group flex items-center" aria-label="LaunchPath home">
-      <div className="relative h-[35px] sm:h-[46px] w-auto transition-all duration-500 group-hover:rotate-[-2deg] group-hover:scale-[1.03]">
+      <div className="relative h-[35px] sm:h-[46px] w-auto transition-all duration-500">
         <Image 
           src={LaunchPathLogo} 
           alt="LaunchPath Logo" 
@@ -26,10 +26,10 @@ export const Logo = ({ color = "white" }: { color?: string }) => {
 };
 
 const navItems = [
-  { label: "Home", href: "/" },
-  { label: "What We Do", href: "/what-we-do" },
-  { label: "About us", href: "/about-us" },
-  { label: "Contact", href: "/contact" },
+  { label: "Home", href: "/#top" },
+  { label: "What We Do", href: "/#what-we-do" },
+  { label: "About us", href: "/#about-us" },
+  { label: "Contact", href: "/#contact" },
 ];
 
 interface HeaderProps {

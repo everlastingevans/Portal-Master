@@ -3,7 +3,7 @@ import { useState } from "react";
 import Image from "next/image"; // Optimized Image utility
 import Link from "next/link";  // Clean Next Router mapping
 import { Phone, Mail } from "lucide-react";
-import contactImg from "@/assets/models/models1.jpg";
+import contactImg from "@/assets/contact-aerial.jpg";
 
 const ContactField = ({
   label,
@@ -19,7 +19,7 @@ const ContactField = ({
 );
 
 const inputClass =
-  "w-full rounded-2xl bg-dark-input px-5 py-4 text-[15px] text-white placeholder:text-dark-muted outline-none ring-1 ring-dark-border focus:ring-white/60 focus:scale-[1.01] transition-all duration-300";
+  "w-full rounded-2xl bg-white/10 border border-white/20 px-5 py-4 text-[15px] text-white placeholder:text-white/60 outline-none focus:border-white focus:bg-white/15 focus:scale-[1.01] transition-all duration-300";
 
 export const ContactFooter = () => {
   const [form, setForm] = useState({
@@ -45,6 +45,7 @@ export const ContactFooter = () => {
               alt="Aerial view of office"
               fill
               sizes="(max-w-768px) 100vw, 50vw"
+              referrerPolicy="no-referrer"
               className="absolute inset-0 h-full w-full object-cover"
             />
             <div className="absolute inset-0 bg-black/35" aria-hidden />
@@ -111,16 +112,16 @@ export const ContactFooter = () => {
         </div>
 
         {/* Updated all footer redirect arrays to native Next.js Link parameters */}
-        <div className="flex flex-col gap-4 border-t border-dark-border px-6 py-6 md:flex-row md:items-center md:justify-between md:px-10">
+        <div className="flex flex-col gap-4 border-t border-white/20 px-6 py-6 md:flex-row md:items-center md:justify-between md:px-10">
           <ul className="flex flex-wrap gap-x-8 gap-y-2 text-[15px] text-white">
-            <li><Link href="/" className="hover:text-dark-muted">Homepage</Link></li>
-            <li><Link href="/what-we-do" className="hover:text-dark-muted">Services</Link></li>
-            <li><Link href="/about-us" className="hover:text-dark-muted">About us</Link></li>
-            <li><Link href="/contact" className="hover:text-dark-muted">Contact</Link></li>
+            <li><Link href="/#top" className="hover:text-white/70">Homepage</Link></li>
+            <li><Link href="/#what-we-do" className="hover:text-white/70">Services</Link></li>
+            <li><Link href="/#about-us" className="hover:text-white/70">About us</Link></li>
+            <li><Link href="/#contact" className="hover:text-white/70">Contact</Link></li>
           </ul>
           <ul className="flex gap-8 text-[15px] text-white">
-            <li><Link href="/privacy" className="hover:text-dark-muted">Privacy Made</Link></li>
-            <li><Link href="/terms" className="hover:text-dark-muted">Terms</Link></li>
+            <li><Link href="/privacy" className="hover:text-white/70">Privacy Made</Link></li>
+            <li><Link href="/terms" className="hover:text-white/70">Terms</Link></li>
           </ul>
         </div>
       </div>

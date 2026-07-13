@@ -337,7 +337,12 @@ export default function PortalSidebar({
       <aside className="w-64 bg-[#0a0f1d] dark:bg-slate-950 border-r border-slate-800 flex-shrink-0 flex flex-col hidden md:flex transition-all duration-300" id="desktop-sidebar">
         <div className="p-6 border-b border-slate-900">
           <div className="flex flex-col items-start gap-3" id="desktop-sidebar-logo-container">
-            <LaunchPathLogo variant="full" textColor="text-white bg-[#0a0f1d]" />
+            <Link 
+              href={normalizedRole === 'EMPLOYER' || normalizedRole === 'CLIENT' ? '/employer/dashboard' : '/candidate/dashboard'} 
+              className="transition-transform hover:scale-[1.02] cursor-pointer"
+            >
+              <LaunchPathLogo variant="full" textColor="text-white bg-[#0a0f1d]" />
+            </Link>
             <span className="px-2.5 py-0.5 bg-gradient-to-r from-[#7145FF]/20 to-violet-500/10 text-violet-300 text-[10px] font-extrabold rounded-md uppercase border border-[#7145FF]/25 select-none tracking-wider">
               {getRoleBadgeLabel()}
             </span>
@@ -384,7 +389,12 @@ export default function PortalSidebar({
       >
         <div className="p-6 border-b border-slate-900 pt-16">
           <div className="flex flex-col items-start gap-3" id="mobile-sidebar-logo-container">
-            <LaunchPathLogo variant="full" textColor="text-white bg-[#0a0f1d]" />
+            <Link 
+              href={normalizedRole === 'EMPLOYER' || normalizedRole === 'CLIENT' ? '/employer/dashboard' : '/candidate/dashboard'} 
+              className="transition-transform hover:scale-[1.02] cursor-pointer"
+            >
+              <LaunchPathLogo variant="full" textColor="text-white bg-[#0a0f1d]" />
+            </Link>
             <span className="px-2.5 py-0.5 bg-gradient-to-r from-[#7145FF]/20 to-violet-500/10 text-violet-300 text-[10px] font-extrabold rounded-md uppercase border border-[#7145FF]/25 select-none tracking-wider">
               {getRoleBadgeLabel()}
             </span>
