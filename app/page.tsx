@@ -42,7 +42,7 @@ export default function Home() {
             <div className="lg:col-span-7 space-y-8 text-left">
               <Reveal>
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-violet-100/60 dark:bg-violet-950/40 rounded-full border border-violet-200 dark:border-violet-900/60 mb-2">
-                  <Sparkles className="w-4 h-4 text-[#5D3FD3]" />
+                  {/* <Sparkles className="w-4 h-4 text-[#5D3FD3]" /> */}
                   <span className="text-[15px] font-extrabold text-[#5D3FD3] dark:text-violet-300 uppercase tracking-widest font-mono">
                     LaunchPath Platform Vision
                   </span>
@@ -63,7 +63,7 @@ export default function Home() {
               </div>
 
               {/* Document Header Brief */}
-              <Reveal delay={160}>
+              {/* <Reveal delay={160}>
                 <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-wrap gap-x-6 gap-y-2 items-center text-[15px] text-slate-500 dark:text-slate-400">
                   <div>
                     <span className="font-bold block text-slate-700 dark:text-slate-300">CTO Overview</span>
@@ -80,7 +80,7 @@ export default function Home() {
                     <span>Africa&apos;s leading early-career platform</span>
                   </div>
                 </div>
-              </Reveal>
+              </Reveal> */}
 
               {/* CTAs */}
               <Reveal delay={200}>
@@ -283,7 +283,7 @@ export default function Home() {
         <PeopleSection />
 
         {/* Graduate Placement Case Studies */}
-        <BrandsSection />
+        {/* <BrandsSection /> */}
 
         {/* Elegant Testimonial Showcase */}
         <TestimonialSection />

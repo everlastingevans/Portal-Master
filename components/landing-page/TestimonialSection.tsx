@@ -53,14 +53,14 @@ export const TestimonialSection = () => {
                 {/* Optimized Avatar Image Layout */}
                 <Image 
                   src={avatar} 
-                  alt="Naledi Mokoena" 
+                  alt="Mark Veld" 
                   width={56} 
                   height={56} 
                   referrerPolicy="no-referrer"
                   className="h-14 w-14 rounded-full object-cover ring-2 ring-white/30" 
                 />
                 <div>
-                  <p className="text-[16px] font-bold">Naledi Mokoena</p>
+                  <p className="text-[16px] font-bold">Mark Veld</p>
                   <p className="text-[14px] text-white/80">Founder, Veld Tech</p>
                 </div>
               </div>
