@@ -23,7 +23,7 @@ export const TeamSection = () => {
   return (
     <section id="about-us" className="bg-page px-6 py-24 md:py-32">
       <div className="mx-auto max-w-[1100px]">
-        <div className="mb-20 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+        {/* <div className="mb-20 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
           <div className="flex w-max animate-marquee whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.2em] text-foreground/70">
             {Array.from({ length: 2 }).map((_, i) => (
               <div key={i} className="flex shrink-0 items-center">
@@ -36,7 +36,7 @@ export const TeamSection = () => {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         <Reveal>
           <h2 className="text-center text-[40px] font-bold leading-[1.1] text-foreground md:text-[56px]">
