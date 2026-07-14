@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import LaunchPathLogo from '@/components/LaunchPathLogo';
 import { ThanosSidebarWidget } from '@/components/ThanosSidebarWidget';
 import { 
@@ -417,7 +418,9 @@ export default function SuperadminDashboard({
       <aside className="w-64 bg-slate-950 border-r border-slate-800 flex-shrink-0 flex flex-col hidden md:flex">
         <div className="p-6">
           <div className="flex flex-col items-start gap-4 mb-8">
-            <LaunchPathLogo variant="full" textColor="text-white" />
+            <Link href="/admin/dashboard" className="transition-transform hover:scale-[1.02] cursor-pointer">
+              <LaunchPathLogo variant="full" textColor="text-white" />
+            </Link>
             <span className="px-2.5 py-0.5 bg-[#7145FF]/10 text-[#7145FF] text-[10px] font-bold rounded-md uppercase border border-[#7145FF]/30 select-none">
               Super Admin
             </span>

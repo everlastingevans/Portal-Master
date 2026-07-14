@@ -1,12 +1,13 @@
 "use client";
-
+ 
 import Link from "next/link";
 import Image from "next/image"; // Optimized Image integration
 import bg from "@/assets/testimonial-bg.jpg";
 import avatar from "@/assets/avatar-thomas.jpg";
 import { Reveal } from "./Reveal";
-
+ 
 export const TestimonialSection = () => {
+ 
   return (
     <section className="bg-page px-4 py-10 md:px-8 md:py-16">
       <Reveal>
@@ -17,6 +18,7 @@ export const TestimonialSection = () => {
             alt="" 
             fill
             sizes="100vw"
+            referrerPolicy="no-referrer"
             className="image-zoom absolute inset-0 h-full w-full object-cover" 
           />
           <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/40 to-emerald-900/30" />
@@ -51,13 +53,14 @@ export const TestimonialSection = () => {
                 {/* Optimized Avatar Image Layout */}
                 <Image 
                   src={avatar} 
-                  alt="Naledi Mokoena" 
+                  alt="Mark Veld" 
                   width={56} 
                   height={56} 
+                  referrerPolicy="no-referrer"
                   className="h-14 w-14 rounded-full object-cover ring-2 ring-white/30" 
                 />
                 <div>
-                  <p className="text-[16px] font-bold">Naledi Mokoena</p>
+                  <p className="text-[16px] font-bold">Mark Veld</p>
                   <p className="text-[14px] text-white/80">Founder, Veld Tech</p>
                 </div>
               </div>

@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image"; // Optimized Image utility
-import yoga from "@/assets/testimonials/test1.jpg";
-import hoodie from "@/assets/testimonials/test2.jpg";
-import menswear from "@/assets/testimonials/test3.jpg";
+import yoga from "@/assets/models/models2.jpg";
+import hoodie from "@/assets/models/models3.jpg";
+import menswear from "@/assets/models/models4.jpg";
 import { Reveal } from "./Reveal";
 
 const cases = [
@@ -27,9 +27,9 @@ export const BrandsSection = () => {
                 Real careers, started with the right SME match. Here are a few graduates whose first job became a real launchpad.
               </p>
             </div>
-            {/* Fixed: Swapped 'to="/what-we-do"' with 'href="/what-we-do"' */}
+            {/* Fixed: Swapped 'to="/what-we-do"' with 'href="/#what-we-do"' */}
             <Link
-              href="/what-we-do"
+              href="/#what-we-do"
               className="shine rounded-full bg-[#5D3FD3] px-7 py-3.5 text-[15px] font-semibold text-white transition-all duration-300 hover:scale-[1.04]"
             >
               <span className="relative z-10">Hire a graduate</span>
@@ -47,6 +47,7 @@ export const BrandsSection = () => {
                   alt={c.title} 
                   fill
                   sizes="(max-w-768px) 100vw, 33vw"
+                  referrerPolicy="no-referrer"
                   className="image-zoom absolute inset-0 h-full w-full object-cover" 
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -59,12 +60,12 @@ export const BrandsSection = () => {
                     <p className="mt-1 text-[14px] text-white/85">{c.desc}</p>
                   </div>
                   {/* Fixed: Swapped 'to="/about-us"' with 'href="/about-us"' */}
-                  <Link 
+                  {/* <Link 
                     href="/about-us" 
                     className="shrink-0 rounded-full bg-white px-5 py-2 text-[13px] font-semibold text-foreground transition-transform duration-300 group-hover:scale-105"
                   >
                     Read
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             </Reveal>
