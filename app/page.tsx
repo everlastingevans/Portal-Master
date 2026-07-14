@@ -27,7 +27,7 @@ import HeroImage from "@/assets/models/models1.jpg";
 
 export default function Home() {
   return (
-    <div id="top" className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-sans transition-colors duration-300">
+    <div id="top" className="min-h-screen bg-slate-50 flex flex-col font-sans transition-colors duration-300">
       {/* Top Navigation */}
       <Header variant="dark" />
 
