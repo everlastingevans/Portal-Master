@@ -31,7 +31,6 @@ export async function PUT(req: Request) {
       certificates_url,
       police_clearance_url
     } = await req.json();
-    const { name, professional_title, experience_level, resume_text, linkedin_url, github_url, phone } = await req.json();
 
     // Get old user details to see if resume text is changing
     const currentUser = await db.user.findUnique({
