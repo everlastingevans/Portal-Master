@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LaunchPathLogo from '@/components/LaunchPathLogo';
 import { ThanosSidebarWidget } from '@/components/ThanosSidebarWidget';
+import SuperadminReportsView from './SuperadminReportsView';
 import { 
   ShieldAlert, 
   Users, 
@@ -28,7 +29,8 @@ import {
   Video,
   Mail,
   Send,
-  MessageSquare
+  MessageSquare,
+  FileText
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
@@ -163,6 +165,7 @@ export default function SuperadminDashboard({
     else if (tab === 'Talent') path = '/admin/talent';
     else if (tab === 'Corporate') path = '/admin/corporate';
     else if (tab === 'Matcher') path = '/admin/matcher';
+    else if (tab === 'Reports') path = '/admin/reports';
 
     router.push(path);
   };
@@ -511,6 +514,18 @@ export default function SuperadminDashboard({
               <Mail className={`w-5 h-5 ${activeTab === 'Tester' ? 'text-violet-300' : ''}`} />
               <span className="flex-1 text-left">Brevo Dispatch Tester</span>
             </button>
+
+            <button 
+              onClick={() => handleTabChange('Reports')} 
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium cursor-pointer ${
+                activeTab === 'Reports' 
+                  ? 'bg-[#7145FF]/10 text-white border border-[#7145FF]/35 shadow-sm shadow-[#7145FF]/10' 
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <FileText className={`w-5 h-5 ${activeTab === 'Reports' ? 'text-[#7145FF]' : ''}`} />
+              <span className="flex-1 text-left">Platform Reports</span>
+            </button>
           </nav>
         </div>
 
@@ -551,6 +566,7 @@ export default function SuperadminDashboard({
             {activeTab === 'Corporate' && 'Strategic Employer Tenant Directories'}
             {activeTab === 'Matcher' && 'Superadmin Candidate-Employer Matcher'}
             {activeTab === 'Tester' && 'Brevo Multi-Channel Dispatch Tester'}
+            {activeTab === 'Reports' && 'Market Analytics & Executive Reporting'}
           </h1>
           <div className="flex items-center gap-6 select-none">
             <span className="px-2.5 py-0.5 bg-[#7145FF]/10 text-[#7145FF] text-[10px] font-mono font-bold rounded-md uppercase border border-[#7145FF]/25">
@@ -1736,6 +1752,11 @@ export default function SuperadminDashboard({
                 )}
               </div>
             </div>
+          )}
+
+          {/* TAB 8: MARKET ANALYTICS & EXECUTIVE REPORTING */}
+          {activeTab === 'Reports' && (
+            <SuperadminReportsView />
           )}
 
         </div>
