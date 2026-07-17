@@ -297,6 +297,89 @@ export default function SuperadminCandidateInspector({
                 </div>
               </div>
 
+              {/* Education, Roles & Verification Documents */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-950/20 p-5 border border-slate-800 rounded-3xl">
+                <div className="space-y-4">
+                  <h4 className="text-[10px] uppercase font-mono font-bold tracking-widest text-[#7145FF]">Education & Career Preferences</h4>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-slate-900/60 p-3.5 border border-slate-850/60 rounded-xl">
+                      <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold block mb-0.5">Institution Studied</span>
+                      <span className="text-white text-xs font-bold block">
+                        {inspectCandidate.study_institution || <span className="text-slate-500 italic font-normal">Not specified</span>}
+                      </span>
+                    </div>
+                    <div className="bg-slate-900/60 p-3.5 border border-slate-850/60 rounded-xl">
+                      <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold block mb-0.5">Field / Specialisation</span>
+                      <span className="text-white text-xs font-bold block">
+                        {inspectCandidate.study_specialisation || <span className="text-slate-500 italic font-normal">Not specified</span>}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-900/60 p-3.5 border border-slate-850/60 rounded-xl">
+                    <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold block mb-0.5">Seeking Roles</span>
+                    <span className="text-white text-xs font-bold block">
+                      {inspectCandidate.seeking_roles || <span className="text-slate-500 italic font-normal">Not specified yet</span>}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="text-[10px] uppercase font-mono font-bold tracking-widest text-emerald-400">Uploaded Documents & Clearance</h4>
+                  
+                  <div className="space-y-3">
+                    {/* Degree Certificate */}
+                    <div className="bg-slate-900/60 p-3.5 border border-slate-850/60 rounded-xl flex items-center justify-between gap-4">
+                      <div>
+                        <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold block mb-0.5">Academic Degree Certificates</span>
+                        {inspectCandidate.certificates_url ? (
+                          <span className="text-emerald-400 text-xs font-bold flex items-center gap-1">
+                            <Check className="w-3.5 h-3.5" /> File Uploaded
+                          </span>
+                        ) : (
+                          <span className="text-slate-500 text-xs italic font-medium">No certificate uploaded</span>
+                        )}
+                      </div>
+                      {inspectCandidate.certificates_url && (
+                        <a 
+                          href={inspectCandidate.certificates_url} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold font-mono uppercase tracking-wider rounded-lg transition"
+                        >
+                          View Certificate
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Police Clearance */}
+                    <div className="bg-slate-900/60 p-3.5 border border-slate-850/60 rounded-xl flex items-center justify-between gap-4">
+                      <div>
+                        <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold block mb-0.5">Police Clearance Certificate</span>
+                        {inspectCandidate.police_clearance_url ? (
+                          <span className="text-emerald-400 text-xs font-bold flex items-center gap-1">
+                            <Check className="w-3.5 h-3.5" /> Clearance Uploaded
+                          </span>
+                        ) : (
+                          <span className="text-slate-500 text-xs italic font-medium">No clearance uploaded</span>
+                        )}
+                      </div>
+                      {inspectCandidate.police_clearance_url && (
+                        <a 
+                          href={inspectCandidate.police_clearance_url} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold font-mono uppercase tracking-wider rounded-lg transition"
+                        >
+                          View Clearance
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Full text parsed from resume PDF uploads */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center bg-slate-950/10 p-1 rounded-lg">

@@ -24,7 +24,12 @@ export async function PUT(req: Request) {
       career_direction,
       work_experience,
       portfolio_url,
-      cv_url
+      cv_url,
+      study_institution,
+      study_specialisation,
+      seeking_roles,
+      certificates_url,
+      police_clearance_url
     } = await req.json();
 
     // Get old user details to see if resume text is changing
@@ -53,6 +58,11 @@ export async function PUT(req: Request) {
         ...(work_experience !== undefined && { work_experience }),
         ...(portfolio_url !== undefined && { portfolio_url }),
         ...(cv_url !== undefined && { cv_url }),
+        ...(study_institution !== undefined && { study_institution }),
+        ...(study_specialisation !== undefined && { study_specialisation }),
+        ...(seeking_roles !== undefined && { seeking_roles }),
+        ...(certificates_url !== undefined && { certificates_url }),
+        ...(police_clearance_url !== undefined && { police_clearance_url }),
       },
     });
 
@@ -61,7 +71,6 @@ export async function PUT(req: Request) {
     // If resume text is changed, recheck jobs matching
     if (isResumeTextChanging && resume_text && resume_text.trim().length > 0) {
       const jobs = await db.job.findMany({ 
-        where: { status: 'ACTIVE' },
         select: { id: true, description: true, title: true } 
       });
       

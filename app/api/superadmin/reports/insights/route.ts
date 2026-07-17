@@ -20,21 +20,60 @@ export async function GET() {
         professional_title: true,
         experience_level: true,
         skills: true,
+        linkedin_url: true,
+        github_url: true,
+        phone: true,
+        qualifications: true,
+        interests: true,
+        career_direction: true,
+        work_experience: true,
+        portfolio_url: true,
+        cv_url: true,
+        resume_text: true,
+        study_institution: true,
+        study_specialisation: true,
+        seeking_roles: true,
+        certificates_url: true,
+        police_clearance_url: true,
         applications: {
           select: {
             id: true,
             status: true,
+            applied_at: true,
+            job: {
+              select: {
+                id: true,
+                title: true,
+                company: true,
+              }
+            }
           }
         },
         job_matches: {
           select: {
+            id: true,
             match_score: true,
+            matched_skills: true,
+            missing_skills: true,
+            fit_summary: true,
+            recommendation: true,
+            job: {
+              select: {
+                id: true,
+                title: true,
+                company: true,
+              }
+            }
           }
         },
         video_interviews: {
           select: {
+            id: true,
             score: true,
             status: true,
+            feedback: true,
+            questions: true,
+            video_url: true,
           }
         }
       }
@@ -242,6 +281,24 @@ export async function GET() {
           title: c.professional_title || 'N/A',
           experienceLevel: c.experience_level || 'N/A',
           skills: c.skills || 'N/A',
+          linkedin_url: c.linkedin_url || '',
+          github_url: c.github_url || '',
+          phone: c.phone || '',
+          qualifications: c.qualifications || '',
+          interests: c.interests || '',
+          career_direction: c.career_direction || '',
+          work_experience: c.work_experience || '',
+          portfolio_url: c.portfolio_url || '',
+          cv_url: c.cv_url || '',
+          resume_text: c.resume_text || '',
+          study_institution: c.study_institution || '',
+          study_specialisation: c.study_specialisation || '',
+          seeking_roles: c.seeking_roles || '',
+          certificates_url: c.certificates_url || '',
+          police_clearance_url: c.police_clearance_url || '',
+          applications: c.applications || [],
+          job_matches: c.job_matches || [],
+          video_interviews: c.video_interviews || [],
           matchesCount: c.job_matches.length,
           appsCount: c.applications.length,
           interviewCount: c.video_interviews.length,
