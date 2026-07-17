@@ -41,7 +41,7 @@ export default function JobFeedTab({
   const [searchTags, setSearchTags] = useState<string[]>(['Product Designer', 'Artist', 'Game Designer', 'Designer']);
   const [selectedEmploymentTypes, setSelectedEmploymentTypes] = useState<string[]>([]);
   const [selectedSeniorityLevels, setSelectedSeniorityLevels] = useState<string[]>([]);
-  const [salaryMinRange, setSalaryMinRange] = useState<number>(10000);
+  const [salaryMinRange, setSalaryMinRange] = useState<number>(5000);
   const [salaryMaxRange, setSalaryMaxRange] = useState<number>(500000);
   const [selectedCountry, setSelectedCountry] = useState<string>('All Countries');
 
