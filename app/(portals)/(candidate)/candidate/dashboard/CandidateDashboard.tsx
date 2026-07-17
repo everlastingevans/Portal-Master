@@ -72,6 +72,11 @@ export default function CandidateDashboard({
   const [profileWorkExperience, setProfileWorkExperience] = useState(user?.work_experience || '');
   const [profilePortfolioUrl, setProfilePortfolioUrl] = useState(user?.portfolio_url || '');
   const [profileCvUrl, setProfileCvUrl] = useState(user?.cv_url || '');
+  const [profileStudyInstitution, setProfileStudyInstitution] = useState(user?.study_institution || '');
+  const [profileStudySpecialisation, setProfileStudySpecialisation] = useState(user?.study_specialisation || '');
+  const [profileSeekingRoles, setProfileSeekingRoles] = useState(user?.seeking_roles || '');
+  const [profileCertificatesUrl, setProfileCertificatesUrl] = useState(user?.certificates_url || '');
+  const [profilePoliceClearanceUrl, setProfilePoliceClearanceUrl] = useState(user?.police_clearance_url || '');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isEditingResume, setIsEditingResume] = useState(false);
@@ -94,6 +99,11 @@ export default function CandidateDashboard({
       setProfileWorkExperience(user.work_experience || '');
       setProfilePortfolioUrl(user.portfolio_url || '');
       setProfileCvUrl(user.cv_url || '');
+      setProfileStudyInstitution(user.study_institution || '');
+      setProfileStudySpecialisation(user.study_specialisation || '');
+      setProfileSeekingRoles(user.seeking_roles || '');
+      setProfileCertificatesUrl(user.certificates_url || '');
+      setProfilePoliceClearanceUrl(user.police_clearance_url || '');
     }
   }, [user]);
 
@@ -400,6 +410,11 @@ export default function CandidateDashboard({
           work_experience: profileWorkExperience,
           portfolio_url: profilePortfolioUrl,
           cv_url: profileCvUrl,
+          study_institution: profileStudyInstitution,
+          study_specialisation: profileStudySpecialisation,
+          seeking_roles: profileSeekingRoles,
+          certificates_url: profileCertificatesUrl,
+          police_clearance_url: profilePoliceClearanceUrl,
         }),
       });
 
@@ -507,6 +522,16 @@ export default function CandidateDashboard({
               setProfilePortfolioUrl={setProfilePortfolioUrl}
               profileCvUrl={profileCvUrl}
               setProfileCvUrl={setProfileCvUrl}
+              profileStudyInstitution={profileStudyInstitution}
+              setProfileStudyInstitution={setProfileStudyInstitution}
+              profileStudySpecialisation={profileStudySpecialisation}
+              setProfileStudySpecialisation={setProfileStudySpecialisation}
+              profileSeekingRoles={profileSeekingRoles}
+              setProfileSeekingRoles={setProfileSeekingRoles}
+              profileCertificatesUrl={profileCertificatesUrl}
+              setProfileCertificatesUrl={setProfileCertificatesUrl}
+              profilePoliceClearanceUrl={profilePoliceClearanceUrl}
+              setProfilePoliceClearanceUrl={setProfilePoliceClearanceUrl}
               profileQualifications={profileQualifications}
               setProfileQualifications={setProfileQualifications}
               profileSkills={profileSkills}

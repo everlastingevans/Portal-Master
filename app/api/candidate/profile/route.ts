@@ -10,7 +10,27 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { name, professional_title, experience_level, resume_text, linkedin_url, github_url, phone } = await req.json();
+    const { 
+      name, 
+      professional_title, 
+      experience_level, 
+      resume_text, 
+      linkedin_url, 
+      github_url, 
+      phone,
+      qualifications,
+      skills,
+      interests,
+      career_direction,
+      work_experience,
+      portfolio_url,
+      cv_url,
+      study_institution,
+      study_specialisation,
+      seeking_roles,
+      certificates_url,
+      police_clearance_url
+    } = await req.json();
 
     // Get old user details to see if resume text is changing
     const currentUser = await db.user.findUnique({
@@ -31,6 +51,18 @@ export async function PUT(req: Request) {
         ...(linkedin_url !== undefined && { linkedin_url }),
         ...(github_url !== undefined && { github_url }),
         ...(phone !== undefined && { phone }),
+        ...(qualifications !== undefined && { qualifications }),
+        ...(skills !== undefined && { skills }),
+        ...(interests !== undefined && { interests }),
+        ...(career_direction !== undefined && { career_direction }),
+        ...(work_experience !== undefined && { work_experience }),
+        ...(portfolio_url !== undefined && { portfolio_url }),
+        ...(cv_url !== undefined && { cv_url }),
+        ...(study_institution !== undefined && { study_institution }),
+        ...(study_specialisation !== undefined && { study_specialisation }),
+        ...(seeking_roles !== undefined && { seeking_roles }),
+        ...(certificates_url !== undefined && { certificates_url }),
+        ...(police_clearance_url !== undefined && { police_clearance_url }),
       },
     });
 
@@ -39,7 +71,6 @@ export async function PUT(req: Request) {
     // If resume text is changed, recheck jobs matching
     if (isResumeTextChanging && resume_text && resume_text.trim().length > 0) {
       const jobs = await db.job.findMany({ 
-        where: { status: 'ACTIVE' },
         select: { id: true, description: true, title: true } 
       });
       

@@ -45,6 +45,11 @@ model User {
   work_experience         String?
   portfolio_url           String?
   cv_url                  String?
+  study_institution       String?
+  study_specialisation    String?
+  seeking_roles           String?
+  certificates_url        String?
+  police_clearance_url    String?
   reset_token             String?
   reset_token_expiry      DateTime?
   job_matches             JobMatch[]

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useState, useRef } from 'react';
 import { 
   CheckCircle2, User, Sparkles, BadgeCheck, ShieldAlert, FileText, Upload 
 } from 'lucide-react';
@@ -29,6 +29,16 @@ export interface ProfileTabProps {
   setProfilePortfolioUrl: (val: string) => void;
   profileCvUrl: string;
   setProfileCvUrl: (val: string) => void;
+  profileStudyInstitution: string;
+  setProfileStudyInstitution: (val: string) => void;
+  profileStudySpecialisation: string;
+  setProfileStudySpecialisation: (val: string) => void;
+  profileSeekingRoles: string;
+  setProfileSeekingRoles: (val: string) => void;
+  profileCertificatesUrl: string;
+  setProfileCertificatesUrl: (val: string) => void;
+  profilePoliceClearanceUrl: string;
+  setProfilePoliceClearanceUrl: (val: string) => void;
   profileQualifications: string;
   setProfileQualifications: (val: string) => void;
   profileSkills: string;
@@ -72,6 +82,16 @@ export default function ProfileTab({
   setProfilePortfolioUrl,
   profileCvUrl,
   setProfileCvUrl,
+  profileStudyInstitution,
+  setProfileStudyInstitution,
+  profileStudySpecialisation,
+  setProfileStudySpecialisation,
+  profileSeekingRoles,
+  setProfileSeekingRoles,
+  profileCertificatesUrl,
+  setProfileCertificatesUrl,
+  profilePoliceClearanceUrl,
+  setProfilePoliceClearanceUrl,
   profileQualifications,
   setProfileQualifications,
   profileSkills,
@@ -94,6 +114,59 @@ export default function ProfileTab({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const completion = getProfileCompletion(user);
   const strength = getResumeStrength(user?.resume_text);
+
+  const [uploadingCert, setUploadingCert] = useState(false);
+  const [uploadingClearance, setUploadingClearance] = useState(false);
+
+  const handleFileUploadToS3 = async (file: File, category: 'documents'): Promise<string> => {
+    const presignResponse = await fetch('/api/storage/presign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filename: file.name,
+        contentType: file.type || 'application/pdf',
+        category: category,
+      }),
+    });
+
+    if (!presignResponse.ok) {
+      const errData = await presignResponse.json();
+      throw new Error(errData.error || 'Failed to obtain S3 presigned upload URL.');
+    }
+
+    const { uploadUrl, publicUrl, s3Key, filename, contentType } = await presignResponse.json();
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('PUT', uploadUrl, true);
+      xhr.setRequestHeader('Content-Type', file.type || 'application/pdf');
+      xhr.onload = () => {
+        if (xhr.status === 200 || xhr.status === 201) resolve();
+        else reject(new Error('S3 upload failed'));
+      };
+      xhr.onerror = () => reject(new Error('S3 upload network error'));
+      xhr.send(file);
+    });
+
+    try {
+      await fetch('/api/storage/log-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          s3Key,
+          url: publicUrl,
+          name: filename,
+          size: file.size,
+          type: category,
+          mimeType: contentType,
+        }),
+      });
+    } catch (e) {
+      console.warn('Logging upload metadata failed, but file is uploaded to S3', e);
+    }
+
+    return publicUrl;
+  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -189,6 +262,11 @@ export default function ProfileTab({
                   setProfileWorkExperience(user?.work_experience || '');
                   setProfilePortfolioUrl(user?.portfolio_url || '');
                   setProfileCvUrl(user?.cv_url || '');
+                  setProfileStudyInstitution(user?.study_institution || '');
+                  setProfileStudySpecialisation(user?.study_specialisation || '');
+                  setProfileSeekingRoles(user?.seeking_roles || '');
+                  setProfileCertificatesUrl(user?.certificates_url || '');
+                  setProfilePoliceClearanceUrl(user?.police_clearance_url || '');
                   setIsEditingProfile(true);
                 }}
                 className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 font-bold text-xs transition cursor-pointer"
@@ -198,19 +276,36 @@ export default function ProfileTab({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-              <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60">
-                <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
-                  Qualifications & Academic Background
-                </h4>
-                {user?.qualifications ? (
-                  <p className="text-sm text-slate-800 dark:text-slate-200 whitespace-pre-line leading-relaxed font-medium">
-                    {user.qualifications}
-                  </p>
-                ) : (
-                  <p className="text-xs text-slate-405 dark:text-slate-500 italic">
-                    No qualification or academic background added yet. Click &quot;Edit Details&quot; to include them.
-                  </p>
-                )}
+              <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60 space-y-4">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
+                    Qualifications & Academic Background
+                  </h4>
+                  {user?.qualifications ? (
+                    <p className="text-sm text-slate-800 dark:text-slate-200 whitespace-pre-line leading-relaxed font-medium">
+                      {user.qualifications}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-slate-405 dark:text-slate-500 italic">
+                      No qualification or academic background added yet. Click &quot;Edit Details&quot; to include them.
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-3 border-t border-slate-150/80 dark:border-slate-800/60 grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Institution Studied</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      {user?.study_institution || <span className="text-slate-400 italic font-normal">Not specified</span>}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Specialisation</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      {user?.study_specialisation || <span className="text-slate-400 italic font-normal">Not specified</span>}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60 space-y-4">
@@ -236,9 +331,16 @@ export default function ProfileTab({
                   )}
                 </div>
 
+                <div className="pt-3 border-t border-slate-150/80 dark:border-slate-800/60">
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">Roles Seeking</span>
+                  <p className="text-xs text-slate-800 dark:text-slate-200 font-bold">
+                    {user?.seeking_roles || <span className="text-slate-400 italic font-normal">Not specified yet</span>}
+                  </p>
+                </div>
+
                 {user?.career_direction && (
-                  <div className="pt-2.5 border-t border-slate-100 dark:border-slate-900">
-                    <h5 className="text-[10.5px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
+                  <div className="pt-2.5 border-t border-slate-150/80 dark:border-slate-800/60">
+                    <h5 className="text-[10.5px] font-bold text-slate-400 dark:text-slate-505 uppercase tracking-wider mb-1.5">
                       Career Direction
                     </h5>
                     <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">
@@ -246,6 +348,65 @@ export default function ProfileTab({
                     </p>
                   </div>
                 )}
+              </div>
+
+              {/* ACADEMIC CERTIFICATES & CLEARANCE */}
+              <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60 md:col-span-2 space-y-4">
+                <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                  Degree Certificates & Verification Clearances
+                </h4>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Certificates / Degree Box */}
+                  <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-lg flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Certificates & Degree PDFs</span>
+                      {user?.certificates_url ? (
+                        <div className="space-y-1 mt-1">
+                          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block truncate">Verified Degree / Certificates</span>
+                          <a 
+                            href={user.certificates_url} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-bold hover:underline"
+                          >
+                            Download / View PDF
+                          </a>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400 italic block mt-1">No certificate or degree PDF uploaded yet.</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Police Clearance Box */}
+                  <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-lg flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle2 className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Police Clearance Certificate</span>
+                      {user?.police_clearance_url ? (
+                        <div className="space-y-1 mt-1">
+                          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block truncate">Verified Police Clearance</span>
+                          <a 
+                            href={user.police_clearance_url} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
+                          >
+                            Download / View PDF
+                          </a>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400 italic block mt-1">No police clearance certificate uploaded yet.</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60 md:col-span-2">
@@ -439,8 +600,188 @@ export default function ProfileTab({
               </div>
             </div>
 
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-4">
+              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-505 uppercase tracking-widest">Education & Career Preferences</h4>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Institution Studied / Studying</label>
+                  <input
+                    type="text"
+                    value={profileStudyInstitution}
+                    onChange={(e) => setProfileStudyInstitution(e.target.value)}
+                    placeholder="e.g. Stanford University"
+                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Specialisation / Field of Study</label>
+                  <input
+                    type="text"
+                    value={profileStudySpecialisation}
+                    onChange={(e) => setProfileStudySpecialisation(e.target.value)}
+                    placeholder="e.g. Computer Science, software systems"
+                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">What roles are you seeking?</label>
+                <input
+                  type="text"
+                  value={profileSeekingRoles}
+                  onChange={(e) => setProfileSeekingRoles(e.target.value)}
+                  placeholder="e.g. Full Stack Developer, Product Engineer"
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-4">
+              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-505 uppercase tracking-widest">Verification Documents</h4>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* Certificate Upload Field */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Certificates & Degree PDFs</span>
+                    {profileCertificatesUrl && (
+                      <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Uploaded
+                      </span>
+                    )}
+                  </div>
+                  
+                  <p className="text-xs text-slate-500">Upload degree or academic achievement certificates (PDF only).</p>
+                  
+                  {profileCertificatesUrl && (
+                    <div className="flex items-center gap-2 text-xs">
+                      <a href={profileCertificatesUrl} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline truncate max-w-[150px]">
+                        View current certificate
+                      </a>
+                      <button 
+                        type="button" 
+                        onClick={() => setProfileCertificatesUrl('')} 
+                        className="text-rose-500 hover:text-rose-700 font-semibold ml-auto"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="relative">
+                    <input 
+                      type="file" 
+                      accept="application/pdf"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setUploadingCert(true);
+                          try {
+                            const url = await handleFileUploadToS3(file, 'documents');
+                            setProfileCertificatesUrl(url);
+                          } catch (err: any) {
+                            alert('Failed to upload certificate: ' + err.message);
+                          } finally {
+                            setUploadingCert(false);
+                          }
+                        }
+                      }}
+                      className="hidden" 
+                      id="cert-file-input" 
+                    />
+                    <label 
+                      htmlFor="cert-file-input"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer shadow-sm transition"
+                    >
+                      {uploadingCert ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"></div>
+                          Uploading to S3...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 text-slate-500" />
+                          Choose PDF Certificate
+                        </>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
+                {/* Police Clearance Upload Field */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Police Clearance Certificate</span>
+                    {profilePoliceClearanceUrl && (
+                      <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Uploaded
+                      </span>
+                    )}
+                  </div>
+                  
+                  <p className="text-xs text-slate-500">Upload clean police clearance background-check document (PDF only).</p>
+                  
+                  {profilePoliceClearanceUrl && (
+                    <div className="flex items-center gap-2 text-xs">
+                      <a href={profilePoliceClearanceUrl} target="_blank" rel="noreferrer" className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline truncate max-w-[150px]">
+                        View current clearance
+                      </a>
+                      <button 
+                        type="button" 
+                        onClick={() => setProfilePoliceClearanceUrl('')} 
+                        className="text-rose-500 hover:text-rose-700 font-semibold ml-auto"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="relative">
+                    <input 
+                      type="file" 
+                      accept="application/pdf"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setUploadingClearance(true);
+                          try {
+                            const url = await handleFileUploadToS3(file, 'documents');
+                            setProfilePoliceClearanceUrl(url);
+                          } catch (err: any) {
+                            alert('Failed to upload police clearance: ' + err.message);
+                          } finally {
+                            setUploadingClearance(false);
+                          }
+                        }
+                      }}
+                      className="hidden" 
+                      id="clearance-file-input" 
+                    />
+                    <label 
+                      htmlFor="clearance-file-input"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer shadow-sm transition"
+                    >
+                      {uploadingClearance ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"></div>
+                          Uploading to S3...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 text-slate-500" />
+                          Choose PDF Clearance
+                        </>
+                      )}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-2">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-505 uppercase tracking-widest">Work Experience, Internships, Projects & Volunteering</h4>
+              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-widest">Work Experience, Internships, Projects & Volunteering</h4>
               <div>
                 <textarea
                   value={profileWorkExperience}
