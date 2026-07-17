@@ -20,6 +20,9 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, Legend
 } from 'recharts';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import SuperadminCandidateInspector from './SuperadminCandidateInspector';
 
 export default function SuperadminReportsView() {
   const [reportType, setReportType] = useState<'candidates' | 'employers' | 'ai-insights'>('candidates');
@@ -28,6 +31,9 @@ export default function SuperadminReportsView() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+
+  const [inspectCandidate, setInspectCandidate] = useState<any>(null);
+  const [inspectTab, setInspectTab] = useState<string>('profile');
 
   const fetchReports = async () => {
     try {
@@ -65,29 +71,236 @@ export default function SuperadminReportsView() {
     const list = data.candidatesReport.candidatesList;
     
     // Headers
-    const headers = ['ID', 'Name', 'Email', 'Professional Title', 'Experience Level', 'Skills', 'Active Matches', 'Applications Count', 'Interviews Attended'];
+    const headers = [
+      'Full Name',
+      'Study Institute',
+      'Study Specialisation',
+      'Seeking Roles',
+      'Phone Number',
+      'Qualifications',
+      'Skills',
+      'Interests'
+    ];
+    
     const rows = list.map((c: any) => [
-      c.id,
       `"${(c.name || '').replace(/"/g, '""')}"`,
-      c.email,
-      `"${(c.title || '').replace(/"/g, '""')}"`,
-      c.experienceLevel,
+      `"${(c.study_institution || '').replace(/"/g, '""')}"`,
+      `"${(c.study_specialisation || '').replace(/"/g, '""')}"`,
+      `"${(c.seeking_roles || '').replace(/"/g, '""')}"`,
+      `"${(c.phone || '').replace(/"/g, '""')}"`,
+      `"${(c.qualifications || '').replace(/"/g, '""')}"`,
       `"${(c.skills || '').replace(/"/g, '""')}"`,
-      c.matchesCount,
-      c.appsCount,
-      c.interviewCount
+      `"${(c.interests || '').replace(/"/g, '""')}"`
     ]);
 
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + [headers.join(','), ...rows.map((e: any) => e.join(','))].join('\n');
+    const csvContent = [headers.join(','), ...rows.map((e: any) => e.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     
-    const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", url);
     link.setAttribute("download", `LaunchPath_Candidate_Report_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // PDF Exporter for Candidate profiles with premium branding and formatted columns
+  const downloadCandidatesPDF = () => {
+    if (!data?.candidatesReport?.candidatesList) return;
+    const list = data.candidatesReport.candidatesList;
+
+    // Create a landscape, millimeters, a4 size document (297mm x 210mm)
+    const doc = new jsPDF('l', 'mm', 'a4');
+
+    // 1. Draw Page 1 Branding and Cover Elements
+    // Top bar deep purple accent ribbon
+    doc.setFillColor(113, 69, 255);
+    doc.rect(0, 0, 297, 4, 'F');
+
+    // LaunchPath Logo & Header text
+    // Custom geometric brand emblem (a neat purple rocket-trail icon block)
+    doc.setFillColor(113, 69, 255);
+    doc.rect(15, 12, 4, 10, 'F');
+    doc.setFillColor(16, 185, 129); // Green accent block
+    doc.rect(21, 15, 4, 7, 'F');
+
+    // Text logo
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.text('LAUNCHPATH', 28, 17);
+
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139); // slate-500
+    doc.text('EXECUTIVE TALENT NETWORK', 28, 22);
+
+    // Metadata Right Block
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(71, 85, 105); // slate-600
+    doc.text('REPORT ID: LP-INS-2026', 215, 15);
+    doc.text(`GENERATED ON: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, 215, 19);
+    doc.text('STATUS: ACTIVE CANDIDATE REGISTRY', 215, 23);
+
+    // Horizontal thin divider
+    doc.setDrawColor(226, 232, 240); // slate-200
+    doc.line(15, 26, 282, 26);
+
+    // Main Report Title
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.text('CANDIDATE REGISTRY & TALENT POOL PROFILE SUMMARY', 15, 33);
+
+    // KPI Summary Widgets
+    // Total registered candidates in pool
+    doc.setFillColor(248, 250, 252); // slate-50
+    doc.roundedRect(15, 37, 80, 13, 1.5, 1.5, 'F');
+    doc.setFillColor(113, 69, 255); // purple bar
+    doc.rect(15, 37, 2, 13, 'F');
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text('TOTAL TALENT POOL', 20, 41);
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${data.candidatesReport.totalCandidates || 0} Candidates`, 20, 47);
+
+    // Average matching score
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(105, 37, 80, 13, 1.5, 1.5, 'F');
+    doc.setFillColor(16, 185, 129); // emerald bar
+    doc.rect(105, 37, 2, 13, 'F');
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text('AVERAGE MATCH FIT', 110, 41);
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${data.candidatesReport.averageMatchScore || 0}% AI Confidence`, 110, 47);
+
+    // Active pipeline applicants
+    const activePipelinersCount = list.filter((c: any) => c.appsCount > 0).length;
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(195, 37, 87, 13, 1.5, 1.5, 'F');
+    doc.setFillColor(59, 130, 246); // blue bar
+    doc.rect(195, 37, 2, 13, 'F');
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text('ACTIVE APPLICANTS', 200, 41);
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${activePipelinersCount} Active Pipeliners`, 200, 47);
+
+    // 2. Format Table Columns
+    // Column Headers matching the user's specific items:
+    // "full name, study institute, study_specialisation, seeking_roles, Phone number, Qualifications, skills and interests"
+    const tableHeaders = [
+      'Full Name',
+      'Study Institute',
+      'Specialisation',
+      'Seeking Roles',
+      'Phone Number',
+      'Qualifications',
+      'Core Skills',
+      'Interests'
+    ];
+
+    // Data Rows
+    const tableRows = list.map((c: any) => [
+      c.name || 'N/A',
+      c.study_institution || 'N/A',
+      c.study_specialisation || 'N/A',
+      c.seeking_roles || 'N/A',
+      c.phone || 'N/A',
+      c.qualifications || 'N/A',
+      c.skills || 'N/A',
+      c.interests || 'N/A'
+    ]);
+
+    // 3. Render Table
+    autoTable(doc, {
+      head: [tableHeaders],
+      body: tableRows,
+      startY: 55, // Leaves space for the Cover elements on page 1
+      margin: { left: 15, right: 15, bottom: 20 },
+      theme: 'striped',
+      headStyles: {
+        fillColor: [113, 69, 255], // LaunchPath brand purple: #7145FF
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 7.5,
+        halign: 'left',
+        valign: 'middle',
+        cellPadding: 2.5
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252] // Clean slate row shading
+      },
+      styles: {
+        fontSize: 7,
+        cellPadding: 2,
+        overflow: 'linebreak'
+      },
+      columnStyles: {
+        0: { cellWidth: 28 }, // Full Name
+        1: { cellWidth: 36 }, // Study Institute
+        2: { cellWidth: 34 }, // Study Specialisation
+        3: { cellWidth: 34 }, // Seeking Roles
+        4: { cellWidth: 25 }, // Phone Number
+        5: { cellWidth: 36 }, // Qualifications
+        6: { cellWidth: 38 }, // Core Skills
+        7: { cellWidth: 36 }  // Interests
+      },
+      didDrawPage: (pageData) => {
+        // Draw Footer on every page
+        const pageCount = doc.getNumberOfPages();
+        doc.setFont('Helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(148, 163, 184); // slate-400
+
+        // Footer divider line
+        doc.setDrawColor(241, 245, 249); // slate-100
+        doc.line(15, 195, 282, 195);
+
+        // Footer Metadata Text
+        doc.text('LAUNCHPATH PLACEMENT NETWORK • CONFIDENTIAL CANDIDATE REGISTRY REPORT', 15, 201);
+        doc.text(`Page ${pageCount}`, 282, 201, { align: 'right' });
+
+        // On subsequent pages, draw a minimalist top bar header so the layout remains professional
+        if (pageData.pageNumber > 1) {
+          // Top bar accent line
+          doc.setFillColor(113, 69, 255);
+          doc.rect(0, 0, 297, 3, 'F');
+
+          // Header Text
+          doc.setFont('Helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(15, 23, 42); // slate-900
+          doc.text('LAUNCHPATH TALENT NETWORK', 15, 10);
+
+          doc.setFont('Helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(100, 116, 139); // slate-500
+          doc.text('• CANDIDATE REGISTRY EXPORT REPORT', 68, 10);
+
+          // Header divider
+          doc.setDrawColor(226, 232, 240); // slate-200
+          doc.line(15, 12, 282, 12);
+        }
+      }
+    });
+
+    // Save PDF Document
+    const dateStr = new Date().toISOString().slice(0, 10);
+    doc.save(`LaunchPath_Candidate_Insights_Report_${dateStr}.pdf`);
   };
 
   // CSV Exporter for Employer activity records
@@ -106,16 +319,17 @@ export default function SuperadminReportsView() {
       e.avgJobSalaryMax
     ]);
 
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + [headers.join(','), ...rows.map((row: any) => row.join(','))].join('\n');
+    const csvContent = [headers.join(','), ...rows.map((row: any) => row.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     
-    const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", url);
     link.setAttribute("download", `LaunchPath_Employer_Report_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   if (loading) {
@@ -148,7 +362,16 @@ export default function SuperadminReportsView() {
   // Filter lists based on Search Query
   const filteredCandidates = (data?.candidatesReport?.candidatesList || []).filter((c: any) => {
     const q = searchQuery.toLowerCase();
-    return c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.title.toLowerCase().includes(q) || c.skills.toLowerCase().includes(q);
+    return (
+      (c.name || '').toLowerCase().includes(q) ||
+      (c.phone || '').toLowerCase().includes(q) ||
+      (c.study_institution || '').toLowerCase().includes(q) ||
+      (c.study_specialisation || '').toLowerCase().includes(q) ||
+      (c.seeking_roles || '').toLowerCase().includes(q) ||
+      (c.qualifications || '').toLowerCase().includes(q) ||
+      (c.skills || '').toLowerCase().includes(q) ||
+      (c.interests || '').toLowerCase().includes(q)
+    );
   });
 
   const filteredEmployers = (data?.employersReport?.employersList || []).filter((e: any) => {
@@ -187,13 +410,22 @@ export default function SuperadminReportsView() {
           </button>
           
           {reportType === 'candidates' && (
-            <button
-              onClick={downloadCandidatesCSV}
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#7145FF] hover:bg-[#5b32e6] text-white font-semibold text-xs rounded-xl transition cursor-pointer shadow-lg shadow-[#7145FF]/10"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export Candidates CSV</span>
-            </button>
+            <>
+              <button
+                onClick={downloadCandidatesCSV}
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-400" />
+                <span>Export CSV</span>
+              </button>
+              <button
+                onClick={downloadCandidatesPDF}
+                className="flex items-center gap-2 px-4 py-2.5 bg-[#7145FF] hover:bg-[#5b32e6] text-white font-bold text-xs rounded-xl transition cursor-pointer shadow-lg shadow-[#7145FF]/10"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-yellow-300 animate-pulse" />
+                <span>Download Branded PDF</span>
+              </button>
+            </>
           )}
 
           {reportType === 'employers' && (
@@ -370,42 +602,53 @@ export default function SuperadminReportsView() {
                 <thead>
                   <tr className="border-b border-slate-800 text-slate-400 font-mono text-[10px] uppercase tracking-wider">
                     <th className="py-3 px-4">Candidate</th>
-                    <th className="py-3 px-4">Title / Exp</th>
-                    <th className="py-3 px-4">Core Skills</th>
-                    <th className="py-3 px-4 text-center">Matches</th>
-                    <th className="py-3 px-4 text-center">Apps</th>
-                    <th className="py-3 px-4 text-center">Interviews</th>
+                    <th className="py-3 px-4">Study Details</th>
+                    <th className="py-3 px-4">Seeking Roles</th>
+                    <th className="py-3 px-4">Qualifications</th>
+                    <th className="py-3 px-4">Skills & Interests</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/55 text-xs text-slate-300">
                   {filteredCandidates.length > 0 ? (
                     filteredCandidates.map((c: any) => (
-                      <tr key={c.id} className="hover:bg-slate-900/40 transition">
+                      <tr 
+                        key={c.id} 
+                        className="hover:bg-slate-900/40 transition cursor-pointer group"
+                        onClick={() => {
+                          setInspectCandidate(c);
+                          setInspectTab('profile');
+                        }}
+                      >
                         <td className="py-3.5 px-4">
-                          <div className="font-bold text-white">{c.name}</div>
-                          <div className="text-[10px] text-slate-500 font-mono">{c.email}</div>
+                          <div className="font-bold text-white group-hover:text-[#a385ff] transition-colors">{c.name}</div>
+                          <div className="text-[10px] text-slate-400 font-mono mt-0.5">{c.phone || 'No phone number'}</div>
                         </td>
                         <td className="py-3.5 px-4">
-                          <div className="font-semibold text-slate-300">{c.title}</div>
-                          <div className="text-[10px] text-[#7145FF] uppercase font-bold tracking-wider">{c.experienceLevel}</div>
+                          <div className="font-semibold text-slate-200">{c.study_institution || 'N/A'}</div>
+                          <div className="text-[10px] text-slate-400 font-medium">{c.study_specialisation || 'No specialisation'}</div>
                         </td>
-                        <td className="py-3.5 px-4 max-w-xs truncate" title={c.skills}>
-                          <span className="text-slate-400 font-mono text-[11px]">{c.skills}</span>
+                        <td className="py-3.5 px-4 max-w-xs truncate" title={c.seeking_roles}>
+                          <span className="text-[#a385ff] font-bold text-[11px]">{c.seeking_roles || 'N/A'}</span>
                         </td>
-                        <td className="py-3.5 px-4 text-center font-mono font-semibold text-slate-400">{c.matchesCount}</td>
-                        <td className="py-3.5 px-4 text-center">
-                          <span className={`px-2 py-0.5 rounded-full font-mono font-bold text-[10px] ${
-                            c.appsCount > 0 ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20' : 'bg-slate-800/40 text-slate-500'
-                          }`}>
-                            {c.appsCount}
-                          </span>
+                        <td className="py-3.5 px-4 max-w-xs truncate" title={c.qualifications}>
+                          <span className="text-slate-300 font-medium">{c.qualifications || 'N/A'}</span>
                         </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <span className={`px-2 py-0.5 rounded-full font-mono font-bold text-[10px] ${
-                            c.interviewCount > 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800/40 text-slate-500'
-                          }`}>
-                            {c.interviewCount}
-                          </span>
+                        <td className="py-3.5 px-4 max-w-xs">
+                          <div className="text-[11px] text-slate-300 truncate" title={c.skills}><strong className="text-slate-400 font-mono text-[10px] uppercase">Skills:</strong> {c.skills || 'N/A'}</div>
+                          <div className="text-[10px] text-slate-400 truncate mt-0.5" title={c.interests}><strong className="text-slate-500 font-mono text-[9px] uppercase">Interests:</strong> {c.interests || 'N/A'}</div>
+                        </td>
+                        <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => {
+                              setInspectCandidate(c);
+                              setInspectTab('profile');
+                            }}
+                            className="px-2.5 py-1 bg-violet-600/20 text-violet-400 hover:bg-[#7145FF] hover:text-white border border-[#7145FF]/30 rounded-lg text-[10px] font-bold uppercase font-sans cursor-pointer group-hover:scale-105 transition inline-flex items-center gap-1 shadow-sm"
+                          >
+                            <Sparkles className="w-3 h-3 text-violet-400 group-hover:text-white" />
+                            Pull Profile
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -638,6 +881,16 @@ export default function SuperadminReportsView() {
             </div>
           </div>
         </div>
+      )}
+
+      {inspectCandidate && (
+        <SuperadminCandidateInspector 
+          inspectCandidate={inspectCandidate}
+          setInspectCandidate={setInspectCandidate}
+          inspectTab={inspectTab}
+          setInspectTab={setInspectTab}
+          interviews={[]}
+        />
       )}
 
     </div>

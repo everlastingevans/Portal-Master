@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getSession } from '@/lib/auth';
+import { scoreMatch } from '@/lib/gemini';
 
 export async function GET() {
   try {
@@ -27,6 +28,11 @@ export async function GET() {
         work_experience: true,
         portfolio_url: true,
         cv_url: true,
+        study_institution: true,
+        study_specialisation: true,
+        seeking_roles: true,
+        certificates_url: true,
+        police_clearance_url: true,
       }
     });
     
@@ -42,10 +48,17 @@ export async function GET() {
         orderBy: { created_at: 'desc' }
       });
 
-      const rawMatches = await db.jobMatch.findMany({
+      // Fetch all active/available jobs first
+      const rawAllJobs = await db.job.findMany({
+        include: {
+          tenant: true
+        },
+        orderBy: { id: 'desc' }
+      });
+
+      let rawMatches = await db.jobMatch.findMany({
         where: { 
-          candidate_id: session.userId,
-          job: { status: 'ACTIVE' }
+          candidate_id: session.userId
         },
         include: {
           job: {
@@ -57,7 +70,47 @@ export async function GET() {
         orderBy: { match_score: 'desc' }
       });
 
-      matches = rawMatches.map(m => {
+      // Auto-match missing jobs if candidate has a resume
+      if (user?.resume_text && user.resume_text.trim()) {
+        const resumeText = user.resume_text;
+        const missingJobs = rawAllJobs.filter((j: any) => !rawMatches.some((m: any) => m.job_id === j.id));
+        if (missingJobs.length > 0) {
+          const matchPromises = missingJobs.map(async (job: any) => {
+            try {
+              const matchResult = await scoreMatch(resumeText, job.description);
+              return await db.jobMatch.create({
+                data: {
+                  candidate_id: session.userId,
+                  job_id: job.id,
+                  match_score: matchResult.matchScore || 0,
+                  missing_skills: JSON.stringify(matchResult.missingSkills || []),
+                  matched_skills: JSON.stringify(matchResult.matchedSkills || []),
+                  recommendation: matchResult.recommendation || 'Unsuitable',
+                  fit_summary: matchResult.fitSummary || 'No summary available.',
+                }
+              });
+            } catch (err) {
+              console.error(`Auto-matching failed for job ${job.id}:`, err);
+              return null;
+            }
+          });
+          
+          await Promise.all(matchPromises);
+          
+          // Re-fetch rawMatches so our local data is up-to-date!
+          rawMatches = await db.jobMatch.findMany({
+            where: { candidate_id: session.userId },
+            include: {
+              job: {
+                include: { tenant: true }
+              }
+            },
+            orderBy: { match_score: 'desc' }
+          });
+        }
+      }
+
+      matches = rawMatches.map((m: any) => {
         let logo = null;
         if (m.job.tenant?.features) {
           try {
@@ -85,7 +138,7 @@ export async function GET() {
       const rawSaved = await db.savedJob.findMany({
         where: { candidate_id: session.userId }
       });
-      savedJobs = rawSaved.map(s => s.job_id);
+      savedJobs = rawSaved.map((s: any) => s.job_id);
 
       const rawApplications = await db.jobApplication.findMany({
         where: { candidate_id: session.userId },
@@ -99,7 +152,7 @@ export async function GET() {
         },
         orderBy: { applied_at: 'desc' }
       });
-      applications = rawApplications.map(a => {
+      applications = rawApplications.map((a: any) => {
         let logo = null;
         if (a.job.tenant?.features) {
           try {
@@ -121,16 +174,7 @@ export async function GET() {
         };
       });
 
-      // Fetch all active jobs from all employers
-      const rawAllJobs = await db.job.findMany({
-        where: { status: 'ACTIVE' },
-        include: {
-          tenant: true
-        },
-        orderBy: { id: 'desc' }
-      });
-
-      allJobs = rawAllJobs.map(j => {
+      allJobs = rawAllJobs.map((j: any) => {
         let logo = null;
         if (j.tenant?.features) {
           try {
