@@ -132,26 +132,11 @@ ${description}
       if (res.ok) {
         const resetData = await res.json();
         
-        if (resetData.bypassed || !resetData.payfast) {
+        if (resetData.jobId) {
+          router.push(`/employer/payment?jobId=${resetData.jobId}`);
+        } else {
           alert('Job post created successfully!');
           router.push('/employer/dashboard');
-        } else if (resetData.payfast) {
-          const { url, data } = resetData.payfast;
-          const form = document.createElement('form');
-          form.action = url;
-          form.method = 'POST';
-          form.style.display = 'none';
-
-          for (const [key, value] of Object.entries(data)) {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = value as string;
-            form.appendChild(input);
-          }
-
-          document.body.appendChild(form);
-          form.submit();
         }
       } else {
         const errorData = await res.json();

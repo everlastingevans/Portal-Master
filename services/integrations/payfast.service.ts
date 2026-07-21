@@ -12,12 +12,12 @@ export class PayfastService {
     cancelUrl: string,
     notifyUrl: string
   ) {
-    const isProd = process.env.NODE_ENV === 'production' && process.env.PAYFAST_ENV === 'production';
+    const isProd = process.env.PAYFAST_ENV === 'production';
     
-    // Sandbox credentials
-    const merchantId = isProd ? process.env.PAYFAST_MERCHANT_ID! : '10000100';
-    const merchantKey = isProd ? process.env.PAYFAST_MERCHANT_KEY! : '46f0cd694581a';
-    const passphrase = isProd ? process.env.PAYFAST_PASSPHRASE || '' : '';
+    // Check if custom merchant credentials are set; otherwise default to official PayFast sandbox keys
+    const merchantId = process.env.PAYFAST_MERCHANT_ID || '10000100';
+    const merchantKey = process.env.PAYFAST_MERCHANT_KEY || '46f0cd694581a';
+    const passphrase = process.env.PAYFAST_PASSPHRASE || '';
 
     const url = isProd ? 'https://www.payfast.co.za/eng/process' : 'https://sandbox.payfast.co.za/eng/process';
 
@@ -33,7 +33,6 @@ export class PayfastService {
     };
 
     let stringToHash = '';
-    const params = new URLSearchParams();
     for (const [key, value] of Object.entries(data)) {
       if (value) {
         stringToHash += `${key}=${encodeURIComponent(value.trim()).replace(/%20/g, '+')}&`;

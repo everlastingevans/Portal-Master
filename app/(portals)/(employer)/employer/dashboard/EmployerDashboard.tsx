@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import PortalSidebar from '@/components/PortalSidebar';
 import ThemeToggle from '@/components/ThemeToggle';
 
@@ -22,20 +23,13 @@ export default function EmployerDashboard({
   onRefresh: () => void;
   onLogout: () => void;
 }) {
+  const router = useRouter();
   const { jobs = [], applications = [] } = data || {};
 
   const isJobUnlocked = (jobId: number | string | null) => {
     if (!jobId) return false;
-    const numericId = parseInt(String(jobId), 10);
-    if (isNaN(numericId)) return false;
-    if (user?.tenant?.plan === 'premium') return true;
-    try {
-      const features = JSON.parse(user?.tenant?.features || '{}');
-      if (Array.isArray(features.unlockedJobIds) && features.unlockedJobIds.includes(numericId)) {
-        return true;
-      }
-    } catch (e) {}
-    return false;
+    const foundJob = jobs.find((j: any) => String(j.id) === String(jobId));
+    return foundJob ? foundJob.status === 'ACTIVE' : false;
   };
 
   const [activeTab, setActiveTab] = useState('Overview');
@@ -375,36 +369,22 @@ ${editDescription}
       alert('Please select a specific job posting to unlock.');
       return;
     }
+
+    if (action === 'checkout') {
+      router.push(`/employer/payment?jobId=${targetJobId}`);
+      return;
+    }
+
     setUnlocking(true);
     try {
-      const res = await fetch('/api/employer/unlock', {
+      const res = await fetch('/api/jobs/pay-simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, jobId: targetJobId }),
+        body: JSON.stringify({ jobId: targetJobId }),
       });
       if (res.ok) {
-        const result = await res.json();
-        if (result.bypassed) {
-          alert('Demo Bypass success! Candidate Pipeline for this role unlocked.');
-          onRefresh();
-        } else if (result.payfast) {
-          const { url, data } = result.payfast;
-          const form = document.createElement('form');
-          form.action = url;
-          form.method = 'POST';
-          form.style.display = 'none';
-
-          for (const [key, value] of Object.entries(data)) {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = value as string;
-            form.appendChild(input);
-          }
-
-          document.body.appendChild(form);
-          form.submit();
-        }
+        alert('Demo Bypass success! Job Posting has been activated and candidate pipeline is unlocked.');
+        onRefresh();
       } else {
         const errorData = await res.json();
         alert('Failed to process unlock: ' + errorData.error);
