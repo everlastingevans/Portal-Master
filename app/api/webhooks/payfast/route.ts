@@ -33,7 +33,7 @@ export async function POST(req: Request) {
               try {
                 const employerEmail = job.employer.email;
                 const subject = `Payment Received & Role Activated: ${job.title} on LaunchPath`;
-                const textCopy = `Your role "${job.title}" has been successfully activated on LaunchPath!\n\nWe have received your payment of R20 once-off.\n\nOur matching process has officially started. You can expect a curated shortlist of vetted candidates directly to your registered email within 5 working days.\n\nThank you for choosing LaunchPath.`;
+                const textCopy = `Your role "${job.title}" has been successfully activated on LaunchPath!\n\nWe have received your payment of R1,999 once-off.\n\nOur matching process has officially started. You can expect a curated shortlist of vetted candidates directly to your registered email within 5 working days.\n\nThank you for choosing LaunchPath.`;
                 
                 const htmlCopy = `
                   <div style="font-family: Arial, sans-serif; color: #1e293b; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
                       Hi there,
                     </p>
                     <p style="font-size: 14px; line-height: 1.6; color: #334155;">
-                      Thank you for posting your vacancy on LaunchPath. We have successfully received your once-off payment of <strong>R20</strong> for the following role:
+                      Thank you for posting your vacancy on LaunchPath. We have successfully received your once-off payment of <strong>R1,999</strong> for the following role:
                     </p>
                     <div style="background-color: #f8fafc; padding: 18px; border-left: 4px solid #bdf500; margin: 18px 0; border-radius: 8px; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
                       <strong style="font-size: 16px; color: #0f172a;">${job.title}</strong><br/>
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
                     <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
                     <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.4;">
                       &copy; ${new Date().getFullYear()} LaunchPath. All rights reserved. <br/>
-                      R20 flat-rate per role posted. Sourcing shortlist delivered by email.
+                      R1,999 flat-rate per role posted. Sourcing shortlist delivered by email.
                     </p>
                   </div>
                 `;
