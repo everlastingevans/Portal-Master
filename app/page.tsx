@@ -27,7 +27,7 @@ import HeroImage from "@/assets/models/models1.jpg";
 
 export default function Home() {
   return (
-    <div id="top" className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-sans transition-colors duration-300">
+    <div id="top" className="min-h-screen bg-slate-50 flex flex-col font-sans transition-colors duration-300">
       {/* Top Navigation */}
       <Header variant="dark" />
 
@@ -41,9 +41,9 @@ export default function Home() {
             {/* Left side: Vision, Core Mission, CTA */}
             <div className="lg:col-span-7 space-y-8 text-left">
               <Reveal>
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-violet-100/60 dark:bg-violet-950/40 rounded-full border border-violet-200 dark:border-violet-900/60 mb-2">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-violet-100/60 rounded-full border border-violet-200 dark:border-violet-900/60 mb-2">
                   {/* <Sparkles className="w-4 h-4 text-[#5D3FD3]" /> */}
-                  <span className="text-[15px] font-extrabold text-[#5D3FD3] dark:text-violet-300 uppercase tracking-widest font-mono">
+                  <span className="text-[15px] font-extrabold text-[#5D3FD3] uppercase tracking-widest font-mono">
                     LaunchPath Platform Vision
                   </span>
                 </div>
@@ -51,36 +51,17 @@ export default function Home() {
 
               <div className="space-y-4">
                 <Reveal delay={80}>
-                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white leading-[1.1] tracking-tight">
+                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.1] tracking-tight">
                     The bridge between <span className="text-[#5D3FD3] bg-gradient-to-r from-[#5D3FD3] to-[#a286f3] bg-clip-text text-transparent">overlooked talent</span> and growing businesses
                   </h1>
                 </Reveal>
                 <Reveal delay={120}>
-                  <p className="text-base sm:text-[15px] text-slate-600 dark:text-slate-350 leading-relaxed max-w-2xl">
+                  <p className="text-base sm:text-[15px] text-slate-600 leading-relaxed max-w-2xl">
                     LaunchPath is not just a job board. It is a hiring infrastructure platform built to solve two massive market failures: helping South African graduates access meaningful work opportunities, and enabling SMEs to hire quality entry-level talent efficiently and affordably.
                   </p>
                 </Reveal>
               </div>
 
-              {/* Document Header Brief */}
-              {/* <Reveal delay={160}>
-                <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-wrap gap-x-6 gap-y-2 items-center text-[15px] text-slate-500 dark:text-slate-400">
-                  <div>
-                    <span className="font-bold block text-slate-700 dark:text-slate-300">CTO Overview</span>
-                    <span>For Evans Munatsa</span>
-                  </div>
-                  <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
-                  <div>
-                    <span className="font-bold block text-slate-700 dark:text-slate-300">Prepared By</span>
-                    <span>Yazid Bohardien</span>
-                  </div>
-                  <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
-                  <div>
-                    <span className="font-bold block text-[#5D3FD3] dark:text-violet-400">Core Mission</span>
-                    <span>Africa&apos;s leading early-career platform</span>
-                  </div>
-                </div>
-              </Reveal> */}
 
               {/* CTAs */}
               <Reveal delay={200}>
@@ -91,12 +72,6 @@ export default function Home() {
                   >
                     Access Gateways <ArrowRight className="w-4 h-4" />
                   </a>
-                  {/* <a
-                    href="#contact"
-                    className="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-900 dark:text-white py-3.5 px-7 rounded-2xl font-extrabold transition-all hover:scale-[1.02] text-sm flex items-center gap-2 cursor-pointer"
-                  >
-                    Request a Demo
-                  </a> */}
                 </div>
               </Reveal>
             </div>
@@ -132,10 +107,10 @@ export default function Home() {
         <div id="portal-gateways" className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full space-y-12 pb-24 border-t border-slate-150 dark:border-slate-850 pt-16">
           <Reveal>
             <div className="text-center max-w-3xl mx-auto space-y-4">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
                 Select Your LaunchPath Gateway
               </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl mx-auto">
+              <p className="text-sm text-slate-500 leading-relaxed max-w-xl mx-auto">
                 Ready to coordinate placement pipelines, perform readiness matches, or request pre-vetted candidates? Choose your portal to begin.
               </p>
             </div>
@@ -145,40 +120,40 @@ export default function Home() {
             
             {/* Gateway 1: Candidate Portal */}
             <Reveal delay={100}>
-              <div className="group h-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm hover:border-[#5D3FD3] dark:hover:border-[#5D3FD3]/80 transition-all duration-300 flex flex-col justify-between relative overflow-hidden hover:shadow-xl hover:shadow-[#5D3FD3]/5">
+              <div className="group h-full bg-white border-2 border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm hover:border-[#5D3FD3] dark:hover:border-[#5D3FD3]/80 transition-all duration-300 flex flex-col justify-between relative overflow-hidden hover:shadow-xl hover:shadow-[#5D3FD3]/5">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#5D3FD3]/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
                 
                 <div className="space-y-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-violet-100 dark:bg-violet-900/30 text-[#5D3FD3] dark:text-violet-300 rounded-2xl flex items-center justify-center font-bold text-lg border border-violet-200 dark:border-violet-800 shadow-inner">
+                    <div className="w-14 h-14 bg-violet-100 text-[#5D3FD3] rounded-2xl flex items-center justify-center font-bold text-lg border border-violet-200 dark:border-violet-800 shadow-inner">
                       <User className="w-7 h-7" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Talent Portal</h2>
-                      <p className="text-[15px] font-semibold text-slate-400 dark:text-slate-500">For Developers &amp; Job Seekers</p>
+                      <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Talent Portal</h2>
+                      <p className="text-[15px] font-semibold text-slate-400">For Developers &amp; Job Seekers</p>
                     </div>
                   </div>
 
-                  <p className="text-[15px] text-slate-600 dark:text-slate-350 leading-relaxed">
+                  <p className="text-[15px] text-slate-600 leading-relaxed">
                     Unlock dynamic role recommendations, perform real-time AI mock readiness simulators to build credentials, and coordinate placement pipelines in one screen.
                   </p>
 
                   <div className="space-y-3.5 pt-2">
                     <div className="flex items-start gap-3">
-                      <div className="mt-1 w-5 h-5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-[10px] font-extrabold">✓</div>
+                      <div className="mt-1 w-5 h-5 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-extrabold">✓</div>
                       <p className="text-[15px] font-medium text-slate-500 dark:text-slate-400 leading-tight">
                         <strong>AI Fit Scores:</strong> Matched job opportunities based on credentials.
                       </p>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="mt-1 w-5 h-5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-[10px] font-extrabold">✓</div>
+                      <div className="mt-1 w-5 h-5 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-extrabold">✓</div>
                       <p className="text-[15px] font-medium text-slate-500 dark:text-slate-400 leading-tight">
                         <strong>Interactive Sandbox:</strong> Test and verify readiness via timed interviews.
                       </p>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="mt-1 w-5 h-5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-[10px] font-extrabold">✓</div>
-                      <p className="text-[15px] font-medium text-slate-500 dark:text-slate-400 leading-tight">
+                      <div className="mt-1 w-5 h-5 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-[10px] font-extrabold">✓</div>
+                      <p className="text-[15px] font-medium text-slate-500 leading-tight">
                         <strong>In-App Mailbox:</strong> Real-time alerts, applications statuses, &amp; logs.
                       </p>
                     </div>
@@ -194,7 +169,7 @@ export default function Home() {
                   </Link>
                   <div className="text-center">
                     <span className="text-[15px] text-slate-400">Already registered? </span>
-                    <Link href="/login" className="text-[15px] font-bold text-[#5D3FD3] dark:text-violet-400 hover:underline">
+                    <Link href="/login" className="text-[15px] font-bold text-[#5D3FD3] hover:underline">
                       Access Account
                     </Link>
                   </div>
@@ -247,7 +222,7 @@ export default function Home() {
                 <div className="mt-10 space-y-3">
                   <Link
                     href="/register?type=client"
-                    className="w-full bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-950 py-3.5 px-6 rounded-full font-mono font-bold transition-all flex items-center justify-center gap-2 text-sm shadow-md cursor-pointer"
+                    className="w-full bg-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-950 py-3.5 px-6 rounded-full font-mono font-bold transition-all flex items-center justify-center gap-2 text-sm shadow-md cursor-pointer"
                   >
                     Enter Employer Portal <ArrowRight className="w-4 h-4" />
                   </Link>
