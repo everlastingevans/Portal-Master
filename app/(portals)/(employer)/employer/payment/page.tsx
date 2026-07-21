@@ -205,7 +205,7 @@ function EmployerPaymentInner() {
 
                   <h3 className="text-lg font-black text-white">Your role is ready for matching</h3>
                   <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-                    Pay R1,499 to activate the role and receive a curated shortlist of vetted candidates matched to your requirements.
+                    Pay R1,999 to activate the role and receive a curated shortlist of vetted candidates matched to your requirements.
                   </p>
 
                   <div className="h-px bg-slate-800 my-4" />
@@ -213,7 +213,7 @@ function EmployerPaymentInner() {
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono block">Billing Amount</span>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-black text-[#bdf500]">R1,499</span>
+                      <span className="text-3xl font-black text-[#bdf500]">R1,999</span>
                       <span className="text-xs text-slate-300 font-semibold">once-off per role</span>
                     </div>
                   </div>
@@ -251,7 +251,7 @@ function EmployerPaymentInner() {
                     </Link>
 
                     {/* Payfast Sandbox WAF Warning */}
-                    <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl space-y-1.5 text-left">
+                    {/* <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl space-y-1.5 text-left">
                       <div className="flex items-center gap-1.5 text-amber-500 font-bold text-xs">
                         <AlertCircle className="w-4 h-4 shrink-0" />
                         <span>Facing a 403 CloudFront Block?</span>
@@ -262,12 +262,12 @@ function EmployerPaymentInner() {
                       <p className="text-[10px] text-slate-400 leading-relaxed font-semibold">
                         To easily bypass this external firewall limit, use the <span className="text-purple-400">Simulate Successful Payment</span> tool below.
                       </p>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
 
                 {/* Developer / AI Studio sandbox helper */}
-                <div className="bg-slate-900/60 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4">
+                {/* <div className="bg-slate-900/60 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />
                     <h4 className="text-xs font-black uppercase tracking-wider font-mono text-slate-800 dark:text-slate-200">
@@ -290,7 +290,7 @@ function EmployerPaymentInner() {
                     )}
                     <span>Simulate Successful Payment</span>
                   </button>
-                </div>
+                </div> */}
               </div>
 
             </div>
