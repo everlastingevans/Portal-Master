@@ -17,7 +17,7 @@ import Link from "next/link";
 const plans = [
   {
     name: "Starter",
-    price: "R1,999",
+    price: "R20",
     period: "per month",
     description: "Ideal for early-stage startups and small businesses making their first key graduate hires.",
     features: [

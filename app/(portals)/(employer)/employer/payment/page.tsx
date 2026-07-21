@@ -192,7 +192,7 @@ function EmployerPaymentInner() {
                   <div>
                     <h5 className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider font-mono">Flat Sourcing Rate</h5>
                     <p className="text-xs text-amber-700/90 dark:text-amber-500/90 leading-relaxed mt-1">
-                      LaunchPath charges a simple, flat-rate of R1,999 once-off per role posted. We do not charge success/placement commissions, nor subscription commitments.
+                      LaunchPath charges a simple, flat-rate of R20 once-off per role posted. We do not charge success/placement commissions, nor subscription commitments.
                     </p>
                   </div>
                 </div>
@@ -205,7 +205,7 @@ function EmployerPaymentInner() {
 
                   <h3 className="text-lg font-black text-white">Your role is ready for matching</h3>
                   <p className="text-xs text-slate-300 mt-2 leading-relaxed">
-                    Pay R1,999 to activate the role and receive a curated shortlist of vetted candidates matched to your requirements.
+                    Pay R20 to activate the role and receive a curated shortlist of vetted candidates matched to your requirements.
                   </p>
 
                   <div className="h-px bg-slate-800 my-4" />
@@ -213,7 +213,7 @@ function EmployerPaymentInner() {
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono block">Billing Amount</span>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-black text-[#bdf500]">R1,999</span>
+                      <span className="text-3xl font-black text-[#bdf500]">R20</span>
                       <span className="text-xs text-slate-300 font-semibold">once-off per role</span>
                     </div>
                   </div>
