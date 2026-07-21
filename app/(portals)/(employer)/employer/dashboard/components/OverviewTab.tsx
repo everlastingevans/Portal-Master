@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Clock, Search, PlusCircle, Briefcase, Users } from 'lucide-react';
+import { Clock, Search, PlusCircle, Briefcase, Users, Lock } from 'lucide-react';
 
 interface OverviewTabProps {
   jobs: any[];
@@ -177,10 +177,12 @@ export default function OverviewTab({
                       className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                         job.status === 'ACTIVE'
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/30'
+                          : job.status === 'PENDING'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800/30 font-extrabold'
                           : 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950/20 dark:text-yellow-400 dark:border-yellow-800/30'
                       }`}
                     >
-                      {job.status || 'ACTIVE'}
+                      {job.status === 'PENDING' ? 'PENDING PAYMENT' : (job.status || 'ACTIVE')}
                     </span>
                   </div>
 
@@ -274,6 +276,14 @@ export default function OverviewTab({
 
                   {/* Action buttons */}
                   <div className="flex flex-wrap gap-2 justify-end">
+                    {job.status === 'PENDING' && (
+                      <Link
+                        href={`/employer/payment?jobId=${job.id}`}
+                        className="bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg transition cursor-pointer border-none flex items-center justify-center gap-1 shadow-sm"
+                      >
+                        Resume Payment
+                      </Link>
+                    )}
                     <button
                       onClick={() => handleStartEdit(job)}
                       className="bg-[#5D3FD3]/10 hover:bg-[#5D3FD3]/20 text-[#5D3FD3] dark:text-[#a385ff] dark:bg-[#5D3FD3]/20 dark:hover:bg-[#5D3FD3]/30 font-bold text-xs px-3.5 py-1.5 rounded-lg transition cursor-pointer border-none"
@@ -285,9 +295,16 @@ export default function OverviewTab({
                         setSelectedJobFilter(job.id);
                         setActiveTab('Applicants');
                       }}
-                      className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 font-bold text-xs text-slate-700 dark:text-slate-300 px-3.5 py-1.5 rounded-lg transition cursor-pointer border-none"
+                      className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 font-bold text-xs text-slate-700 dark:text-slate-300 px-3.5 py-1.5 rounded-lg transition cursor-pointer border-none flex items-center justify-center gap-1 shadow-sm"
                     >
-                      View Applicants
+                      {job.status === 'PENDING' ? (
+                        <>
+                          <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                          <span>View Applicants (Locked)</span>
+                        </>
+                      ) : (
+                        <span>View Applicants</span>
+                      )}
                     </button>
                   </div>
                 </div>

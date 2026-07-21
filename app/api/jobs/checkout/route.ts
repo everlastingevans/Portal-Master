@@ -4,6 +4,50 @@ import { NextResponse } from 'next/server';
 import sanitizeHtml from 'sanitize-html';
 import { PayfastService } from '@/services/integrations/payfast.service';
 
+export async function GET(req: Request) {
+  try {
+    const session = await getSession();
+    if (!session || (session.role !== 'CLIENT' && session.role !== 'EMPLOYER')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const jobId = searchParams.get('jobId');
+
+    if (!jobId) {
+      return NextResponse.json({ error: 'Job ID is required' }, { status: 400 });
+    }
+
+    const job = await db.job.findUnique({
+      where: { id: Number(jobId) }
+    });
+
+    if (!job) {
+      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    }
+
+    if (job.employer_id !== session.userId) {
+      return NextResponse.json({ error: 'Forbidden. You do not own this job post.' }, { status: 403 });
+    }
+
+    const origin = new URL(req.url).origin;
+
+    const payfastData = PayfastService.generatePaymentData(
+      `JOB_${job.id}`,
+      1499,
+      `LaunchPath Job Posting: ${job.title}`,
+      `${origin}/employer/payment/success?jobId=${job.id}`,
+      `${origin}/employer/payment?jobId=${job.id}`,
+      `${origin}/api/webhooks/payfast`
+    );
+
+    return NextResponse.json({ success: true, job, payfast: payfastData });
+  } catch (error) {
+    console.error('Error fetching checkout data:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const session = await getSession();
@@ -51,7 +95,7 @@ export async function POST(req: Request) {
     const salaryMinVal = salary_min && !isNaN(parseInt(String(salary_min), 10)) ? parseInt(String(salary_min), 10) : null;
     const salaryMaxVal = salary_max && !isNaN(parseInt(String(salary_max), 10)) ? parseInt(String(salary_max), 10) : null;
 
-    // Create the job directly as ACTIVE instead of PENDING_PAYMENT to bypass payment
+    // Create the job with status PENDING so it requires payment activation
     const job = await db.job.create({
       data: {
         title,
@@ -59,7 +103,7 @@ export async function POST(req: Request) {
         location: location || 'Remote',
         description: sanitizedDescription,
         employer_id: session.userId,
-        status: 'ACTIVE',
+        status: 'PENDING',
         years_experience: yearsExp,
         mandatory_skills: mandatorySkillsArr,
         tech_stack: techStackArr,
@@ -68,7 +112,7 @@ export async function POST(req: Request) {
       }
     });
 
-    return NextResponse.json({ success: true, bypassed: true, payfast: null });
+    return NextResponse.json({ success: true, bypassed: false, jobId: job.id });
   } catch (error) {
     console.error('Checkout error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

@@ -131,9 +131,7 @@ export default function ApplicantsTab({
             })}
           </div>
         </div>
-      ) : selectedJobFilter &&
-        !isJobUnlocked(selectedJobFilter) &&
-        (applications || []).filter((a: any) => a.job_id === selectedJobFilter).length > 0 ? (
+      ) : selectedJobFilter && !isJobUnlocked(selectedJobFilter) ? (
         <div className="max-w-3xl mx-auto py-8">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden p-8 md:p-12 text-center space-y-6 transition-all">
             <div className="mx-auto w-20 h-20 bg-[#5D3FD3]/10 dark:bg-[#5D3FD3]/20 rounded-full flex items-center justify-center animate-pulse">
@@ -217,18 +215,18 @@ export default function ApplicantsTab({
                   disabled={unlocking}
                   className="w-full sm:w-auto bg-[#5D3FD3] hover:bg-[#5b32e6] text-white font-extrabold px-8 py-3 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  {unlocking ? 'Connecting...' : 'Unlock Candidate Pipeline (R499.00 once-off)'}
+                  {unlocking ? 'Connecting...' : 'Activate Role & Sourcing matches (R1,499 once-off)'}
                 </button>
                 <button
                   onClick={() => handleUnlock('bypass', selectedJobFilter)}
                   disabled={unlocking}
                   className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold px-6 py-3 rounded-xl text-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  Bypass & Unlock (Demo)
+                  Simulate Payment & Activate (Demo)
                 </button>
               </div>
               <p className="text-[11px] text-slate-400 mt-3">
-                Unlock allows lifetime views of applicants matching this specific job vacancy. Secured by Payfast.
+                Payment activates your job vacancy for matching and lifetime views of matched applicants. Secured by Payfast.
               </p>
 
               {(jobs || []).length > 1 && (
