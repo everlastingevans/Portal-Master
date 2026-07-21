@@ -34,7 +34,7 @@ export async function GET(req: Request) {
 
     const payfastData = PayfastService.generatePaymentData(
       `JOB_${job.id}`,
-      1999,
+      19,
       `LaunchPath Job Posting: ${job.title}`,
       `${origin}/employer/payment/success?jobId=${job.id}`,
       `${origin}/employer/payment?jobId=${job.id}`,
