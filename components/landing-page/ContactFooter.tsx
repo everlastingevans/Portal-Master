@@ -36,7 +36,7 @@ export const ContactFooter = () => {
 
   return (
     <section id="contact" className="bg-page px-4 py-10 md:px-8 md:py-16">
-      <div className="mx-auto max-w-[1400px] overflow-hidden rounded-[28px] bg-[#5D3FD3] text-dark-foreground">
+      <div className="mx-auto max-w-[1400px] overflow-hidden rounded-[28px] bg-[#0A1B3D] text-dark-foreground">
         <div className="grid gap-10 p-6 md:grid-cols-2 md:gap-12 md:p-10">
           <div className="relative overflow-hidden rounded-2xl">
             {/* Optimized Next.js Image Replacement */}
