@@ -19,10 +19,10 @@ export const OfferSection = () => {
     <section id="features" className="bg-page px-6 pb-24 md:pb-32">
       <div className="mx-auto max-w-[1400px]">
         <Reveal>
-          <div className="flex flex-col items-start justify-between gap-6 pb-10 md:flex-row md:items-end">
-            <div className="max-w-[640px]">
-              <h2 className="text-[40px] font-bold leading-[1.1] text-foreground md:text-[52px]">A simpler way to hire junior talent.</h2>
-              <p className="mt-5 text-[16px] leading-relaxed text-foreground/70">
+          <div className="flex flex-col items-start justify-between gap-6 pt-20 pb-10 md:flex-row md:items-end">
+            <div className="max-w-4xl">
+              <h2 className="text-[40px] font-bold leading-[1.1] text-[#0A1B3D] md:text-[52px]">A simpler way to hire junior talent.</h2>
+              <p className="mt-5 text-[16px] font-mono leading-relaxed text-[#0A1B3D]">
                 LaunchPath is a recruitment platform built for South African employers who need to hire well without burning weeks doing it. We do three things, and we do them properly:
               </p>
             </div>
@@ -30,7 +30,7 @@ export const OfferSection = () => {
             {/* Fixed: Swapped 'to="/contact"' with 'href="/contact"' */}
             <Link
               href="/contact"
-              className="shine group rounded-full bg-[#5D3FD3] px-7 py-3.5 text-[15px] font-semibold text-white transition-all duration-300 hover:scale-[1.04] hover:shadow-lg"
+              className="shine group rounded-full bg-[#A6F23C] px-7 py-3.5 text-[16px] font-semibold text-[#0A1B3D] transition-all duration-300 hover:scale-[1.04] hover:shadow-lg"
             >
               <span className="relative z-10 inline-flex items-center gap-2">
                 Request Candidates
