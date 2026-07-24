@@ -192,7 +192,7 @@ function EmployerPaymentInner() {
                   <div>
                     <h5 className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider font-mono">Flat Sourcing Rate</h5>
                     <p className="text-xs text-amber-700/90 dark:text-amber-500/90 leading-relaxed mt-1">
-                      LaunchPath charges a simple, flat-rate of R1,499 once-off per role posted. We do not charge success/placement commissions, nor subscription commitments.
+                      LaunchPath charges a simple, flat-rate of R1,999 once-off per role posted. We do not charge success/placement commissions, nor subscription commitments.
                     </p>
                   </div>
                 </div>

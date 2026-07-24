@@ -29,7 +29,7 @@ export const metadata = {
   title: "LaunchPath Recruitment",
   description: "AI-Powered Recruitment and Job Readiness Platform",
   icons: {
-    icon: "/icon.svg",
+    icon: "/icon.png",
   },
   verification: {
     google: "iRvE4kw0JqCBgqSbF94O2MnA3AEvflXSUDvdYVCx9YM",

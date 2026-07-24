@@ -215,7 +215,7 @@ export default function ApplicantsTab({
                   disabled={unlocking}
                   className="w-full sm:w-auto bg-[#5D3FD3] hover:bg-[#5b32e6] text-white font-extrabold px-8 py-3 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  {unlocking ? 'Connecting...' : 'Activate Role & Sourcing matches (R1,499 once-off)'}
+                  {unlocking ? 'Connecting...' : 'Activate Role & Sourcing matches (R1,999 once-off)'}
                 </button>
                 <button
                   onClick={() => handleUnlock('bypass', selectedJobFilter)}

@@ -36,7 +36,7 @@ export const ContactFooter = () => {
 
   return (
     <section id="contact" className="bg-page px-4 py-10 md:px-8 md:py-16">
-      <div className="mx-auto max-w-[1400px] overflow-hidden rounded-[28px] bg-[#5D3FD3] text-dark-foreground">
+      <div className="mx-auto max-w-[1400px] overflow-hidden rounded-[28px] bg-[#0A1B3D] text-dark-foreground">
         <div className="grid gap-10 p-6 md:grid-cols-2 md:gap-12 md:p-10">
           <div className="relative overflow-hidden rounded-2xl">
             {/* Optimized Next.js Image Replacement */}
@@ -57,7 +57,7 @@ export const ContactFooter = () => {
                 <p className="text-[15px] font-medium text-white">Or reach us directly:</p>
                 <a href="tel:+27115550199" className="flex items-center gap-3 text-[20px] font-medium text-white transition-transform duration-300 hover:translate-x-1 md:text-[22px]">
                   <Phone className="h-5 w-5" />
-                  +27 11 555 0199
+                  +27 83 433 9350
                 </a>
                 <a href="mailto:hello@launchpath.co.za" className="flex items-center gap-3 text-[20px] font-medium text-white transition-transform duration-300 hover:translate-x-1 md:text-[22px]">
                   <Mail className="h-5 w-5" />
@@ -114,9 +114,9 @@ export const ContactFooter = () => {
         {/* Updated all footer redirect arrays to native Next.js Link parameters */}
         <div className="flex flex-col gap-4 border-t border-white/20 px-6 py-6 md:flex-row md:items-center md:justify-between md:px-10">
           <ul className="flex flex-wrap gap-x-8 gap-y-2 text-[15px] text-white">
-            <li><Link href="/#top" className="hover:text-white/70">Homepage</Link></li>
-            <li><Link href="/#what-we-do" className="hover:text-white/70">Services</Link></li>
+            <li><Link href="/#top" className="hover:text-white/70">Home</Link></li>
             <li><Link href="/#about-us" className="hover:text-white/70">About us</Link></li>
+            <li><Link href="/#what-we-do" className="hover:text-white/70">What We Do</Link></li>
             <li><Link href="/#contact" className="hover:text-white/70">Contact</Link></li>
           </ul>
           <ul className="flex gap-8 text-[15px] text-white">
