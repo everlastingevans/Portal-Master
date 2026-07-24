@@ -1,8 +1,25 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Briefcase, Users, GraduationCap, Rocket, Heart, Brain, Sparkles, Target, Eye, Compass, Shield, TrendingUp } from "lucide-react";
+import Image from "next/image"; // Added for rendering partner logos cleanly
+import { Briefcase, Users, GraduationCap, Rocket, Heart, Brain, Sparkles, Target, Eye, Compass, Shield, TrendingUp, ArrowRight } from "lucide-react";
 import { Reveal } from "./Reveal";
+
+// Placeholder imports for logos matching the image. Replace these string paths with your real image imports if needed.
+const UNIVERSITY_PARTNERS = [
+  { name: "Regent Business School", src: "/logos/regent.png" },
+  { name: "Richfield", src: "/logos/richfield.png" },
+  { name: "Melsoft Academy", src: "/logos/melsoft.png" },
+  { name: "Umuzi", src: "/logos/umuzi.png" },
+  { name: "Code Girls Academy", src: "/logos/codegirls.png" },
+  { name: "Capacitia", src: "/logos/capacita.png" },
+];
+
+const HIRING_PARTNERS = [
+  { name: "Trenchless Technologies", src: "/trenchless.png" },
+  { name: "Checkers", src: "/checkers.jpg" },
+  { name: "Idilli", src: "/idili.avif" },
+];
 
 const tags = [
   { label: "Graduate-first", icon: GraduationCap },
@@ -54,29 +71,10 @@ export const TeamSection = () => {
   }, []);
 
   return (
-    <section id="about-us" ref={sectionRef} className="bg-page px-6 py-24 md:py-32">
+    
+     <section id="about-us" ref={sectionRef} className="bg-page px-6 py-24 md:py-32">
       <div className="mx-auto max-w-[1100px]">
-        
-        {/* Reactivated Marquee with smooth load-in fade */}
-        {/* <div 
-          className={`mb-20 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] transition-all duration-1000 transform ${
-            isLoaded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
-          }`}
-        >
-          <div className="flex w-max animate-marquee whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.2em] text-foreground/70">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="flex shrink-0 items-center">
-                {Array.from({ length: 8 }).map((__, j) => (
-                  <span key={j} className="flex items-center">
-                    <span className="mx-8">Bold minds launch</span>
-                    <span aria-hidden className="text-emerald-600">★</span>
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div> */}
-
+       
         <Reveal>
           <h2 className="text-center text-[40px] font-bold leading-[1.1] text-[#0A1B3D] md:text-[56px]">
            The hiring problem <span className="text-[#A6F23C]"> nobody </span>is solving properly.
@@ -97,7 +95,7 @@ export const TeamSection = () => {
         </Reveal>
 
         {/* Staggered Scroll-Triggered Tag Grid Container */}
-        <div className="mx-auto mt-12 flex max-w-[900px] flex-wrap justify-center gap-3">
+        <div className="mx-auto mt-2 flex max-w-[900px] flex-wrap justify-center gap-3">
           {tags.map((t, i) => {
             const Icon = t.icon;
             return (
@@ -105,11 +103,11 @@ export const TeamSection = () => {
                 key={`${t.label}-${i}`}
                 className={`inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[14px] font-medium text-foreground ring-1 ring-[#A6F23C] cursor-default
                   transition-all duration-300 ease-out transform-gpu
-                  hover:-translate-y-1.5 hover:scale-105 hover:shadow-md hover:shadow-[#A6F23C]/20`}
+                  hover:-translate-y-1.5 hover:scale-105`}
                 style={{
                   opacity: isSectionVisible ? 1 : 0,
                   transform: isSectionVisible ? "translateY(0) scale(1)" : "translateY(24px) scale(0.95)",
-                  transitionProperty: "opacity, transform, background-color, box-shadow",
+                  transitionProperty: "opacity, transform, background-color",
                   transitionDuration: "500ms",
                   transitionDelay: `${i * 40}ms`, // Staggers element reveals sequentially based on scroll trigger
                 }}
@@ -120,7 +118,78 @@ export const TeamSection = () => {
             );
           })}
         </div>
+
+        {/* Integrated Partner Logos Layout Section from Image */}
+        <Reveal delay={240}>
+          <div className="mt-20 border border-slate-100 bg-white rounded-3xl p-2 md:p-2 text-center">
+            
+            <span className="text-xs font-bold tracking-widest text-emerald-600 uppercase font-mono">
+              Our Partners
+            </span>
+            
+            <h3 className="mt-3 text-2xl md:text-3xl font-bold text-[#0A1B3D] tracking-tight">
+              Working together to move talent into work
+            </h3>
+            
+            <p className="mx-auto mt-3 max-w-2xl text-[15px] leading-relaxed text-slate-500">
+              LaunchPath works with universities, training providers and hiring partners to help young South Africans move from learning into meaningful employment.
+            </p>
+
+            {/* Split layout grid: University vs Hiring Partners */}
+            <div className="mt-12 grid md:grid-cols-2 gap-12 text-left relative">
+              {/* Optional divider line matching the UI layout image */}
+              <div className="hidden md:block absolute top-0 bottom-0 left-1/2 w-px bg-slate-100" />
+
+              {/* Left Column: Universities */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-50">
+                  <GraduationCap className="h-5 w-5 text-[#0A1B3D]" />
+                  <h4 className="font-bold text-[#0A1B3D] text-[15px]">University & Training Partners</h4>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {UNIVERSITY_PARTNERS.map((logo, i) => (
+                    <div key={i} className="flex items-center justify-center h-16 px-4 transition-all">
+                      <div className="relative w-40 h-20 opacity-80 hover:opacity-100 transition-opacity">
+                        <Image src={logo.src} alt={logo.name} fill className="object-contain" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Column: Hiring Corporates */}
+              <div className="space-y-6 md:pl-6">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-50">
+                  <Briefcase className="h-5 w-5 text-blue-600" />
+                  <h4 className="font-bold text-[#0A1B3D] text-[15px]">Hiring Partners</h4>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {HIRING_PARTNERS.map((logo, i) => (
+                    <div key={i} className="flex items-center justify-center h-16 px-4 bg-white border border-slate-100 rounded-xl transition-all">
+                      <div className="relative w-full h-8 opacity-80 hover:opacity-100 transition-opacity">
+                        <Image src={logo.src} alt={logo.name} fill className="object-contain" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Call to Action Button Layout */}
+            <div className="mt-12 flex justify-center">
+              <a
+                href="#partner"
+                className="inline-flex items-center gap-2 bg-[#A6F23C] hover:bg-[#024d64] text-[#0A1B3D] py-3 px-6 text-sm font-semibold rounded-full transition-colors cursor-pointer"
+              >
+                Partner with LaunchPath <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
+
+          </div>
+        </Reveal>
+
       </div>
-    </section>
+      </section>
+    
   );
 };

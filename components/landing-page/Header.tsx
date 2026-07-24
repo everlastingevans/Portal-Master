@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import LaunchPathLogo from "@/assets/logo/launch.png";
+import LaunchPathLogo from "@/assets/logo/launchpath-main.png";
 import { useState, useEffect } from "react";
 
 export const Logo = () => {
@@ -12,9 +12,9 @@ export const Logo = () => {
         <Image 
           src={LaunchPathLogo} 
           alt="LaunchPath Logo" 
-          height={64} 
+          height={40} 
           priority 
-          className="h-full w-auto object-contain"
+          className="h-[50px] w-[150px] object-contain"
         />
       </div>
     </Link>
@@ -23,8 +23,8 @@ export const Logo = () => {
 
 const navItems = [
   { label: "Home", id: "top", href: "/#top" },
+  { label: "About Us", id: "about-us", href: "/#about-us" },
   { label: "What We Do", id: "what-we-do", href: "/#what-we-do" },
-  { label: "About us", id: "about-us", href: "/#about-us" },
   { label: "Contact", id: "contact", href: "/#contact" },
 ];
 
