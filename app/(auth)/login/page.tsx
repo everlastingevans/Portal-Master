@@ -4,7 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
-import LaunchPathLogo from '@/components/LaunchPathLogo';
+// import LaunchPathLogo from '@/components/LaunchPathLogo';
+import Image from "next/image";
+// import LaunchPathLogo from "../../assets/logo/launchpath-main.png"; 
+import LaunchpathLogo from "../../../assets/logo/launchpath-main.png";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -110,14 +113,24 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      <header className="bg-white border-b border-slate-205">
+      <header className="bg-[#0A1B3D] border-b border-slate-205">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <LaunchPathLogo variant="full" />
-          </Link>
-          <div className="text-sm font-medium text-slate-650">
+          <div className="relative z-50 flex items-center">
+            <Link href="/" className="group flex items-center" aria-label="LaunchPath home">
+              <div className="relative h-[45px] sm:h-[50px] w-auto transition-all duration-300 group-hover:scale-[1.02]">
+                <Image 
+                  src={LaunchpathLogo} 
+                  alt="LaunchPath Logo" 
+                  height={44} 
+                  priority 
+                  className="h-full w-auto object-contain transition-all duration-300 dark:brightness-110 dark:contrast-110" 
+                />
+              </div>
+            </Link>
+          </div>
+          <div className="text-sm font-medium text-white">
             Don&apos;t have an account?{' '}
-            <Link href="/register" className="text-[#7145FF] hover:text-[#5b32e6] transition-colors">
+            <Link href="/register" className="text-[#A6F23C] hover:text-[#5b32e6] transition-colors">
               Sign up
             </Link>
           </div>
@@ -211,7 +224,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-[#7145FF] text-white py-3 px-4 rounded-xl font-semibold hover:bg-[#5b32e6] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7145FF] disabled:opacity-70"
+                className="w-full flex items-center justify-center gap-2 bg-[#0A1B3D] text-white py-3 px-4 rounded-full font-semibold hover:bg-[#A6F23C] hover:text-[#0A1B3D] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7145FF] disabled:opacity-70"
               >
                 {loading ? (
                   <>

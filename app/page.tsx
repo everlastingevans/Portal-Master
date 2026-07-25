@@ -7,6 +7,7 @@ import { PeopleSection } from "@/components/landing-page/PeopleSection";
 import { TestimonialSection } from "@/components/landing-page/TestimonialSection";
 import { ContactFooter } from "@/components/landing-page/ContactFooter";
 import { PlatformVision } from "@/components/landing-page/PlatformVision";
+import { EmployerPricingSection } from "@/components/landing-page/EmployerPricingSection";
 
 export default function Home() {
   return (
@@ -31,6 +32,7 @@ export default function Home() {
 
       {/* Interactive Comparison Section */}
       {/* <PeopleSection /> */}
+      <EmployerPricingSection/>
 
       {/* Elegant Testimonial Showcase */}
       <TestimonialSection />

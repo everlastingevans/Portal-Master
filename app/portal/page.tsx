@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Sparkles, User, Building2, } from "lucide-react";
-import LaunchPathLogo from "../../assets/logo/launchpath2.png"; 
+import LaunchPathLogo from "../../assets/logo/launchpath-main.png"; 
 
 
 
@@ -29,15 +29,15 @@ export default function Portal() {
     return () => { document.body.style.overflow = "unset"; };
   }, [isOpen]);
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-sans transition-colors duration-300">
+    <div className="min-h-screen flex flex-col font-sans transition-colors duration-300">
       {/* Top Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b border-slate-200/60 bg-white/80 backdrop-blur-md transition-all duration-300 dark:border-slate-800/60 dark:bg-slate-950/80">
+      <header className="sticky top-0 z-50 w-full bg-[#0A1B3D]  transition-all duration-300">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           
           {/* LOGO: Standardized with Next.js Image optimization and locked to z-50 */}
         <div className="relative z-50 flex items-center">
           <Link href="/" className="group flex items-center" aria-label="LaunchPath home">
-            <div className="relative h-[38px] sm:h-[44px] w-auto transition-all duration-300 group-hover:scale-[1.02]">
+            <div className="relative h-[45px] sm:h-[50px] w-auto transition-all duration-300 group-hover:scale-[1.02]">
               <Image 
                 src={LaunchPathLogo} 
                 alt="LaunchPath Logo" 
@@ -53,13 +53,13 @@ export default function Portal() {
           <nav className="hidden sm:flex items-center gap-6">
             <Link
               href="/login"
-              className="text-sm font-semibold text-slate-600 transition-colors duration-200 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50"
+              className="text-sm font-semibold text-[#A6F23C] transition-colors duration-200"
             >
               Portal Log In
             </Link>
             <Link
               href="/register"
-              className="relative overflow-hidden rounded-xl bg-[#7145FF] px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-purple-500/10 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#5b32e6] hover:shadow-lg hover:shadow-purple-500/20 active:translate-y-0"
+              className="relative overflow-hidden rounded-full bg-[#A6F23C] px-5 py-2.5 text-sm font-bold text-[#0A1B3D] active:translate-y-0"
             >
               Create Account
             </Link>
@@ -130,14 +130,8 @@ export default function Portal() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-12">
           
           <div className="text-center max-w-3xl mx-auto space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-violet-50 dark:bg-violet-950/40 rounded-full border border-violet-100 dark:border-violet-900/60 mb-2">
-              <Sparkles className="w-4 h-4 text-[#7145FF]" />
-              <span className="text-xs font-bold text-[#7145FF] dark:text-violet-300">
-                LaunchPath Placement Ecosystem
-              </span>
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white leading-[1.15] tracking-tight">
-              Access Your <span className="text-[#7145FF] bg-gradient-to-r from-[#7145FF] to-[#b395ff] bg-clip-text text-transparent">LaunchPath Portal</span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-mono text-slate-900 dark:text-white leading-[1.15] tracking-tight">
+              Access Your <span className="text-[#A6F23C]">LaunchPath Portal</span>
             </h1>
             <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
               Verify credentials, track opportunities, and automate high-velocity placements. Select your portal gateway below to sign in or register.
@@ -157,31 +151,31 @@ export default function Portal() {
                     <User className="w-7 h-7" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Talent Portal</h2>
-                    <p className="text-xs font-semibold text-slate-400 dark:text-slate-500">For Developers & Job Seekers</p>
+                    <h2 className="text-[28px] font-extrabold font-mono text-[#0A1B3D] e tracking-tight">Talent Portal</h2>
+                    <p className="text-xs font-semibold text-[#0A1B3D]">For Developers & Job Seekers</p>
                   </div>
                 </div>
 
-                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p className="text-[16px] text-[#0A1B3D] leading-relaxed">
                   Unlock dynamic role recommendations, perform real-time AI mock readiness simulators to build credentials, and coordinate placement pipelines in one screen.
                 </p>
 
                 <div className="space-y-3.5 pt-2">
                   <div className="flex items-start gap-3">
                     <div className="mt-1 w-5 h-5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-[10px] font-extrabold">✓</div>
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 leading-tight">
+                    <p className="text-[16px] font-medium text-[#0A1B3D] leading-tight">
                       <strong>AI Fit Scores:</strong> Matched job opportunities based on credentials.
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="mt-1 w-5 h-5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-[10px] font-extrabold">✓</div>
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 leading-tight">
+                    <p className="text-[16px] font-medium text-[#0A1B3D] leading-tight">
                       <strong>Interactive Sandbox:</strong> Test and verify readiness via timed interviews.
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="mt-1 w-5 h-5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-[10px] font-extrabold">✓</div>
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 leading-tight">
+                    <p className="text-[16px] font-medium text-[#0A1B3D] leading-tight">
                       <strong>In-App Mailbox:</strong> Real-time alerts, applications statuses, & logs.
                     </p>
                   </div>
@@ -191,7 +185,7 @@ export default function Portal() {
               <div className="mt-10 space-y-3">
                 <Link
                   href="/register?type=talent"
-                  className="w-full bg-[#7145FF] text-white py-3.5 px-6 rounded-2xl font-extrabold hover:bg-[#5b32e6] transition-all flex items-center justify-center gap-2 text-sm shadow-md shadow-violet-500/10 cursor-pointer"
+                  className="w-full bg-[#0A1B3D] text-white py-3.5 px-6 rounded-full font-extrabold hover:bg-[#5b32e6] transition-all flex items-center justify-center gap-2 text-sm shadow-md shadow-violet-500/10 cursor-pointer"
                 >
                   Enter Talent Portal <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -214,31 +208,31 @@ export default function Portal() {
                     <Building2 className="w-7 h-7" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Employer Portal</h2>
+                    <h2 className="text-[28px] font-extrabold text-[#0A1B3D] tracking-tight">Employer Portal</h2>
                     <p className="text-xs font-semibold text-slate-400 dark:text-slate-500">For Hiring Managers & Businesses</p>
                   </div>
                 </div>
 
-                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p className="text-[16px] text-[#0A1B3D] leading-relaxed">
                   Publish open vacancies, review pre-vetted interactive candidate scorecards, and propose automated interview slots with instant multi-channel dispatch.
                 </p>
 
                 <div className="space-y-3.5 pt-2">
                   <div className="flex items-start gap-3">
                     <div className="mt-1 w-5 h-5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-[10px] font-extrabold">✓</div>
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 leading-tight">
+                    <p className="text-[16px] font-medium text-[#0A1B3D] leading-tight">
                       <strong>Automated Dispatch:</strong> Multi-channel alerts sent via Email, SMS & WhatsApp.
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="mt-1 w-5 h-5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-[10px] font-extrabold">✓</div>
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 leading-tight">
+                    <p className="text-[16px] font-medium text-[#0A1B3D] leading-tight">
                       <strong>High-Fidelity Screening:</strong> Listen to real video answers & view code reports.
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="mt-1 w-5 h-5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-[10px] font-extrabold">✓</div>
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 leading-tight">
+                    <p className="text-[16px] font-medium text-[#0A1B3D] leading-tight">
                       <strong>Pipeline Trackers:</strong> Fast, robust interface to manage talent matches.
                     </p>
                   </div>
@@ -248,7 +242,7 @@ export default function Portal() {
               <div className="mt-10 space-y-3">
                 <Link
                   href="/register?type=client"
-                  className="w-full bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-950 py-3.5 px-6 rounded-2xl font-extrabold transition-all flex items-center justify-center gap-2 text-sm shadow-md cursor-pointer"
+                  className="w-full bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 text-white  py-3.5 px-6 rounded-full font-extrabold transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
                 >
                   Enter Employer Portal <ArrowRight className="w-4 h-4" />
                 </Link>
