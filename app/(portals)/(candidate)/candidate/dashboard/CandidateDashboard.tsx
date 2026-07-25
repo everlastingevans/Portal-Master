@@ -458,7 +458,10 @@ export default function CandidateDashboard({
   };
 
   return (
-    <div className="w-full h-screen bg-slate-50 dark:bg-slate-950 flex flex-col overflow-hidden text-slate-900 dark:text-slate-100 transition-colors">
+    // Brand shell: navy header (via CandidateNavbar) sits on a light neutral canvas
+    // so lime (#A6F23C) accents inside the tab content still pop. No dark-mode split —
+    // matches the single fixed navy/lime theme used on the landing page and navbar.
+    <div className="w-full h-screen bg-[#F5F6F8] flex flex-col overflow-hidden text-[#0A1B3D]">
       {/* Top Navbar */}
       <CandidateNavbar
         user={user}

@@ -5,24 +5,9 @@ import Image from "next/image";
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import LaunchPathLogo from "../assets/logo/launchpath.png";
+import LaunchPathLogo from "../assets/logo/launchpath-main.png";
 
-import { 
-  Sparkles, 
-  Briefcase, 
-  Settings, 
-  LogOut, 
-  Search, 
-  Bookmark, 
-  PlusCircle, 
-  ShieldAlert,
-  Menu,
-  X,
-  User,
-  ChevronDown,
-  Mail,
-  Bell
-} from 'lucide-react';
+import { Sparkles, Briefcase, Settings, LogOut, Search, Bookmark, PlusCircle, ShieldAlert, Menu, X, User, ChevronDown, Mail, Bell } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useToast } from './ToastNotification';
 
@@ -41,6 +26,9 @@ export interface CandidateNavbarProps {
   onLogout: () => void;
   onTabChange?: (tab: string) => void;
 }
+
+// Brand tokens for reference (matches landing page header)
+// navy: #0A1B3D | lime: #A6F23C | lime hover: #C8FF7A
 
 export const Logo = ({ color = "white" }: { color?: string }) => {
   const isLightText = color === "white";
@@ -137,222 +125,236 @@ export default function CandidateNavbar({
     }
   };
 
+  // Lock background scroll when mobile drawer is open (matches landing page header behavior)
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [mobileMenuOpen]);
+
+  // Desktop pill-nav link classes (mirrors landing page nav pill styling)
   const getLinkClasses = (isActive: boolean) => {
-    return isActive
-      ? 'text-white font-bold px-3.5 py-2 text-xs uppercase tracking-wider bg-neutral-900 rounded-lg flex items-center gap-2 transition-all border border-neutral-800'
-      : 'text-neutral-400 hover:text-white px-3.5 py-2 text-xs font-semibold uppercase tracking-wider flex items-center gap-2 transition-all hover:bg-neutral-900/50 rounded-lg';
+    return `rounded-full px-4 py-2 text-[13px] font-semibold uppercase tracking-wider flex items-center gap-2 transition-all duration-200 ${
+      isActive
+        ? "bg-[#A6F23C] text-[#0A1B3D] shadow-md"
+        : "text-white/80 hover:bg-[#C8FF7A] hover:text-[#0A1B3D]"
+    }`;
   };
 
   const getMobileLinkClasses = (isActive: boolean) => {
-    return isActive
-      ? 'w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-neutral-900 text-white font-bold text-left transition-colors border border-neutral-800'
-      : 'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-400 hover:bg-neutral-900/50 hover:text-white font-semibold text-left transition-colors';
+    return `w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left text-base font-medium transition-all duration-200 ${
+      isActive
+        ? "bg-[#A6F23C] text-[#0A1B3D] font-semibold"
+        : "text-white/80 hover:bg-[#C8FF7A] hover:text-[#0A1B3D]"
+    }`;
   };
 
-  const [isOpen, setIsOpen] = useState(false);
-
-
   return (
-    <header className="relative w-full bg-[#0B0B0C] border-b border-neutral-900 shadow-xl z-50 text-white select-none">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          
-          {/* Left section: Logo */}
-          {/* LOGO: Forced to z-50 so it stays above the open menu screen */}
-          <div className="relative z-50">
-            <Logo />
-          </div>
+    <header className="relative w-full bg-[#0A1B3D] z-50 text-white select-none">
+      <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4 md:px-12 md:py-5">
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex space-x-2 h-full items-center">
-            {/* Find Jobs */}
-            <button
-              onClick={() => handleTabClick('Jobs')}
-              className={getLinkClasses(isDashboard ? (activeTab === 'Jobs' || activeTab === 'AllJobs' || activeTab === 'Saved') : false)}
+        {/* LOGO */}
+        <div className="relative z-50">
+          <Logo />
+        </div>
+
+        {/* Desktop Navigation — glass pill container, same pattern as landing page */}
+        <nav className="hidden lg:flex items-center gap-1 bg-white/5 backdrop-blur-sm rounded-full p-1 border border-white/10">
+          <button
+            onClick={() => handleTabClick('Jobs')}
+            className={getLinkClasses(isDashboard ? (activeTab === 'Jobs' || activeTab === 'AllJobs' || activeTab === 'Saved') : false)}
+          >
+            <Briefcase className="w-4 h-4" />
+            <span>Find Jobs</span>
+          </button>
+
+          <button
+            onClick={() => handleTabClick('Applications')}
+            className={getLinkClasses(isDashboard ? activeTab === 'Applications' : false)}
+          >
+            <Mail className="w-4 h-4" />
+            <span>My Proposals</span>
+            {applicationsCount > 0 && (
+              <span className="bg-[#0A1B3D] text-[#A6F23C] text-[10px] font-black px-2 py-0.5 rounded-full">
+                {applicationsCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => handleTabClick('Inbox')}
+            className={getLinkClasses(isDashboard ? activeTab === 'Inbox' : false)}
+          >
+            <Bell className="w-4 h-4" />
+            <span>Inbox</span>
+            {unreadNotificationsCount > 0 && (
+              <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-bounce">
+                {unreadNotificationsCount}
+              </span>
+            )}
+          </button>
+        </nav>
+
+        {/* Right section: Profile & Menu Controls */}
+        <div className="flex items-center gap-4 relative z-50">
+
+          {user?.realRole === 'SUPERADMIN' && (
+            <div className="hidden xl:flex items-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1 gap-1">
+              <span className="text-[9px] font-extrabold text-[#A6F23C] uppercase tracking-wider pl-2.5 pr-1 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 animate-pulse" />
+                Thanos:
+              </span>
+              <button
+                onClick={() => handleCandidateRoleSwitch('SUPERADMIN')}
+                disabled={switching}
+                className={`py-1.5 px-3 rounded-full text-[9px] font-bold tracking-wider uppercase transition cursor-pointer ${
+                  user.role === 'SUPERADMIN' || (!user.role || user.role === 'ADMIN')
+                    ? 'bg-[#A6F23C] text-[#0A1B3D]'
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                Admin
+              </button>
+              <button
+                onClick={() => handleCandidateRoleSwitch('CANDIDATE')}
+                disabled={switching}
+                className={`py-1.5 px-3 rounded-full text-[9px] font-bold tracking-wider uppercase transition cursor-pointer ${
+                  user.role === 'CANDIDATE'
+                    ? 'bg-[#A6F23C] text-[#0A1B3D]'
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                Candidate
+              </button>
+              <button
+                onClick={() => handleCandidateRoleSwitch('EMPLOYER')}
+                disabled={switching}
+                className={`py-1.5 px-3 rounded-full text-[9px] font-bold tracking-wider uppercase transition cursor-pointer ${
+                  user.role === 'EMPLOYER'
+                    ? 'bg-[#A6F23C] text-[#0A1B3D]'
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                Employer
+              </button>
+            </div>
+          )}
+
+          {/* Desktop Only: User Dropdown */}
+          <div className="hidden md:flex items-center relative">
+            <button 
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              onBlur={() => setTimeout(() => setUserMenuOpen(false), 200)}
+              className="flex items-center gap-3 text-white/80 hover:text-white transition p-1.5 pr-3 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 text-left cursor-pointer"
             >
-              <Briefcase className="w-4 h-4 text-[#22c55e]" />
-              <span>Find Jobs</span>
+              <div className="w-9 h-9 rounded-full bg-[#A6F23C]/10 text-[#A6F23C] flex items-center justify-center text-sm font-black border border-[#A6F23C]/30">
+                {user?.name?.substring(0, 2).toUpperCase() || 'ME'}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-black tracking-tight leading-none text-white">{user?.name || 'Olivia Timboys'}</span>
+                <span className="text-[10px] text-white/50 font-semibold tracking-wide mt-0.5 leading-none">{user?.professional_title || 'Product Designer'}</span>
+              </div>
+              <ChevronDown className="w-4 h-4 text-white/50 ml-1" />
             </button>
 
-            {/* My Proposals */}
-            <button
-              onClick={() => handleTabClick('Applications')}
-              className={getLinkClasses(isDashboard ? activeTab === 'Applications' : false)}
-            >
-              <Mail className="w-4 h-4 text-emerald-500" />
-              <span>My Proposals</span>
-              {applicationsCount > 0 && (
-                <span className="bg-[#22c55e] text-black text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm">
-                  {applicationsCount}
-                </span>
-              )}
-            </button>
-
-            {/* Inbox */}
-            <button
-              onClick={() => handleTabClick('Inbox')}
-              className={getLinkClasses(isDashboard ? activeTab === 'Inbox' : false)}
-            >
-              <Bell className="w-4 h-4 text-emerald-500" />
-              <span>Inbox</span>
-              {unreadNotificationsCount > 0 && (
-                <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-bounce">
-                  {unreadNotificationsCount}
-                </span>
-              )}
-            </button>
-
-          </nav>
-
-          {/* Right section: Profile & Menu Controls */}
-          <div className="flex items-center gap-6">
-            
-            {/* Theme Toggle */}
-            {/* <div className="bg-neutral-900 p-1.5 rounded-lg border border-neutral-800">
-              <ThemeToggle />
-            </div> */}
-
-            {user?.realRole === 'SUPERADMIN' && (
-              <div className="hidden xl:flex items-center bg-neutral-950 border border-neutral-900 rounded-full p-1 gap-1">
-                <span className="text-[9px] font-extrabold text-[#22c55e] uppercase tracking-wider pl-2.5 pr-1 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-emerald-400 animate-pulse" />
-                  Thanos:
-                </span>
-                <button
-                  onClick={() => handleCandidateRoleSwitch('SUPERADMIN')}
-                  disabled={switching}
-                  className={`flex items-center gap-1 py-1.5 px-3 rounded-full text-[9px] font-bold tracking-wider uppercase transition cursor-pointer ${
-                    user.role === 'SUPERADMIN' || (!user.role || user.role === 'ADMIN')
-                      ? 'bg-neutral-800 text-white shadow'
-                      : 'text-neutral-500 hover:text-neutral-300'
-                  }`}
+            {/* User Dropdown Menu */}
+            {userMenuOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 bg-[#0A1B3D] border border-white/10 rounded-xl py-2 z-50 text-white/80 shadow-xl animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="px-4 py-2 border-b border-white/10">
+                  <p className="text-xs font-black truncate text-white uppercase tracking-wider">{user?.name || 'Candidate'}</p>
+                  <p className="text-[10px] text-white/50 truncate">{user?.professional_title || 'Professional Partner'}</p>
+                </div>
+                
+                <button 
+                  onClick={() => handleTabClick('Profile')}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-wider text-left hover:bg-white/5 transition-colors text-white/80 font-bold cursor-pointer"
                 >
-                  Admin
+                  <User className="w-4 h-4 text-[#A6F23C]" />
+                  <span>My Profile</span>
                 </button>
-                <button
-                  onClick={() => handleCandidateRoleSwitch('CANDIDATE')}
-                  disabled={switching}
-                  className={`flex items-center gap-1 py-1.5 px-3 rounded-full text-[9px] font-bold tracking-wider uppercase transition cursor-pointer ${
-                    user.role === 'CANDIDATE'
-                      ? 'bg-neutral-800 text-white shadow'
-                      : 'text-neutral-500 hover:text-neutral-300'
-                  }`}
+
+                <Link 
+                  href="/candidate/new" 
+                  className="flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-wider hover:bg-white/5 transition-colors text-white/80 font-bold"
                 >
-                  Candidate
-                </button>
-                <button
-                  onClick={() => handleCandidateRoleSwitch('EMPLOYER')}
-                  disabled={switching}
-                  className={`flex items-center gap-1 py-1.5 px-3 rounded-full text-[9px] font-bold tracking-wider uppercase transition cursor-pointer ${
-                    user.role === 'EMPLOYER'
-                      ? 'bg-neutral-800 text-white shadow'
-                      : 'text-neutral-500 hover:text-neutral-300'
-                  }`}
+                  <PlusCircle className="w-4 h-4 text-[#A6F23C]" />
+                  <span>Upload Resume</span>
+                </Link>
+
+                <Link 
+                  href="/candidate/update" 
+                  className="flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-wider hover:bg-white/5 transition-colors text-white/80 font-bold"
                 >
-                  Employer
+                  <Settings className="w-4 h-4 text-white/50" />
+                  <span>Settings</span>
+                </Link>
+
+                <Link 
+                  href="/candidate/delete" 
+                  className="flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-wider text-red-400 hover:bg-red-950/20 transition-colors font-bold"
+                >
+                  <ShieldAlert className="w-4 h-4 text-red-400" />
+                  <span>Close Account</span>
+                </Link>
+
+                <div className="border-t border-white/10 my-1.5"></div>
+
+                <button 
+                  onClick={onLogout}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-wider text-left hover:bg-white/5 transition-colors text-white/50 font-bold cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 text-white/50" />
+                  <span>Log Out</span>
                 </button>
               </div>
             )}
-            
-            {/* Desktop Settings & Profile actions */}
-            <div className="hidden md:flex items-center gap-4 relative">
-              {/* User Dropdown Toggle */}
-              <div className="relative">
-                <button 
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  onBlur={() => setTimeout(() => setUserMenuOpen(false), 200)}
-                  className="flex items-center gap-3 text-neutral-300 hover:text-white transition p-2 rounded-xl bg-neutral-900 border border-neutral-850 hover:border-neutral-800 text-left cursor-pointer"
-                >
-                  <div className="w-9 h-9 rounded-xl bg-[#22c55e]/10 text-[#22c55e] flex items-center justify-center text-sm font-black border border-[#22c55e]/30 shadow-inner">
-                    {user?.name?.substring(0, 2).toUpperCase() || 'ME'}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-black tracking-tight leading-none text-white">{user?.name || 'Olivia Timboys'}</span>
-                    <span className="text-[10px] text-neutral-400 font-semibold tracking-wide mt-0.5 leading-none">{user?.professional_title || 'Product Designer'}</span>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-neutral-400 ml-1" />
-                </button>
-
-                {/* User Dropdown Menu */}
-                {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-[#0B0B0C] border border-neutral-900 rounded-xl shadow-2xl py-2 z-50 text-neutral-300 animate-in fade-in slide-in-from-top-2 duration-150">
-                    <div className="px-4 py-2 border-b border-neutral-900">
-                      <p className="text-xs font-black truncate text-white uppercase tracking-wider">{user?.name || 'Candidate'}</p>
-                      <p className="text-[10px] text-neutral-400 truncate">{user?.professional_title || 'Professional Partner'}</p>
-                    </div>
-                    
-                    <button 
-                      onClick={() => handleTabClick('Profile')}
-                      className="w-full flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-wider text-left hover:bg-neutral-900 transition-colors text-neutral-300 font-bold cursor-pointer"
-                    >
-                      <User className="w-4 h-4 text-[#22c55e]" />
-                      <span>My Profile</span>
-                    </button>
-
-                    <Link 
-                      href="/candidate/new" 
-                      className="flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-wider hover:bg-neutral-900 transition-colors text-neutral-300 font-bold"
-                    >
-                      <PlusCircle className="w-4 h-4 text-[#22c55e]" />
-                      <span>Upload Resume</span>
-                    </Link>
-
-                    <Link 
-                      href="/candidate/update" 
-                      className="flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-wider hover:bg-neutral-900 transition-colors text-neutral-300 font-bold"
-                    >
-                      <Settings className="w-4 h-4 text-neutral-400" />
-                      <span>Settings</span>
-                    </Link>
-
-                    <Link 
-                      href="/candidate/delete" 
-                      className="flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-wider text-red-400 hover:bg-red-950/20 transition-colors font-bold"
-                    >
-                      <ShieldAlert className="w-4 h-4 text-red-500" />
-                      <span>Close Account</span>
-                    </Link>
-
-                    <div className="border-t border-neutral-900 my-1.5"></div>
-
-                    <button 
-                      onClick={onLogout}
-                      className="w-full flex items-center gap-2 px-4 py-2.5 text-xs uppercase tracking-wider text-left hover:bg-neutral-900 transition-colors text-neutral-500 font-bold cursor-pointer"
-                    >
-                      <LogOut className="w-4 h-4 text-neutral-500" />
-                      <span>Log Out</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Mobile menu button */}
-            <div className="flex lg:hidden">
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-900 transition cursor-pointer"
-              >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-            </div>
-
           </div>
+
+          {/* Mobile Hamburger / Close Button — same animated icon as landing page */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+            className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 rounded-full lg:hidden border border-white/10 bg-white/5 focus:outline-none" 
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            <span className={`h-0.5 w-5 rounded-full transition-all duration-300 bg-white ${
+              mobileMenuOpen ? "translate-y-2 rotate-45" : ""
+            }`} />
+            <span className={`h-0.5 w-5 rounded-full transition-all duration-300 bg-white ${
+              mobileMenuOpen ? "opacity-0" : ""
+            }`} />
+            <span className={`h-0.5 w-5 rounded-full transition-all duration-300 bg-white ${
+              mobileMenuOpen ? "-translate-y-2 -rotate-45" : ""
+            }`} />
+          </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-inner py-4 px-4 space-y-3">
-          <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-900">
-            <p className="text-sm font-semibold truncate text-slate-950 dark:text-white">{user?.name || 'Talent'}</p>
-            <p className="text-xs text-slate-400 truncate">{user?.professional_title || 'Professional Partner'}</p>
+      {/* Mobile Navigation Drawer Overlay — same full-screen navy pattern as landing page */}
+      <div className={`fixed inset-0 z-40 bg-[#0A1B3D] transition-all duration-300 lg:hidden flex flex-col justify-center px-6 overflow-y-auto py-24 ${
+        mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+      }`}>
+        <nav className="flex flex-col gap-2 w-full max-w-md mx-auto">
+
+          {/* User summary card */}
+          <div className="flex items-center gap-3 px-4 py-3 mb-2 rounded-xl bg-white/5 border border-white/10">
+            <div className="w-10 h-10 rounded-full bg-[#A6F23C]/10 text-[#A6F23C] flex items-center justify-center text-sm font-black border border-[#A6F23C]/30">
+              {user?.name?.substring(0, 2).toUpperCase() || 'ME'}
+            </div>
+            <div className="flex flex-col">
+              <p className="text-sm font-black truncate text-white">{user?.name || 'Talent'}</p>
+              <p className="text-xs text-white/50 truncate">{user?.professional_title || 'Professional Partner'}</p>
+            </div>
           </div>
 
           {user?.realRole === 'SUPERADMIN' && (
-            <div className="bg-slate-100 dark:bg-slate-900 rounded-lg p-2.5 mx-1 border border-slate-200 dark:border-slate-800 space-y-1.5 shadow-sm">
-              <p className="text-[10px] uppercase font-bold tracking-wider text-violet-400 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 animate-pulse text-violet-400" />
+            <div className="bg-white/5 rounded-xl p-2.5 mb-2 border border-white/10 space-y-1.5">
+              <p className="text-[10px] uppercase font-bold tracking-wider text-[#A6F23C] flex items-center gap-1">
+                <Sparkles className="w-3 h-3 animate-pulse" />
                 Thanos Mobile Switcher
               </p>
               <div className="flex gap-1.5">
@@ -361,8 +363,8 @@ export default function CandidateNavbar({
                   disabled={switching}
                   className={`flex-1 flex items-center justify-center py-1.5 px-2.5 rounded-lg text-[10px] font-bold transition cursor-pointer ${
                     user.role === 'SUPERADMIN' || (!user.role || user.role === 'ADMIN')
-                      ? 'bg-[#7145FF] text-white shadow-sm shadow-[#7145FF]/20'
-                      : 'bg-slate-50 dark:bg-slate-950 text-slate-500 font-medium'
+                      ? 'bg-[#A6F23C] text-[#0A1B3D]'
+                      : 'bg-white/5 text-white/50 font-medium'
                   }`}
                 >
                   Admin
@@ -372,8 +374,8 @@ export default function CandidateNavbar({
                   disabled={switching}
                   className={`flex-1 flex items-center justify-center py-1.5 px-2.5 rounded-lg text-[10px] font-bold transition cursor-pointer ${
                     user.role === 'CANDIDATE'
-                      ? 'bg-[#7145FF] text-white shadow-sm shadow-[#7145FF]/20'
-                      : 'bg-slate-50 dark:bg-slate-950 text-slate-500 font-medium'
+                      ? 'bg-[#A6F23C] text-[#0A1B3D]'
+                      : 'bg-white/5 text-white/50 font-medium'
                   }`}
                 >
                   Candidate
@@ -383,8 +385,8 @@ export default function CandidateNavbar({
                   disabled={switching}
                   className={`flex-1 flex items-center justify-center py-1.5 px-2.5 rounded-lg text-[10px] font-bold transition cursor-pointer ${
                     user.role === 'EMPLOYER'
-                      ? 'bg-[#7145FF] text-white shadow-sm shadow-[#7145FF]/20'
-                      : 'bg-slate-50 dark:bg-slate-950 text-slate-500 font-medium'
+                      ? 'bg-[#A6F23C] text-[#0A1B3D]'
+                      : 'bg-white/5 text-white/50 font-medium'
                   }`}
                 >
                   Employer
@@ -397,7 +399,7 @@ export default function CandidateNavbar({
             onClick={() => handleTabClick('Jobs')}
             className={getMobileLinkClasses(isDashboard ? activeTab === 'Jobs' : false)}
           >
-            <Sparkles className="w-5 h-5 text-blue-500" />
+            <Sparkles className="w-5 h-5" />
             <span>AI Job Feed</span>
           </button>
 
@@ -405,7 +407,7 @@ export default function CandidateNavbar({
             onClick={() => handleTabClick('AllJobs')}
             className={getMobileLinkClasses(isDashboard ? activeTab === 'AllJobs' : false)}
           >
-            <Search className="w-5 h-5 text-indigo-500" />
+            <Search className="w-5 h-5" />
             <span>All Active Jobs</span>
           </button>
 
@@ -413,7 +415,7 @@ export default function CandidateNavbar({
             onClick={() => handleTabClick('Saved')}
             className={getMobileLinkClasses(isDashboard ? activeTab === 'Saved' : false)}
           >
-            <Bookmark className="w-5 h-5 text-amber-500" />
+            <Bookmark className="w-5 h-5" />
             <span>Saved Jobs</span>
           </button>
 
@@ -421,10 +423,10 @@ export default function CandidateNavbar({
             onClick={() => handleTabClick('Applications')}
             className={getMobileLinkClasses(isDashboard ? activeTab === 'Applications' : false)}
           >
-            <Briefcase className="w-5 h-5 text-emerald-500" />
+            <Briefcase className="w-5 h-5" />
             <span className="flex-1 text-left">My Applications</span>
             {applicationsCount > 0 && (
-              <span className="bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 text-xs px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-800">
+              <span className="bg-white/10 text-white text-xs px-2 py-0.5 rounded-full border border-white/10">
                 {applicationsCount}
               </span>
             )}
@@ -434,7 +436,7 @@ export default function CandidateNavbar({
             onClick={() => handleTabClick('Inbox')}
             className={getMobileLinkClasses(isDashboard ? activeTab === 'Inbox' : false)}
           >
-            <Mail className="w-5 h-5 text-purple-500" />
+            <Mail className="w-5 h-5" />
             <span className="flex-1 text-left">Inbox</span>
             {unreadNotificationsCount > 0 && (
               <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
@@ -447,7 +449,7 @@ export default function CandidateNavbar({
             onClick={() => handleTabClick('Profile')}
             className={getMobileLinkClasses(isDashboard ? activeTab === 'Profile' : false)}
           >
-            <User className="w-5 h-5 text-blue-500" />
+            <User className="w-5 h-5" />
             <span>My Profile</span>
           </button>
 
@@ -456,7 +458,7 @@ export default function CandidateNavbar({
             onClick={() => setMobileMenuOpen(false)}
             className={getMobileLinkClasses(pathname === '/candidate/new')}
           >
-            <PlusCircle className="w-5 h-5 text-pink-500" />
+            <PlusCircle className="w-5 h-5" />
             <span>Upload New Resume</span>
           </Link>
 
@@ -465,33 +467,33 @@ export default function CandidateNavbar({
             onClick={() => setMobileMenuOpen(false)}
             className={getMobileLinkClasses(pathname === '/candidate/update')}
           >
-            <Settings className="w-5 h-5 text-slate-500" />
+            <Settings className="w-5 h-5" />
             <span>Settings & Preferences</span>
           </Link>
 
           <Link
             href="/candidate/delete"
             onClick={() => setMobileMenuOpen(false)}
-            className={getMobileLinkClasses(pathname === '/candidate/delete')}
+            className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left text-base font-medium text-red-400 hover:bg-red-950/20 transition-colors"
           >
-            <ShieldAlert className="w-5 h-5 text-red-500" />
+            <ShieldAlert className="w-5 h-5" />
             <span>Close Account</span>
           </Link>
 
-          <div className="border-t border-slate-100 dark:border-slate-900 my-2"></div>
+          <div className="border-t border-white/10 my-2"></div>
 
           <button
             onClick={() => {
               setMobileMenuOpen(false);
               onLogout();
             }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-650 hover:bg-slate-50 dark:hover:bg-slate-900 text-left font-medium"
+            className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-white/60 hover:bg-white/5 text-left font-medium transition-colors"
           >
             <LogOut className="w-5 h-5" />
             <span>Log Out</span>
           </button>
-        </div>
-      )}
+        </nav>
+      </div>
     </header>
   );
 }

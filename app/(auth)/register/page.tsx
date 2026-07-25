@@ -4,7 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Mail, Lock, User, Building2, Loader2, Phone } from 'lucide-react';
-import LaunchPathLogo from '@/components/LaunchPathLogo';
+// import LaunchPathLogo from '@/components/LaunchPathLogo';
+import Image from "next/image";
+
+import LaunchpathLogo from "../../../assets/logo/launchpath-main.png";
+
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -56,14 +60,24 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      <header className="bg-white border-b border-slate-200">
+      <header className="bg-[#0A1B3D] border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <LaunchPathLogo variant="full" />
-          </Link>
-          <div className="text-sm font-medium text-slate-600">
+          <div className="relative z-50 flex items-center">
+            <Link href="/" className="group flex items-center" aria-label="LaunchPath home">
+              <div className="relative h-[45px] sm:h-[50px] w-auto transition-all duration-300 group-hover:scale-[1.02]">
+                <Image 
+                  src={LaunchpathLogo} 
+                  alt="LaunchPath Logo" 
+                  height={44} 
+                  priority 
+                  className="h-full w-auto object-contain transition-all duration-300 dark:brightness-110 dark:contrast-110" 
+                />
+              </div>
+            </Link>
+          </div>
+          <div className="text-sm font-medium text-white">
             Already have an account?{' '}
-            <Link href="/login" className="text-[#7145FF] hover:text-[#5b32e6] transition-colors">
+            <Link href="/login" className="text-[#A6F23C] transition-colors">
               Log in
             </Link>
           </div>
@@ -89,9 +103,9 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setAccountType('talent')}
-                  className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 font-semibold transition-colors ${
+                  className={`flex items-center justify-center gap-2 p-3 rounded-full border-2 font-semibold transition-colors ${
                     accountType === 'talent'
-                      ? 'border-[#7145FF] bg-[#7145FF]/5 text-[#7145FF]'
+                      ? 'border-[#A6F23C] bg-[#7145FF]/5 text-[#0A1B3D]'
                       : 'border-slate-200 text-slate-600 hover:border-slate-300'
                   }`}
                 >
@@ -101,9 +115,9 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setAccountType('client')}
-                  className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 font-semibold transition-colors ${
+                  className={`flex items-center justify-center gap-2 p-3 rounded-full border-2 font-semibold transition-colors ${
                     accountType === 'client'
-                      ? 'border-[#7145FF] bg-[#7145FF]/5 text-[#7145FF]'
+                      ? 'border-[#A6F23C] bg-[#7145FF]/5 text-[#0A1B3D]'
                       : 'border-slate-200 text-slate-600 hover:border-slate-300'
                   }`}
                 >
@@ -190,7 +204,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-[#7145FF] text-white py-3 px-4 rounded-xl font-semibold hover:bg-[#5b32e6] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7145FF] disabled:opacity-70 mt-4"
+                className="w-full flex items-center justify-center gap-2 bg-[#0A1B3D] text-white py-3 px-4 rounded-full font-semibold hover:bg-[#A6F23C] hover:text-[#0A1B3D] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7145FF] disabled:opacity-70 mt-4"
               >
                 {loading ? (
                   <>
