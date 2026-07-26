@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from "next/image"; 
 import { usePathname } from 'next/navigation';
-import LaunchPathLogo from './LaunchPathLogo';
+// import LaunchPathLogo from './LaunchPathLogo';
+import LaunchPathLogo from "../assets/logo/launchpath-main.png";
 import { ThanosSidebarWidget } from './ThanosSidebarWidget';
 import { 
   Sparkles, 
@@ -19,6 +21,7 @@ import {
   X,
   Building
 } from 'lucide-react';
+
 
 export interface PortalSidebarProps {
   role: 'CANDIDATE' | 'EMPLOYER' | string;
@@ -337,11 +340,16 @@ export default function PortalSidebar({
       <aside className="w-64 bg-[#0A1B3D] border-r border-white/10 flex-shrink-0 flex flex-col hidden md:flex transition-all duration-300" id="desktop-sidebar">
         <div className="p-6 border-b border-white/10">
           <div className="flex flex-col items-start gap-3" id="desktop-sidebar-logo-container">
-            <Link 
-              href={normalizedRole === 'EMPLOYER' || normalizedRole === 'CLIENT' ? '/employer/dashboard' : '/candidate/dashboard'} 
-              className="transition-transform hover:scale-[1.02] cursor-pointer"
-            >
-              <LaunchPathLogo variant="full" textColor="text-white bg-[#0A1B3D]" />
+           <Link href="/" className="group flex items-center" aria-label="LaunchPath home">
+              <div className="relative h-[58px] sm:h-[64px] w-auto transition-transform duration-300 group-hover:scale-102">
+                <Image 
+                  src={LaunchPathLogo} 
+                  alt="LaunchPath Logo" 
+                  height={40} 
+                  priority 
+                  className="h-[50px] w-[150px] object-contain"
+                />
+              </div>
             </Link>
             <span className="px-2.5 py-0.5 bg-[#A6F23C]/15 text-[#A6F23C] text-[10px] font-extrabold rounded-md uppercase border border-[#A6F23C]/30 select-none tracking-wider">
               {getRoleBadgeLabel()}
@@ -389,11 +397,16 @@ export default function PortalSidebar({
       >
         <div className="p-6 border-b border-white/10 pt-16">
           <div className="flex flex-col items-start gap-3" id="mobile-sidebar-logo-container">
-            <Link 
-              href={normalizedRole === 'EMPLOYER' || normalizedRole === 'CLIENT' ? '/employer/dashboard' : '/candidate/dashboard'} 
-              className="transition-transform hover:scale-[1.02] cursor-pointer"
-            >
-              <LaunchPathLogo variant="full" textColor="text-white bg-[#0A1B3D]" />
+            <Link href="/" className="group flex items-center" aria-label="LaunchPath home">
+              <div className="relative h-[58px] sm:h-[64px] w-auto transition-transform duration-300 group-hover:scale-102">
+                <Image 
+                  src={LaunchPathLogo} 
+                  alt="LaunchPath Logo" 
+                  height={40} 
+                  priority 
+                  className="h-[50px] w-[150px] object-contain"
+                />
+              </div>
             </Link>
             <span className="px-2.5 py-0.5 bg-[#A6F23C]/15 text-[#A6F23C] text-[10px] font-extrabold rounded-md uppercase border border-[#A6F23C]/30 select-none tracking-wider">
               {getRoleBadgeLabel()}

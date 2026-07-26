@@ -81,7 +81,7 @@ export default function ApplicantsTab({
       {!selectedJobFilter && (jobs || []).length > 1 ? (
         <div className="max-w-5xl mx-auto py-8 space-y-6">
           <div className="text-center space-y-2 max-w-2xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#0A1B3D]">
               Review Applicants by Job Posting
             </h2>
             <p className="text-sm text-slate-500">
@@ -96,15 +96,15 @@ export default function ApplicantsTab({
               return (
                 <div
                   key={j.id}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between hover:border-[#5D3FD3]/30 transition-all"
+                  className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col justify-between hover:border-[#A6F23C]/50 transition-all"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span
-                        className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider ${
+                        className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${
                           unlocked
-                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
-                            : 'bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400'
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-amber-100 text-amber-700'
                         }`}
                       >
                         {unlocked ? 'Unlocked 🔓' : 'Locked 🔒'}
@@ -113,7 +113,7 @@ export default function ApplicantsTab({
                         {appCount} {appCount === 1 ? 'Candidate' : 'Candidates'}
                       </span>
                     </div>
-                    <h3 className="font-extrabold text-md text-slate-900 dark:text-white line-clamp-1">
+                    <h3 className="font-extrabold text-md text-[#0A1B3D] line-clamp-1">
                       {j.title}
                     </h3>
                     <p className="text-xs text-slate-500">
@@ -122,7 +122,7 @@ export default function ApplicantsTab({
                   </div>
                   <button
                     onClick={() => setSelectedJobFilter(j.id)}
-                    className="mt-6 w-full text-center bg-slate-100 hover:bg-[#5D3FD3] hover:text-white dark:bg-slate-800 dark:hover:bg-[#5D3FD3] text-slate-700 dark:text-slate-300 font-bold py-2 rounded-lg text-xs transition cursor-pointer"
+                    className="mt-6 w-full text-center bg-slate-100 hover:bg-[#A6F23C] hover:text-[#0A1B3D] text-slate-700 font-bold py-2 rounded-full text-xs transition cursor-pointer"
                   >
                     View Applicants
                   </button>
@@ -133,24 +133,24 @@ export default function ApplicantsTab({
         </div>
       ) : selectedJobFilter && !isJobUnlocked(selectedJobFilter) ? (
         <div className="max-w-3xl mx-auto py-8">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden p-8 md:p-12 text-center space-y-6 transition-all">
-            <div className="mx-auto w-20 h-20 bg-[#5D3FD3]/10 dark:bg-[#5D3FD3]/20 rounded-full flex items-center justify-center animate-pulse">
-              <Lock className="w-10 h-10 text-[#5D3FD3]" />
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden p-8 md:p-12 text-center space-y-6 transition-all">
+            <div className="mx-auto w-20 h-20 bg-[#A6F23C]/15 rounded-full flex items-center justify-center animate-pulse">
+              <Lock className="w-10 h-10 text-[#0A1B3D]" />
             </div>
 
             <div className="space-y-3">
-              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-[#0A1B3D] tracking-tight">
                 Candidate Pipeline Locked 🔒
               </h2>
-              <p className="text-slate-500 dark:text-slate-400 text-xs uppercase font-extrabold tracking-wider">
+              <p className="text-slate-500 text-xs uppercase font-extrabold tracking-wider">
                 Role:{' '}
-                <span className="text-[#5D3FD3] dark:text-violet-400 font-bold">
+                <span className="text-[#0A1B3D] font-bold">
                   {activeJob?.title || 'Selected Role'}
                 </span>
               </p>
-              <p className="text-slate-600 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-md leading-relaxed">
+              <p className="text-slate-600 max-w-xl mx-auto text-sm md:text-md leading-relaxed">
                 Great news! You have{' '}
-                <span className="font-extrabold text-[#5D3FD3] dark:text-violet-400">
+                <span className="font-extrabold text-[#0A1B3D]">
                   {
                     (applications || []).filter((a: any) => a.job_id === selectedJobFilter)
                       .length
@@ -162,10 +162,10 @@ export default function ApplicantsTab({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto py-4 text-left">
-              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-slate-800">
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-150">
                 <CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <h4 className="text-xs font-bold text-slate-800">
                     Unlock All Candidate Profiles
                   </h4>
                   <p className="text-[11px] text-slate-500">
@@ -173,10 +173,10 @@ export default function ApplicantsTab({
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-slate-800">
-                <Sparkles className="w-5 h-5 text-[#5D3FD3] mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-150">
+                <Sparkles className="w-5 h-5 text-[#0A1B3D] mt-0.5 flex-shrink-0" />
                 <div>
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <h4 className="text-xs font-bold text-slate-800">
                     AI Role-Fit Index
                   </h4>
                   <p className="text-[11px] text-slate-500">
@@ -184,10 +184,10 @@ export default function ApplicantsTab({
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-slate-800 animate-pulse">
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-150 animate-pulse">
                 <Video className="w-5 h-5 text-sky-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <h4 className="text-xs font-bold text-indigo-600 dark:text-indigo-400 font-sans">
+                  <h4 className="text-xs font-bold text-slate-800 font-sans">
                     Practice Pitch Recordings
                   </h4>
                   <p className="text-[11px] text-slate-500">
@@ -195,10 +195,10 @@ export default function ApplicantsTab({
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-slate-800">
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-150">
                 <Clock className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <h4 className="text-xs font-bold text-slate-800">
                     Direct Interview Proposals
                   </h4>
                   <p className="text-[11px] text-slate-500">
@@ -208,19 +208,19 @@ export default function ApplicantsTab({
               </div>
             </div>
 
-            <div className="border-t border-slate-150 dark:border-slate-800 pt-6">
+            <div className="border-t border-slate-150 pt-6">
               <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
                 <button
                   onClick={() => handleUnlock('checkout', selectedJobFilter)}
                   disabled={unlocking}
-                  className="w-full sm:w-auto bg-[#5D3FD3] hover:bg-[#5b32e6] text-white font-extrabold px-8 py-3 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full sm:w-auto bg-[#A6F23C] hover:bg-[#C8FF7A] text-[#0A1B3D] font-extrabold px-8 py-3 rounded-full text-sm transition shadow-lg shadow-[#A6F23C]/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {unlocking ? 'Connecting...' : 'Activate Role & Sourcing matches (R1,999 once-off)'}
                 </button>
                 <button
                   onClick={() => handleUnlock('bypass', selectedJobFilter)}
                   disabled={unlocking}
-                  className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold px-6 py-3 rounded-xl text-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-6 py-3 rounded-full text-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   Simulate Payment & Activate (Demo)
                 </button>
@@ -232,7 +232,7 @@ export default function ApplicantsTab({
               {(jobs || []).length > 1 && (
                 <button
                   onClick={() => setSelectedJobFilter(null)}
-                  className="text-xs text-slate-500 hover:text-[#5D3FD3] hover:underline font-bold flex items-center gap-1 mx-auto mt-4 cursor-pointer bg-transparent border-none"
+                  className="text-xs text-slate-500 hover:text-[#0A1B3D] hover:underline font-bold flex items-center gap-1 mx-auto mt-4 cursor-pointer bg-transparent border-none"
                 >
                   ← Back to Job Postings
                 </button>
@@ -243,9 +243,9 @@ export default function ApplicantsTab({
       ) : (
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
           {/* Sidebar Column: Sorting & Filtering Sidebar */}
-          <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-5 shadow-sm sticky top-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="font-bold text-sm text-slate-800 dark:text-white">Filter Applicants</h3>
+          <div className="lg:col-span-1 bg-white border border-slate-200 rounded-xl p-5 space-y-5 shadow-sm sticky top-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-bold text-sm text-slate-800">Filter Applicants</h3>
               <button
                 type="button"
                 onClick={() => {
@@ -254,7 +254,7 @@ export default function ApplicantsTab({
                   setFilterSkill('All');
                   setSortBy('applied_at_desc');
                 }}
-                className="text-xs text-[#5D3FD3] hover:underline font-bold cursor-pointer bg-transparent border-none"
+                className="text-xs text-[#0A1B3D] hover:underline font-bold cursor-pointer bg-transparent border-none"
               >
                 Reset All
               </button>
@@ -262,13 +262,13 @@ export default function ApplicantsTab({
 
             {/* Sort By Dropdown */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Sort By
               </label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent dark:bg-slate-900 focus:ring-2 focus:ring-[#5D3FD3] focus:border-transparent outline-none transition"
+                className="w-full text-xs p-2.5 px-3.5 rounded-full border border-slate-200 bg-transparent focus:ring-2 focus:ring-[#A6F23C] focus:border-transparent outline-none transition"
               >
                 <option value="applied_at_desc">Applied Date (Newest)</option>
                 <option value="score_desc">AI Match Score (High-Low)</option>
@@ -279,7 +279,7 @@ export default function ApplicantsTab({
 
             {/* AI Match Score Options */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Min AI Job Match
               </label>
               <div className="grid grid-cols-2 gap-1.5">
@@ -288,10 +288,10 @@ export default function ApplicantsTab({
                     key={s}
                     type="button"
                     onClick={() => setFilterScore(s as any)}
-                    className={`px-2 py-1.5 rounded-lg text-center text-xs font-semibold border transition cursor-pointer ${
+                    className={`px-2 py-1.5 rounded-full text-center text-xs font-semibold border transition cursor-pointer ${
                       filterScore === s
-                        ? 'bg-[#5D3FD3]/10 border-[#5D3FD3] text-[#5D3FD3]'
-                        : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        ? 'bg-[#A6F23C]/15 border-[#A6F23C] text-[#0A1B3D]'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
                     {s === 'All' ? 'All Scores' : `${s}%+ Match`}
@@ -302,7 +302,7 @@ export default function ApplicantsTab({
 
             {/* Experience Level */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Experience Level
               </label>
               <div className="flex flex-col gap-1">
@@ -311,15 +311,15 @@ export default function ApplicantsTab({
                     key={level}
                     type="button"
                     onClick={() => setFilterExperience(level)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium border transition flex items-center justify-between cursor-pointer ${
+                    className={`w-full text-left px-3.5 py-2 rounded-full text-xs font-medium border transition flex items-center justify-between cursor-pointer ${
                       filterExperience === level
-                        ? 'bg-[#5D3FD3]/10 border-[#5D3FD3]/30 text-[#5D3FD3] font-bold'
-                        : 'border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        ? 'bg-[#A6F23C]/15 border-[#A6F23C]/40 text-[#0A1B3D] font-bold'
+                        : 'border-transparent text-slate-600 hover:bg-slate-50'
                     }`}
                   >
                     <span>{level === 'All' ? 'Any Experience' : `${level} Level`}</span>
                     {filterExperience === level && (
-                      <span className="h-1.5 w-1.5 bg-[#5D3FD3] rounded-full"></span>
+                      <span className="h-1.5 w-1.5 bg-[#A6F23C] rounded-full"></span>
                     )}
                   </button>
                 ))}
@@ -328,7 +328,7 @@ export default function ApplicantsTab({
 
             {/* Key Verified Skill Set */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Verified Skillset
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -341,8 +341,8 @@ export default function ApplicantsTab({
                       className={`px-2.5 py-1 rounded-full text-xs font-bold border transition cursor-pointer ${
                         (skill === 'NodeJS' && filterSkill === 'Node') ||
                         (skill !== 'NodeJS' && filterSkill === skill)
-                          ? 'bg-[#5D3FD3]/15 border-[#5D3FD3]/40 text-[#5D3FD3]'
-                          : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                          ? 'bg-[#A6F23C]/15 border-[#A6F23C]/40 text-[#0A1B3D]'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                       }`}
                     >
                       {skill}
@@ -354,16 +354,16 @@ export default function ApplicantsTab({
           </div>
 
           {/* Main Candidates Column */}
-          <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors flex flex-col">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-              <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-600" />
+          <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition-colors flex flex-col">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <h2 className="font-bold text-[#0A1B3D] flex items-center gap-2">
+                <Users className="w-5 h-5 text-[#0A1B3D]" />
                 Applicant Pipeline ({filteredApplicants.length})
               </h2>
               {selectedJobFilter && (
                 <button
                   onClick={() => setSelectedJobFilter(null)}
-                  className="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold px-3 py-1.5 rounded-lg transition cursor-pointer"
+                  className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-1.5 rounded-full transition cursor-pointer"
                 >
                   Show All Postings
                 </button>
@@ -371,7 +371,7 @@ export default function ApplicantsTab({
             </div>
 
             {selectedJobFilter && (
-              <div className="px-6 py-3 bg-[#5D3FD3]/5 dark:bg-[#5D3FD3]/10 border-b border-[#5D3FD3]/15 dark:border-[#5D3FD3]/25 flex items-center justify-between text-xs text-[#5D3FD3] dark:text-violet-300">
+              <div className="px-6 py-3 bg-[#A6F23C]/5 border-b border-[#A6F23C]/20 flex items-center justify-between text-xs text-[#0A1B3D]">
                 <span>
                   Filtering applicants for role:{' '}
                   <span className="font-bold underline">
@@ -380,7 +380,7 @@ export default function ApplicantsTab({
                 </span>
                 <button
                   onClick={() => setSelectedJobFilter(null)}
-                  className="font-semibold hover:underline cursor-pointer bg-transparent border-none text-[#5D3FD3] dark:text-violet-300"
+                  className="font-semibold hover:underline cursor-pointer bg-transparent border-none text-[#0A1B3D]"
                 >
                   Clear Filter
                 </button>
@@ -389,8 +389,8 @@ export default function ApplicantsTab({
 
             <div className="overflow-x-auto min-h-[400px]">
               <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-50 dark:bg-slate-950/20">
-                  <tr className="text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                <thead className="bg-slate-50">
+                  <tr className="text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200">
                     <th className="px-6 py-3">Candidate</th>
                     <th className="px-6 py-3">Applied Role</th>
                     <th className="px-6 py-3">AI Match Score</th>
@@ -398,7 +398,7 @@ export default function ApplicantsTab({
                     <th className="px-6 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-slate-100">
                   {filteredApplicants.length === 0 && (
                     <tr>
                       <td colSpan={5} className="p-10 text-center text-slate-500 text-sm">
@@ -409,10 +409,10 @@ export default function ApplicantsTab({
                   {filteredApplicants.map((app: any) => (
                     <tr
                       key={app.id}
-                      className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors"
+                      className="hover:bg-slate-50/50 transition-colors"
                     >
                       <td className="px-6 py-4">
-                        <p className="font-bold text-slate-900 dark:text-white text-sm">
+                        <p className="font-bold text-[#0A1B3D] text-sm">
                           {app.candidate.name}
                         </p>
                         <p className="text-xs text-slate-500 mt-0.5">
@@ -423,7 +423,7 @@ export default function ApplicantsTab({
                         </p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="bg-[#5D3FD3]/10 text-[#5D3FD3] dark:text-violet-300 px-2.5 py-1 rounded-md text-xs font-semibold border border-[#5D3FD3]/20">
+                        <span className="bg-[#A6F23C]/15 text-[#0A1B3D] px-2.5 py-1 rounded-full text-xs font-semibold border border-[#A6F23C]/30">
                           {app.job.title}
                         </span>
                       </td>
@@ -431,10 +431,10 @@ export default function ApplicantsTab({
                         {app.matchContext ? (
                           <div className="flex items-center gap-2">
                             <span
-                              className={`px-2.5 py-1 rounded-md text-xs font-bold ${
+                              className={`px-2.5 py-1 rounded-full text-xs font-bold ${
                                 app.matchContext.match_score >= 80
-                                  ? 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-900/30'
-                                  : 'bg-yellow-100 text-yellow-700 border border-yellow-200 dark:bg-yellow-950/30 dark:text-yellow-400 dark:border-yellow-900/30'
+                                  ? 'bg-green-100 text-green-700 border border-green-200'
+                                  : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
                               }`}
                             >
                               {app.matchContext.match_score}%
@@ -448,14 +448,14 @@ export default function ApplicantsTab({
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 max-w-sm">
+                        <p className="text-xs text-slate-600 line-clamp-2 max-w-sm">
                           {app.matchContext?.fit_summary || 'N/A'}
                         </p>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => setSelectedApplicant(app)}
-                          className="text-[#5D3FD3] hover:text-[#5b32e6] font-bold text-xs bg-[#5D3FD3]/10 hover:bg-[#5D3FD3]/20 dark:bg-[#5D3FD3]/20 dark:hover:bg-[#5D3FD3]/30 px-3.5 py-1.5 rounded transition cursor-pointer border-none"
+                          className="text-[#0A1B3D] hover:text-[#0A1B3D] font-bold text-xs bg-[#A6F23C]/15 hover:bg-[#A6F23C]/25 px-4 py-1.5 rounded-full transition cursor-pointer border-none"
                         >
                           Manage
                         </button>
@@ -470,15 +470,15 @@ export default function ApplicantsTab({
               (() => {
                 const readiness = selectedApplicant.candidate.video_interviews?.[0];
                 return (
-                  <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+                  <div className="fixed inset-0 bg-[#0A1B3D]/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
                     <div
-                      className={`bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-xl shadow-2xl ${
+                      className={`bg-white text-slate-900 rounded-xl shadow-2xl ${
                         readiness ? 'max-w-4xl' : 'max-w-lg'
                       } w-full overflow-hidden flex flex-col transition-all duration-300`}
                     >
-                      <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
+                      <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                         <div>
-                          <h3 className="font-bold text-lg">
+                          <h3 className="font-bold text-lg text-[#0A1B3D]">
                             Manage Candidate: {selectedApplicant.candidate.name}
                           </h3>
                           <p className="text-xs text-slate-500 mt-1">
@@ -489,7 +489,7 @@ export default function ApplicantsTab({
                               <span>📧</span> {selectedApplicant.candidate.email}
                             </span>
                             {selectedApplicant.candidate.phone && (
-                              <span className="flex items-center gap-1 font-bold text-[#5D3FD3] dark:text-[#a385ff]">
+                              <span className="flex items-center gap-1 font-bold text-[#0A1B3D]">
                                 <span>📞</span> {selectedApplicant.candidate.phone}
                               </span>
                             )}
@@ -508,7 +508,7 @@ export default function ApplicantsTab({
                                 href={selectedApplicant.candidate.github_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-slate-500 dark:text-slate-400 hover:underline"
+                                className="text-slate-500 hover:underline"
                               >
                                 GitHub ↗
                               </a>
@@ -517,7 +517,7 @@ export default function ApplicantsTab({
                         </div>
                         <button
                           onClick={() => setSelectedApplicant(null)}
-                          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 text-2xl font-bold leading-none cursor-pointer border-none bg-transparent"
+                          className="text-slate-400 hover:text-slate-600 text-2xl font-bold leading-none cursor-pointer border-none bg-transparent"
                         >
                           &times;
                         </button>
@@ -531,7 +531,7 @@ export default function ApplicantsTab({
                         {/* Left column: Scheduling & Actions */}
                         <div className="space-y-6">
                           {/* Application Decision Actions */}
-                          <div className="p-4 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3 mb-6">
+                          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 mb-6">
                             <div className="flex items-center justify-between">
                               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                                 Application Status
@@ -539,10 +539,10 @@ export default function ApplicantsTab({
                               <span
                                 className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border ${
                                   selectedApplicant.status === 'Accepted'
-                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/60'
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                     : selectedApplicant.status === 'Rejected'
-                                    ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-800/60'
-                                    : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800/60'
+                                    ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                    : 'bg-amber-50 text-amber-700 border-amber-200'
                                 }`}
                               >
                                 {selectedApplicant.status || 'Pending'}
@@ -555,9 +555,9 @@ export default function ApplicantsTab({
                                   handleUpdateApplicationStatus(selectedApplicant.id, 'Accepted')
                                 }
                                 disabled={selectedApplicant.status === 'Accepted'}
-                                className={`w-full font-bold py-2 px-3 rounded-lg text-xs transition cursor-pointer text-center flex items-center justify-center gap-1.5 border-none ${
+                                className={`w-full font-bold py-2 px-3 rounded-full text-xs transition cursor-pointer text-center flex items-center justify-center gap-1.5 border-none ${
                                   selectedApplicant.status === 'Accepted'
-                                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                     : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                                 }`}
                               >
@@ -570,9 +570,9 @@ export default function ApplicantsTab({
                                   handleUpdateApplicationStatus(selectedApplicant.id, 'Rejected')
                                 }
                                 disabled={selectedApplicant.status === 'Rejected'}
-                                className={`w-full font-bold py-2 px-3 rounded-lg text-xs transition cursor-pointer text-center flex items-center justify-center gap-1.5 border-none ${
+                                className={`w-full font-bold py-2 px-3 rounded-full text-xs transition cursor-pointer text-center flex items-center justify-center gap-1.5 border-none ${
                                   selectedApplicant.status === 'Rejected'
-                                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                     : 'bg-rose-600 hover:bg-rose-700 text-white'
                                 }`}
                               >
@@ -584,21 +584,21 @@ export default function ApplicantsTab({
 
                           {selectedApplicant.interviews && selectedApplicant.interviews.length > 0 ? (
                             <div>
-                              <h4 className="font-bold text-sm text-slate-800 dark:text-white mb-3">
+                              <h4 className="font-bold text-sm text-slate-800 mb-3">
                                 Scheduled Interviews
                               </h4>
                               <div className="space-y-3">
                                 {selectedApplicant.interviews.map((iv: any) => (
                                   <div
                                     key={iv.id}
-                                    className="p-3 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950"
+                                    className="p-3 border border-slate-200 rounded-xl bg-slate-50"
                                   >
                                     <p className="font-bold text-sm">
                                       {new Date(iv.proposed_time).toLocaleString()}
                                     </p>
                                     <p className="text-xs text-slate-500 mt-1">
                                       Status:{' '}
-                                      <span className="font-bold text-[#5D3FD3]">{iv.status}</span>
+                                      <span className="font-bold text-[#0A1B3D]">{iv.status}</span>
                                     </p>
                                   </div>
                                 ))}
@@ -608,8 +608,8 @@ export default function ApplicantsTab({
                             <p className="text-sm text-slate-500 italic">No interviews scheduled yet.</p>
                           )}
 
-                          <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
-                            <h4 className="font-bold text-sm text-slate-800 dark:text-white mb-3">
+                          <div className="border-t border-slate-100 pt-6">
+                            <h4 className="font-bold text-sm text-slate-800 mb-3">
                               Propose New Interview
                             </h4>
                             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -621,7 +621,7 @@ export default function ApplicantsTab({
                                   type="date"
                                   value={interviewDate}
                                   onChange={(e) => setInterviewDate(e.target.value)}
-                                  className="w-full text-sm p-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded font-sans"
+                                  className="w-full text-sm p-2 px-3.5 border border-slate-200 rounded-full font-sans focus:ring-2 focus:ring-[#A6F23C] outline-none"
                                 />
                               </div>
                               <div>
@@ -632,7 +632,7 @@ export default function ApplicantsTab({
                                   type="time"
                                   value={interviewTime}
                                   onChange={(e) => setInterviewTime(e.target.value)}
-                                  className="w-full text-sm p-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded font-sans"
+                                  className="w-full text-sm p-2 px-3.5 border border-slate-200 rounded-full font-sans focus:ring-2 focus:ring-[#A6F23C] outline-none"
                                 />
                               </div>
                             </div>
@@ -645,12 +645,12 @@ export default function ApplicantsTab({
                                 value={interviewNotes}
                                 onChange={(e) => setInterviewNotes(e.target.value)}
                                 placeholder="Zoom/Meet link or instructions"
-                                className="w-full text-sm p-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded font-sans"
+                                className="w-full text-sm p-2 px-3.5 border border-slate-200 rounded-full font-sans focus:ring-2 focus:ring-[#A6F23C] outline-none"
                               />
                             </div>
                             <button
                               onClick={() => scheduleInterview(selectedApplicant)}
-                              className="w-full bg-[#5D3FD3] hover:bg-[#5b32e6] text-white font-bold py-2 rounded transition cursor-pointer border-none"
+                              className="w-full bg-[#A6F23C] hover:bg-[#C8FF7A] text-[#0A1B3D] font-bold py-2.5 rounded-full transition cursor-pointer border-none"
                             >
                               Send Invite
                             </button>
@@ -659,23 +659,23 @@ export default function ApplicantsTab({
 
                         {/* Right column: Shared Job Readiness Credentials */}
                         {readiness && (
-                          <div className="border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-800 md:pl-8 space-y-6">
-                            <div className="flex items-center justify-between border-b pb-3 border-slate-100 dark:border-slate-800">
-                              <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                                <Sparkles className="w-4 h-4 text-blue-500 animate-pulse" />
+                          <div className="border-t md:border-t-0 md:border-l border-slate-200 md:pl-8 space-y-6">
+                            <div className="flex items-center justify-between border-b pb-3 border-slate-100">
+                              <h4 className="font-extrabold text-sm text-[#0A1B3D] flex items-center gap-2">
+                                <Sparkles className="w-4 h-4 text-[#0A1B3D] animate-pulse" />
                                 Job Readiness Credentials
                               </h4>
-                              <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-955 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-850 font-sans">
+                              <span className="text-xs font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 font-sans">
                                 Overall Score: {readiness.score}%
                               </span>
                             </div>
 
                             {/* Shared Video response stream player */}
                             <div className="space-y-2">
-                              <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
+                              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
                                 Candidate Stream Recording Output
                               </span>
-                              <div className="aspect-video bg-black rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 relative shadow-sm">
+                              <div className="aspect-video bg-black rounded-xl overflow-hidden border border-slate-200 relative shadow-sm">
                                 <LaunchpathMuxPlayer
                                   videoUrl={readiness?.video_url as string | undefined}
                                   poster={LAUNCHPATH_POSTER_SVG}
@@ -685,18 +685,18 @@ export default function ApplicantsTab({
                             </div>
 
                             {/* Shared AI Experts feedback assessment */}
-                            <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5 font-sans">
-                              <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
+                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 font-sans">
+                              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block">
                                 Recruiter Coaching Feedback
                               </span>
-                              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">
+                              <p className="text-xs text-slate-700 leading-relaxed font-semibold">
                                 {readiness.feedback}
                               </p>
                             </div>
 
                             {/* Question lists, transcripts, and scores */}
                             <div className="space-y-3 font-sans">
-                              <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block border-b border-slate-100 dark:border-slate-800 pb-1.5">
+                              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block border-b border-slate-100 pb-1.5">
                                 Readiness Speech Transcripts
                               </span>
                               <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
@@ -706,17 +706,17 @@ export default function ApplicantsTab({
                                 ).map((q: any) => (
                                   <div
                                     key={q.id}
-                                    className="p-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-slate-800 rounded-lg space-y-2 text-xs"
+                                    className="p-3.5 bg-slate-50 border border-slate-150 rounded-xl space-y-2 text-xs"
                                   >
-                                    <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-2 rounded border border-slate-100 dark:border-slate-800/60 font-semibold">
-                                      <span className="font-extrabold text-slate-800 dark:text-slate-200">
+                                    <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100 font-semibold">
+                                      <span className="font-extrabold text-slate-800">
                                         Q0{q.id}: {q.title}
                                       </span>
-                                      <span className="text-[10px] font-mono font-bold text-blue-600 dark:text-blue-400 font-mono">
+                                      <span className="text-[10px] font-mono font-bold text-[#0A1B3D]">
                                         Score: {q.questionScore}%
                                       </span>
                                     </div>
-                                    <p className="italic text-slate-600 dark:text-slate-300 leading-relaxed bg-white dark:bg-slate-900 p-2.5 rounded border border-slate-100 dark:border-slate-800">
+                                    <p className="italic text-slate-600 leading-relaxed bg-white p-2.5 rounded-lg border border-slate-100">
                                       &ldquo;{q.transcript}&rdquo;
                                     </p>
                                   </div>

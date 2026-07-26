@@ -60,19 +60,19 @@ export default function EditJobModal({
   if (!editingJob) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 border border-slate-100 dark:border-slate-800">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
+    <div className="fixed inset-0 bg-[#0A1B3D]/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+      <div className="bg-white text-slate-900 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 border border-slate-100">
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <div>
-            <h3 className="font-bold text-lg flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-[#5D3FD3]" />
+            <h3 className="font-bold text-lg flex items-center gap-2 text-[#0A1B3D]">
+              <Briefcase className="w-5 h-5 text-[#0A1B3D]" />
               Edit Job Posting: {editingJob.title}
             </h3>
             <p className="text-xs text-slate-500 mt-1">Update specifications and requirements for this role.</p>
           </div>
           <button 
             onClick={() => setEditingJob(null)} 
-            className="text-slate-400 hover:text-slate-650 dark:hover:text-slate-300 text-2xl font-bold leading-none cursor-pointer border-none bg-transparent"
+            className="text-slate-400 hover:text-slate-650 text-2xl font-bold leading-none cursor-pointer border-none bg-transparent"
           >
             &times;
           </button>
@@ -85,7 +85,7 @@ export default function EditJobModal({
               type="text" 
               value={editTitle} 
               onChange={e => setEditTitle(e.target.value)} 
-              className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl font-sans"
+              className="w-full text-sm p-2.5 px-4 border border-slate-200 rounded-full font-sans focus:ring-2 focus:ring-[#A6F23C] outline-none"
               required
             />
           </div>
@@ -105,7 +105,7 @@ export default function EditJobModal({
                 type="text" 
                 value={editCompany} 
                 onChange={e => setEditCompany(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                className="w-full text-sm p-2.5 px-4 border border-slate-200 rounded-full focus:ring-2 focus:ring-[#A6F23C] outline-none"
                 required
               />
             </div>
@@ -115,7 +115,7 @@ export default function EditJobModal({
                 type="text" 
                 value={editLocation} 
                 onChange={e => setEditLocation(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                className="w-full text-sm p-2.5 px-4 border border-slate-200 rounded-full focus:ring-2 focus:ring-[#A6F23C] outline-none"
                 required
               />
             </div>
@@ -128,7 +128,7 @@ export default function EditJobModal({
                 type="number" 
                 value={editSalaryMin} 
                 onChange={e => setEditSalaryMin(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                className="w-full text-sm p-2.5 px-4 border border-slate-200 rounded-full focus:ring-2 focus:ring-[#A6F23C] outline-none"
                 placeholder="e.g. 450000"
               />
             </div>
@@ -138,7 +138,7 @@ export default function EditJobModal({
                 type="number" 
                 value={editSalaryMax} 
                 onChange={e => setEditSalaryMax(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                className="w-full text-sm p-2.5 px-4 border border-slate-200 rounded-full focus:ring-2 focus:ring-[#A6F23C] outline-none"
                 placeholder="e.g. 750000"
               />
             </div>
@@ -151,7 +151,7 @@ export default function EditJobModal({
                 type="text" 
                 value={editYearsExperience} 
                 onChange={e => setEditYearsExperience(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                className="w-full text-sm p-2.5 px-4 border border-slate-200 rounded-full focus:ring-2 focus:ring-[#A6F23C] outline-none"
                 placeholder="e.g. 3-5 years"
               />
             </div>
@@ -160,7 +160,7 @@ export default function EditJobModal({
               <select 
                 value={editStatus} 
                 onChange={e => setEditStatus(e.target.value)}
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                className="w-full text-sm p-2.5 px-4 border border-slate-200 rounded-full focus:ring-2 focus:ring-[#A6F23C] outline-none"
               >
                 <option value="ACTIVE">Active</option>
                 <option value="CLOSED">Closed / Filled</option>
@@ -175,7 +175,7 @@ export default function EditJobModal({
                 type="text" 
                 value={editMandatorySkills} 
                 onChange={e => setEditMandatorySkills(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                className="w-full text-sm p-2.5 px-4 border border-slate-200 rounded-full focus:ring-2 focus:ring-[#A6F23C] outline-none"
                 placeholder="e.g. React, Node, SQL"
               />
             </div>
@@ -185,7 +185,7 @@ export default function EditJobModal({
                 type="text" 
                 value={editTechStack} 
                 onChange={e => setEditTechStack(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
+                className="w-full text-sm p-2.5 px-4 border border-slate-200 rounded-full focus:ring-2 focus:ring-[#A6F23C] outline-none"
                 placeholder="e.g. GitHub, GCP, Prisma"
               />
             </div>
@@ -195,14 +195,14 @@ export default function EditJobModal({
             <button 
               type="button" 
               onClick={() => setEditingJob(null)} 
-              className="px-5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+              className="px-5 py-2.5 border border-slate-200 rounded-full text-sm font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
             >
               Cancel
             </button>
             <button 
               type="submit" 
               disabled={updatingJob}
-              className="px-6 py-2.5 bg-[#5D3FD3] hover:bg-[#5b32e6] text-white font-bold rounded-xl text-sm transition cursor-pointer disabled:opacity-50"
+              className="px-6 py-2.5 bg-[#A6F23C] hover:bg-[#C8FF7A] text-[#0A1B3D] font-bold rounded-full text-sm transition cursor-pointer disabled:opacity-50 shadow-lg shadow-[#A6F23C]/20"
             >
               {updatingJob ? 'Saving...' : 'Save Job Posting'}
             </button>
