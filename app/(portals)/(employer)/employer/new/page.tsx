@@ -176,7 +176,7 @@ ${description}
   }
 
   return (
-    <div className="w-full h-screen bg-slate-50 dark:bg-slate-950 flex overflow-hidden font-sans text-slate-900 dark:text-slate-100 transition-colors">
+    <div className="w-full h-screen bg-[#F5F6F8] flex overflow-hidden font-sans text-[#0A1B3D] transition-colors">
       
       {/* Sidebar navigation */}
       <PortalSidebar
@@ -187,11 +187,11 @@ ${description}
 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <header className="bg-white dark:bg-slate-900 h-16 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between pl-14 pr-4 md:px-8 flex-shrink-0 transition-colors">
-          <h1 className="text-xl font-bold dark:text-white">Create New Job Posting</h1>
+        <header className="bg-white h-16 border-b border-slate-200 flex items-center justify-between pl-14 pr-4 md:px-8 flex-shrink-0 transition-colors">
+          <h1 className="text-xl font-bold text-[#0A1B3D]">Create New Job Posting</h1>
           <div className="flex items-center gap-6">
-            <div className="hidden sm:flex items-center gap-2 bg-[#5D3FD3]/10 dark:bg-[#5D3FD3]/20 text-[#5D3FD3] dark:text-violet-300 px-3 py-1 rounded-full text-sm font-semibold border border-[#5D3FD3]/20 dark:border-[#5D3FD3]/30">
-              <span className="w-2 h-2 bg-[#5D3FD3] dark:bg-[#5D3FD3] rounded-full animate-pulse"></span>
+            <div className="hidden sm:flex items-center gap-2 bg-[#A6F23C]/15 text-[#0A1B3D] px-3 py-1 rounded-full text-sm font-semibold border border-[#A6F23C]/30">
+              <span className="w-2 h-2 bg-[#A6F23C] rounded-full animate-pulse"></span>
               {user?.role || 'EMPLOYER'}
             </div>
             <ThemeToggle />
@@ -200,28 +200,28 @@ ${description}
 
         {/* Form Body */}
         <div className="flex-1 overflow-y-auto p-8 max-w-4xl mx-auto w-full">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-8 transition-colors">
-              <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-blue-600" /> Post a New Role
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 transition-colors">
+              <h2 className="text-xl font-bold text-[#0A1B3D] mb-6 flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-[#0A1B3D]" /> Post a New Role
               </h2>
               
               <form onSubmit={handleCreateJob} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Job Title</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Job Title</label>
                   <div className="flex gap-3">
                     <input 
                       type="text" 
                       value={title}
                       onChange={e => setTitle(e.target.value)}
                       placeholder="e.g. Senior Full Stack Engineer" 
-                      className="flex-1 p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-sm bg-transparent focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white"
+                      className="flex-1 p-2.5 px-4 border border-slate-300 rounded-full text-sm bg-transparent focus:ring-2 focus:ring-[#A6F23C] outline-none text-[#0A1B3D]"
                       required
                     />
                     <button
                       type="button"
                       onClick={handleAiAutofill}
                       disabled={aiLoading}
-                      className="bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400 dark:hover:bg-purple-950 px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2 disabled:opacity-50"
+                      className="bg-[#A6F23C]/15 hover:bg-[#A6F23C]/25 text-[#0A1B3D] px-4 py-2 rounded-full text-sm font-bold transition flex items-center gap-2 disabled:opacity-50"
                     >
                       {aiLoading ? <Clock className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                       AI Autofill
@@ -230,18 +230,18 @@ ${description}
                 </div>
 
                 {aiLoading ? (
-                  <div className="space-y-4 animate-pulse p-4 bg-purple-50/50 dark:bg-purple-950/20 rounded-xl border border-purple-100 dark:border-purple-900/30">
-                    <div className="flex items-center gap-2 mb-4 text-purple-700 dark:text-purple-400 font-medium text-sm">
+                  <div className="space-y-4 animate-pulse p-4 bg-[#A6F23C]/5 rounded-xl border border-[#A6F23C]/20">
+                    <div className="flex items-center gap-2 mb-4 text-[#0A1B3D] font-medium text-sm">
                       <Clock className="w-5 h-5 animate-spin" />
                       Generating description, requirements, and tech stack...
                     </div>
-                    <div className="h-4 bg-purple-200 dark:bg-purple-900/40 rounded w-1/4 mb-2"></div>
-                    <div className="h-32 bg-purple-100 dark:bg-purple-900/20 rounded-lg w-full"></div>
+                    <div className="h-4 bg-[#A6F23C]/20 rounded-full w-1/4 mb-2"></div>
+                    <div className="h-32 bg-[#A6F23C]/10 rounded-xl w-full"></div>
                   </div>
                 ) : (
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Job Description (Rich Text Builder)</label>
+                      <label className="block text-sm font-bold text-slate-700 mb-1">Job Description (Rich Text Builder)</label>
                       <RichTextEditor 
                         content={description}
                         onChange={setDescription}
@@ -251,23 +251,23 @@ ${description}
                     {/* Company and Location group */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Company Name</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Company Name</label>
                         <input 
                           type="text"
                           value={company}
                           onChange={e => setCompany(e.target.value)}
-                          className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-sm bg-transparent focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white"
+                          className="w-full p-2.5 px-4 border border-slate-300 rounded-full text-sm bg-transparent focus:ring-2 focus:ring-[#A6F23C] outline-none text-[#0A1B3D]"
                           placeholder="e.g. LaunchPath Corp"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Job Location</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Job Location</label>
                         <input 
                           type="text"
                           value={location}
                           onChange={e => setLocation(e.target.value)}
-                          className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-sm bg-transparent focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white"
+                          className="w-full p-2.5 px-4 border border-slate-300 rounded-full text-sm bg-transparent focus:ring-2 focus:ring-[#A6F23C] outline-none text-[#0A1B3D]"
                           placeholder="e.g. Johannesburg, GP or Remote"
                           required
                         />
@@ -277,22 +277,22 @@ ${description}
                     {/* Salary Range group */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Minimum Salary (e.g. Annual or Monthly value)</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Minimum Salary (e.g. Annual or Monthly value)</label>
                         <input 
                           type="number"
                           value={salaryMin}
                           onChange={e => setSalaryMin(e.target.value)}
-                          className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-sm bg-transparent focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white"
+                          className="w-full p-2.5 px-4 border border-slate-300 rounded-full text-sm bg-transparent focus:ring-2 focus:ring-[#A6F23C] outline-none text-[#0A1B3D]"
                           placeholder="e.g. 450000"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Maximum Salary</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Maximum Salary</label>
                         <input 
                           type="number"
                           value={salaryMax}
                           onChange={e => setSalaryMax(e.target.value)}
-                          className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-sm bg-transparent focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white"
+                          className="w-full p-2.5 px-4 border border-slate-300 rounded-full text-sm bg-transparent focus:ring-2 focus:ring-[#A6F23C] outline-none text-[#0A1B3D]"
                           placeholder="e.g. 750000"
                         />
                       </div>
@@ -300,22 +300,22 @@ ${description}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Years of Experience</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Years of Experience</label>
                         <input 
                           type="text"
                           value={yearsExperience}
                           onChange={e => setYearsExperience(e.target.value)}
-                          className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-sm bg-transparent focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white"
+                          className="w-full p-2.5 px-4 border border-slate-300 rounded-full text-sm bg-transparent focus:ring-2 focus:ring-[#A6F23C] outline-none text-[#0A1B3D]"
                           placeholder="e.g. 5+ years"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Mandatory Skills</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Mandatory Skills</label>
                         <input 
                           type="text"
                           value={mandatorySkills}
                           onChange={e => setMandatorySkills(e.target.value)}
-                          className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-sm bg-transparent focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white"
+                          className="w-full p-2.5 px-4 border border-slate-300 rounded-full text-sm bg-transparent focus:ring-2 focus:ring-[#A6F23C] outline-none text-[#0A1B3D]"
                           placeholder="e.g. React, Node, SQL"
                         />
                       </div>
@@ -323,21 +323,21 @@ ${description}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Tech Stack</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Tech Stack</label>
                         <input 
                           type="text"
                           value={techStack}
                           onChange={e => setTechStack(e.target.value)}
-                          className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-sm bg-transparent focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white"
+                          className="w-full p-2.5 px-4 border border-slate-300 rounded-full text-sm bg-transparent focus:ring-2 focus:ring-[#A6F23C] outline-none text-[#0A1B3D]"
                           placeholder="e.g. GitHub, GCP, Prisma"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Listing Duration</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Listing Duration</label>
                         <select 
                           value={duration}
                           onChange={e => setDuration(e.target.value)}
-                          className="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-sm bg-transparent focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 dark:text-white"
+                          className="w-full p-2.5 px-4 border border-slate-300 rounded-full text-sm bg-transparent focus:ring-2 focus:ring-[#A6F23C] outline-none text-[#0A1B3D]"
                         >
                           <option value="30">30 Days</option>
                           <option value="60">60 Days</option>
@@ -351,7 +351,7 @@ ${description}
                 <button 
                   type="submit"
                   disabled={savingJob || !title || !description}
-                  className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3.5 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-200 transition disabled:opacity-50 text-base cursor-pointer"
+                  className="w-full bg-[#A6F23C] hover:bg-[#C8FF7A] text-[#0A1B3D] font-bold py-3.5 rounded-full transition disabled:opacity-50 text-base cursor-pointer shadow-lg shadow-[#A6F23C]/20"
                 >
                   {savingJob ? 'Publishing...' : 'Publish Job Posting'}
                 </button>
