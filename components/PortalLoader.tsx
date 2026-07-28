@@ -11,11 +11,11 @@ export default function PortalLoader({ portal, title }: PortalLoaderProps) {
       <div className="flex flex-col items-center text-center space-y-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img 
-          src="/logo.svg" 
+          src="/logos/logo.png" 
           alt="Company Logo" 
-          className="w-16 h-16 animate-pulse"
+          className="w-30 h-30 animate-pulse"
         />
-        <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-neutral-400 dark:text-neutral-500">
+        <p className="text-[14px] font-bold font-mono uppercase tracking-[0.25em] text-[#0A1B3D]">
           {title || 'Loading...'}
         </p>
       </div>
