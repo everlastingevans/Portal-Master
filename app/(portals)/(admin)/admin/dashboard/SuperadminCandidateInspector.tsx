@@ -1,25 +1,38 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import LaunchpathMuxPlayer from '@/components/LaunchpathMuxPlayer';
-const LAUNCHPATH_POSTER_SVG = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgNDUwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ2xvdyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxZTFiNGIiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI0MCUiIHN0b3AtY29sb3I9IiMwZjE3MmEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDIwNjE3Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJicmFuZCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNzE0NUZGIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzhiNWNmNiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI0NTAiIGZpbGw9InVybCgjZ2xvdykiLz4KICAKICA8IS0tIFN1YnRsZSBmdXR1cmlzdGljIGxpbmVzIC0tPgogIDxnIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLW9wYWNpdHk9IjAuMDMiIHN0cm9rZS13aWR0aD0iMSI+CiAgICA8bGluZSB4MT0iMTAwIiB5MT0iMCIgeDI9IjEwMCIgeTI9IjQ1MCIvPgogICAgPGxpbmUgeDE9IjIwMCIgeTE9IjAiIHgyPSIyMDAiIHkyPSI0NTAiLz4KICAgIDxsaW5lIHgxPSIzMDAiIHkxPSIwIiB4Mj0iMzAwIiB5Mj0iNDUwIi8+CiAgICA8bGluZSB4MT0iNDAwIiB5MT0iMCIgeDI9IjQwMCIgeTI9IjQ1MCIvPgogICAgPGxpbmUgeDE9IjUwMCIgeTE9IjAiIHgyPSI1MDAiIHkyPSI0NTAiLz4KICAgIDxsaW5lIHgxPSI2MDAiIHkxPSIwIiB4Mj0iNjAwIiB5Mj0iNDUwIi8+CiAgICA8bGluZSB4MT0iNzAwIiB5MT0iMCIgeDI9IjcwMCIgeTI9IjQ1MCIvPgogICAgPGxpbmUgeDE9IjAiIHkxPSIxMDAiIHgyPSI4MDAiIHkyPSIxMDAiLz4KICAgIDxsaW5lIHgxPSIwIiB5MT0iMjAwIiB4Mj0iODAwIiB5Mj0iMjAwIi8+CiAgICA8bGluZSB4PSIwIiB5MT0iMzAwIiB4Mj0iODAwIiB5Mj0iMzAwIi8+CiAgICA8bGluZSB4PSIwIiB5MT0iNDAwIiB4Mj0iODAwIiB5Mj0iNDAwIi8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjQwMCIgY3k9IjIyNSIgcj0iMTQwIiBmaWxsPSIjNzE0NUZGIiBmaWxsLW9wYWNpdHk9IjAuMTUiIGZpbHRlcj0iYmx1cig2MHB4KSIvPgogIDxjaXJjbGUgY3g9IjIwMCIgY3k9IjE1MCIgcj0iODAiIGZpbGw9IiMzYjgyZjYiIGZpbGwtb3BhY2l0eT0iMC4xIiBmaWx0ZXI9ImJsdXIoNDBweCkiLz4KICA8cmVjdCB4PSI1MCIgeT0iNTAiIHdpZHRoPSI3MDAiIGhlaWdodD0iMzUwIiByeD0iMjAiIGZpbGw9IiMwZjE3MmEiIGZpbGwtb3BhY2l0eT0iMC41IiBzdHJva2U9IiMzMzQxNTUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2Utb3BhY2l0eT0iMC40Ii8+CiAgPGNpcmNsZSBjeD0iNDAwIiBjeT0iMTkwIiByPSI0NSIgZmlsbD0iIzcxNDVGRiIgZmlsbC1vcGFjaXR5PSIwLjIiIHN0cm9rZT0iIzcxNDVGRiIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPGNpcmNsZSBjeD0iNDAwIiBjeT0iMTkwIiByPSIzNSIgZmlsbD0idXJsKCNicmFuZCkiLz4KICA8cG9seWdvbiBwb2ludHM9IjM5MiwxNzcgNDE1LDE5MCAzOTIsMjAzIiBmaWxsPSIjZmZmZmZmIi8+CiAgPHJlY3QgeD0iMzEwIiB5PSIyNzAiIHdpZHRoPSIxODAiIGhlaWdodD0iMjQiIHJ4PSIxMiIgZmlsbD0iIzcxNDVGRiIgZmlsbC1vcGFjaXR5PSIwLjE1IiBzdHJva2U9IiM3MTQ1RkYiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLW9wYWNpdHk9IjAuMyIvPgogIDx0ZXh0IHg9IjQwMCIgeT0iMjg1IiBmaWxsPSIjYTc4YmZhIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Db2wsICdTZWdvZSBVSScsIFJvYm90bywgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMCIgZm9udC13ZWlnaHQ9IjkwMCIgbGV0dGVyLXNwYWNpbmc9IjEuNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgdGV4dC10cmFuc2Zvcm09InVwcGVyY2FzZSI+TEFVTkNIUEFUSCBWRVJJRklFRDwvdGV4dD4KICA8dGV4dCB4PSI0MDAiIHk9IjMyNSIgZmlsbD0iI2ZmZmZmZiIgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sIEJsaW5rTWFjU3lzdGVtQ29sLCAnU2Vnb2UgVUknLCBSb2JvdG8sIE91dGZpdCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjgwMCIgbGV0dGVyLXNwYWNpbmc9Ii0wLjUiIHRleHQtYW5jaG9yPSJuYXR1cmFsIj5BSSBSRUFESU5FU1MgVklERU8gSU5URVJWSUVXPC90ZXh0PgogIDx0ZXh0IHg9IjQwMCIgeT0iMzQ3IiBmaWxsPSIjOTRhM2I4IiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Db2wsICdTZWdvZSBVSScsIFJvYm90bywgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZm9udC13ZWlnaHQ9IjUwMCIgdHJhY2tpbmc9IjAuNSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+U2VjdXJlIFdlYlJUQyBUaW1lZCBFeGVjdXRpdmUgUHJlc2VudGF0aW9uPC90ZXh0PgogIDx0ZXh0IHg9IjgwIiB5PSI5MCIgZmlsbD0iIzY0NzQ4YiIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxMSIgZm9udC13ZWlnaHQ9IjcwMCI+RkVFRF9TVFJFQU06IEFDVElWRTwvdGV4dD4KICA8Y2lyY2xlIGN4PSIyMTUiIGN5PSI4NiIgcj0iNCIgZmlsbD0iIzEwYjk4MSIvPgogIDx0ZXh0IHg9IjcyMCIgeT0iOTAiIGZpbGw9IiM2NDc0OGIiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTEiIHRleHQtYW5jaG9yPSJlbmQiPjQvNCBNT0RVTEVTIENPTVBMRVRFRDwvdGV4dD4KPC9zdmc+";
-
-import { 
-  X, 
-  Mail, 
+import {
+  X,
+  Mail,
   Phone,
-  ExternalLink, 
-  FileText, 
-  Activity, 
-  TrendingUp, 
-  Calendar, 
-  Clock, 
-  ShieldAlert,
-  Award,
+  ExternalLink,
+  FileText,
+  Calendar,
+  Clock,
   Check,
+  Copy,
+  Save,
   Video,
-  Save
+  TrendingUp,
+  AlertCircle,
 } from 'lucide-react';
+import { Badge, BadgeTone, Button, EmptyState, Identity, Segmented, StatusBadge, Table, TBody, Td, Th, THead, Tr, Textarea, cx, statusTone } from '../_components/ui';
+import { useToast } from '@/components/ToastNotification';
+
+// Brand video poster (navy surface, lime play mark)
+const LAUNCHPATH_POSTER_SVG =
+  'data:image/svg+xml;charset=utf-8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <rect width="800" height="450" fill="#081227"/>
+  <rect x="0.5" y="0.5" width="799" height="449" fill="none" stroke="#ffffff" stroke-opacity="0.06"/>
+  <circle cx="400" cy="200" r="38" fill="#A6F23C" fill-opacity="0.12" stroke="#A6F23C" stroke-opacity="0.5" stroke-width="1.5"/>
+  <polygon points="390,184 418,200 390,216" fill="#A6F23C"/>
+  <text x="400" y="285" fill="#ffffff" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="18" font-weight="600" text-anchor="middle">Video interview</text>
+  <text x="400" y="310" fill="#94a3b8" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" text-anchor="middle">LaunchPath readiness assessment</text>
+</svg>`,
+  );
 
 interface SuperadminCandidateInspectorProps {
   inspectCandidate: any;
@@ -30,6 +43,81 @@ interface SuperadminCandidateInspectorProps {
   onRefresh?: () => void;
 }
 
+type InspectTab = 'profile' | 'video' | 'matches' | 'pipeline';
+
+/* ------------------------------ Local helpers ----------------------------- */
+
+function Section({ title, description, action, children }: { title: string; description?: string; action?: ReactNode; children: ReactNode }) {
+  return (
+    <section className="space-y-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-white">{title}</h3>
+          {description && <p className="mt-1 text-xs text-slate-400">{description}</p>}
+        </div>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function DetailItem({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="rounded-xl border border-white/[0.06] bg-ink-850/60 px-4 py-3">
+      <p className="text-xs text-slate-500">{label}</p>
+      <div className="mt-1 text-sm font-medium text-white">{children}</div>
+    </div>
+  );
+}
+
+function Muted({ children }: { children: ReactNode }) {
+  return <span className="font-normal text-slate-500">{children}</span>;
+}
+
+function ErrorAlert({ message }: { message: string }) {
+  return (
+    <div role="alert" className="flex items-start gap-2.5 rounded-xl border border-rose-400/20 bg-rose-500/[0.06] px-3.5 py-3 text-xs leading-relaxed text-rose-200">
+      <AlertCircle className="mt-px h-4 w-4 shrink-0 text-rose-300" />
+      <span>{message}</span>
+    </div>
+  );
+}
+
+function scoreTone(score: number): BadgeTone {
+  if (score < 55) return 'danger';
+  if (score < 75) return 'warning';
+  return 'success';
+}
+
+function applicationTone(status?: string): BadgeTone {
+  if (status === 'Declined') return 'danger';
+  const tone = statusTone(status);
+  return tone === 'neutral' ? 'warning' : tone;
+}
+
+function interviewTone(status?: string): BadgeTone {
+  if (status === 'Confirmed') return 'success';
+  if (status === 'Cancelled') return 'danger';
+  return 'warning';
+}
+
+function LinkButton({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-white/[0.04] px-3 text-xs font-medium text-slate-200 ring-1 ring-inset ring-white/10 transition-colors hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime/60"
+    >
+      {children}
+      <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+    </a>
+  );
+}
+
+/* -------------------------------- Component ------------------------------- */
+
 export default function SuperadminCandidateInspector({
   inspectCandidate,
   setInspectCandidate,
@@ -38,13 +126,15 @@ export default function SuperadminCandidateInspector({
   interviews = [],
   onRefresh
 }: SuperadminCandidateInspectorProps) {
+  const toast = useToast();
   const readiness = inspectCandidate?.video_interviews?.[0];
   const [manualScore, setManualScore] = useState(0);
   const [manualFeedback, setManualFeedback] = useState('');
   const [manualQuestions, setManualQuestions] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
+
+  const isOpen = Boolean(inspectCandidate);
 
   useEffect(() => {
     if (readiness) {
@@ -64,15 +154,26 @@ export default function SuperadminCandidateInspector({
       setManualFeedback('');
       setManualQuestions([]);
     }
-    setSubmitSuccess(false);
     setSubmitError('');
   }, [inspectCandidate, readiness]);
+
+  // Escape to close + body scroll lock while the drawer is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setInspectCandidate(null);
+    document.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen, setInspectCandidate]);
 
   const handleSaveGrades = async () => {
     if (!readiness) return;
     setIsSubmitting(true);
     setSubmitError('');
-    setSubmitSuccess(false);
 
     try {
       const res = await fetch('/api/superadmin/video-interview/grade', {
@@ -91,18 +192,18 @@ export default function SuperadminCandidateInspector({
         throw new Error(resData.error || 'Failed to submit score grading');
       }
 
-      setSubmitSuccess(true);
-      
+      toast.success('Score saved and interview approved');
+
       const updatedVideoArr = [{
         ...readiness,
         score: manualScore,
         feedback: manualFeedback,
         status: 'COMPLETED',
-        questions: typeof readiness.questions === 'string' 
-          ? JSON.stringify(manualQuestions) 
+        questions: typeof readiness.questions === 'string'
+          ? JSON.stringify(manualQuestions)
           : manualQuestions
       }];
-      
+
       setInspectCandidate({
         ...inspectCandidate,
         video_interviews: updatedVideoArr
@@ -112,7 +213,7 @@ export default function SuperadminCandidateInspector({
         onRefresh();
       }
     } catch (err: any) {
-      setSubmitError(err.message || 'Error processing grades.');
+      setSubmitError(err.message || 'Could not save the score. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -127,694 +228,417 @@ export default function SuperadminCandidateInspector({
   const handleQuestionScoreChange = (qi: number, value: number) => {
     const updated = [...manualQuestions];
     const scoreVal = Math.max(0, Math.min(100, value));
-    updated[qi] = { 
-      ...updated[qi], 
+    updated[qi] = {
+      ...updated[qi],
       questionScore: scoreVal,
       score: scoreVal,
-      question_score: scoreVal 
+      question_score: scoreVal
     };
     setManualQuestions(updated);
   };
 
+  const handleCopyResume = () => {
+    if (typeof window !== 'undefined' && window.navigator && window.navigator.clipboard) {
+      window.navigator.clipboard.writeText(inspectCandidate.resume_text || '');
+      toast.success('Resume text copied');
+    }
+  };
+
   if (!inspectCandidate) return null;
 
-  return (
-    <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 w-full max-w-5xl h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-slate-800 rounded-3xl animate-scale-in">
-        
-        {/* Header block with candidate branding */}
-        <div className="p-6 border-b border-slate-800 bg-slate-950 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#7145FF] to-indigo-500 flex items-center justify-center text-lg font-mono font-black text-white border border-[#7145FF]/30 select-none shadow-lg shadow-[#7145FF]/10">
-              {inspectCandidate.name?.substring(0, 2).toUpperCase() || 'CD'}
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-                {inspectCandidate.name}
-                <span className="text-[10px] font-mono tracking-widest uppercase px-2.5 py-0.5 bg-[#7145FF]/10 border border-[#7145FF]/30 rounded text-[#a385ff] font-extrabold shadow-sm animate-pulse">
-                  #{inspectCandidate.id}
-                </span>
-              </h2>
-              <p className="text-sm font-semibold text-slate-400 mt-0.5">{inspectCandidate.professional_title || 'Software Candidate'}</p>
-              <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-slate-500 w-full animate-fade-in">
-                <span className="flex items-center gap-1 shrink-0">
-                  <Mail className="w-3.5 h-3.5 text-slate-500" />
-                  {inspectCandidate.email}
-                </span>
-                {inspectCandidate.phone && (
-                  <span className="flex items-center gap-1.5 shrink-0 text-emerald-450 font-medium">
-                    <Phone className="w-3.5 h-3.5 text-emerald-500" />
-                    {inspectCandidate.phone}
-                  </span>
-                )}
-                {inspectCandidate.experience_level && (
-                  <span className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-800 border border-slate-700/60 rounded text-slate-300 font-mono text-[10.5px]">
-                    EXP: {inspectCandidate.experience_level}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+  const close = () => setInspectCandidate(null);
+  const matches: any[] = inspectCandidate.job_matches || [];
+  const applications: any[] = inspectCandidate.applications || [];
+  const candidateInterviews = (interviews || []).filter((iv: any) => iv.candidate_id === inspectCandidate.id);
+  const resumeTask = inspectCandidate.resume_tasks?.[0];
 
-          {/* External links and state trackers */}
-          <div className="flex flex-wrap items-center gap-2.5 self-stretch md:self-auto select-none">
-            {inspectCandidate.linkedin_url && (
-              <a 
-                href={inspectCandidate.linkedin_url} 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex items-center gap-1 bg-blue-500/10 hover:bg-blue-500/25 text-blue-400 border border-blue-550/30 px-3 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition font-mono"
-              >
-                LinkedIn <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            )}
-            {inspectCandidate.github_url && (
-              <a 
-                href={inspectCandidate.github_url} 
-                target="_blank" 
-                rel="noreferrer" 
-                className="flex items-center gap-1 bg-pink-500/10 hover:bg-pink-500/25 text-pink-405 border border-pink-550/30 px-3 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition font-mono"
-              >
-                GitHub <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            )}
-            <button 
-              onClick={() => setInspectCandidate(null)}
-              className="p-2 border border-slate-800 bg-slate-900 text-slate-400 hover:text-white rounded-xl transition cursor-pointer font-bold ml-1"
-              title="Close Inspect Profile"
+  const tabOptions: { value: InspectTab; label: string; count?: number }[] = [
+    { value: 'profile', label: 'Profile' },
+    { value: 'video', label: 'Video interview' },
+    { value: 'matches', label: 'Matches', count: matches.length },
+    { value: 'pipeline', label: 'Pipeline', count: applications.length },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={`Candidate ${inspectCandidate.name || ''}`}>
+      <div className="absolute inset-0 bg-ink-950/80 backdrop-blur-sm animate-fade-in" onClick={close} />
+
+      <aside className="absolute inset-y-0 right-0 flex h-full w-full max-w-3xl flex-col border-l border-white/[0.06] bg-ink-900 shadow-2xl shadow-black/50 animate-fade-in">
+        {/* Header */}
+        <header className="space-y-4 border-b border-white/[0.06] px-6 pb-4 pt-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <Identity
+                name={inspectCandidate.name}
+                sub={inspectCandidate.professional_title || 'Candidate'}
+              />
+              <Badge>#{inspectCandidate.id}</Badge>
+            </div>
+            <button
+              type="button"
+              onClick={close}
+              aria-label="Close"
+              className="-mr-2 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime/60"
             >
-              <X className="w-5 h-5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
-        </div>
 
-        {/* Navigation within the candidate inspection portal */}
-        <div className="bg-slate-950/60 border-b border-slate-800/80 px-6 py-2.5 flex flex-wrap gap-1.5 select-none">
-          <button
-            onClick={() => setInspectTab('profile')}
-            className={`px-4 py-2 text-xs font-bold font-mono uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 ${
-              inspectTab === 'profile'
-                ? 'bg-[#7145FF]/10 text-white border border-[#7145FF]/30 shadow-inner'
-                : 'text-slate-450 hover:text-slate-200 hover:bg-slate-850'
-            }`}
-          >
-            <FileText className="w-4 h-4 text-slate-400" /> RESUME PAYLOAD
-          </button>
-          
-          <button
-            onClick={() => setInspectTab('video')}
-            className={`px-4 py-2 text-xs font-bold font-mono uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 relative ${
-              inspectTab === 'video'
-                ? 'bg-[#7145FF]/10 text-white border border-[#7145FF]/30 shadow-inner'
-                : 'text-slate-450 hover:text-slate-200 hover:bg-slate-850'
-            }`}
-          >
-            <Activity className="w-4 h-4 text-violet-400" /> 
-            VIDEO READINESS 
-            {inspectCandidate.video_interviews?.length > 0 && (
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-ping absolute top-1 right-2" />
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400">
+            {inspectCandidate.email && (
+              <span className="inline-flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5 text-slate-500" />
+                {inspectCandidate.email}
+              </span>
             )}
-          </button>
+            {inspectCandidate.phone && (
+              <span className="inline-flex items-center gap-1.5">
+                <Phone className="h-3.5 w-3.5 text-slate-500" />
+                {inspectCandidate.phone}
+              </span>
+            )}
+            {inspectCandidate.experience_level && (
+              <Badge>
+                <span className="capitalize">{String(inspectCandidate.experience_level).toLowerCase()}</span>
+              </Badge>
+            )}
+            {(inspectCandidate.linkedin_url || inspectCandidate.github_url) && (
+              <span className="ml-auto flex items-center gap-2">
+                {inspectCandidate.linkedin_url && <LinkButton href={inspectCandidate.linkedin_url}>LinkedIn</LinkButton>}
+                {inspectCandidate.github_url && <LinkButton href={inspectCandidate.github_url}>GitHub</LinkButton>}
+              </span>
+            )}
+          </div>
 
-          <button
-            onClick={() => setInspectTab('matches')}
-            className={`px-4 py-2 text-xs font-bold font-mono uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 ${
-              inspectTab === 'matches'
-                ? 'bg-[#7145FF]/10 text-white border border-[#7145FF]/30 shadow-inner'
-                : 'text-slate-450 hover:text-slate-200 hover:bg-slate-850'
-            }`}
-          >
-            <TrendingUp className="w-4 h-4 text-blue-400" /> POSITION MATCHES ({inspectCandidate.job_matches?.length || 0})
-          </button>
+          <div className="overflow-x-auto">
+            <Segmented<InspectTab>
+              value={inspectTab as InspectTab}
+              onChange={(v) => setInspectTab(v)}
+              options={tabOptions}
+            />
+          </div>
+        </header>
 
-          <button
-            onClick={() => setInspectTab('pipeline')}
-            className={`px-4 py-2 text-xs font-bold font-mono uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 ${
-              inspectTab === 'pipeline'
-                ? 'bg-[#7145FF]/10 text-white border border-[#7145FF]/30 shadow-inner'
-                : 'text-slate-450 hover:text-slate-200 hover:bg-slate-850'
-            }`}
-          >
-            <Calendar className="w-4 h-4 text-emerald-400" /> HIRING PIPELINE
-          </button>
-        </div>
-
-        {/* Core Panels Wrapper */}
-        <div className="flex-1 overflow-y-auto p-8 min-h-0 bg-slate-900 space-y-6">
-
-          {/* PANEL 1: PROFILE & PARSED RESUME TEXT */}
+        {/* Body */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
+          {/* PROFILE */}
           {inspectTab === 'profile' && (
-            <div className="space-y-6">
-              {/* Basic details cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-slate-950/40 p-4 border border-slate-850 rounded-2xl">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-extrabold block">Candidate Designation</span>
-                  <p className="text-white font-bold text-sm mt-1">{inspectCandidate.professional_title || 'General Software Architect'}</p>
-                </div>
-                <div className="bg-slate-950/40 p-4 border border-slate-850 rounded-2xl">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-extrabold block">Email Authentication</span>
-                  <p className="text-white font-bold text-sm mt-1">{inspectCandidate.email || 'N/A'}</p>
-                </div>
-                <div className="bg-slate-950/40 p-4 border border-slate-850 rounded-2xl">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-extrabold block">Resume Processing Tasks</span>
-                  <div className="mt-1 flex items-center gap-2">
-                    {inspectCandidate.resume_tasks && inspectCandidate.resume_tasks.length > 0 ? (
-                      (() => {
-                        const task = inspectCandidate.resume_tasks[0];
-                        let taskColor = "text-yellow-405";
-                        if (task.status === 'COMPLETED') taskColor = "text-emerald-400";
-                        else if (task.status === 'FAILED') taskColor = "text-red-400";
-                        return (
-                          <span className={`text-xs font-mono font-bold uppercase tracking-wider ${taskColor}`}>
-                            {task.status} ({task.progress}%)
-                          </span>
-                        );
-                      })()
-                    ) : (
-                      <span className="text-xs text-slate-500 italic font-mono">No tasks queued</span>
-                    )}
-                  </div>
-                </div>
+            <div className="space-y-8 animate-fade-in">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <DetailItem label="Job title">{inspectCandidate.professional_title || <Muted>Not specified</Muted>}</DetailItem>
+                <DetailItem label="Email">
+                  <span className="block truncate">{inspectCandidate.email || <Muted>Not specified</Muted>}</span>
+                </DetailItem>
+                <DetailItem label="Resume processing">
+                  {resumeTask ? (
+                    <Badge tone={statusTone(resumeTask.status)} dot>
+                      <span className="capitalize">{String(resumeTask.status || '').toLowerCase()}</span>
+                      <span className="tabular-nums">{resumeTask.progress}%</span>
+                    </Badge>
+                  ) : (
+                    <Muted>No tasks queued</Muted>
+                  )}
+                </DetailItem>
               </div>
 
-              {/* Education, Roles & Verification Documents */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-950/20 p-5 border border-slate-800 rounded-3xl">
-                <div className="space-y-4">
-                  <h4 className="text-[10px] uppercase font-mono font-bold tracking-widest text-[#7145FF]">Education & Career Preferences</h4>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-slate-900/60 p-3.5 border border-slate-850/60 rounded-xl">
-                      <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold block mb-0.5">Institution Studied</span>
-                      <span className="text-white text-xs font-bold block">
-                        {inspectCandidate.study_institution || <span className="text-slate-500 italic font-normal">Not specified</span>}
-                      </span>
-                    </div>
-                    <div className="bg-slate-900/60 p-3.5 border border-slate-850/60 rounded-xl">
-                      <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold block mb-0.5">Field / Specialisation</span>
-                      <span className="text-white text-xs font-bold block">
-                        {inspectCandidate.study_specialisation || <span className="text-slate-500 italic font-normal">Not specified</span>}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-900/60 p-3.5 border border-slate-850/60 rounded-xl">
-                    <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold block mb-0.5">Seeking Roles</span>
-                    <span className="text-white text-xs font-bold block">
-                      {inspectCandidate.seeking_roles || <span className="text-slate-500 italic font-normal">Not specified yet</span>}
-                    </span>
+              <Section title="Education and preferences">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <DetailItem label="Institution">{inspectCandidate.study_institution || <Muted>Not specified</Muted>}</DetailItem>
+                  <DetailItem label="Field of study">{inspectCandidate.study_specialisation || <Muted>Not specified</Muted>}</DetailItem>
+                  <div className="sm:col-span-2">
+                    <DetailItem label="Seeking roles">{inspectCandidate.seeking_roles || <Muted>Not specified</Muted>}</DetailItem>
                   </div>
                 </div>
+              </Section>
 
-                <div className="space-y-4">
-                  <h4 className="text-[10px] uppercase font-mono font-bold tracking-widest text-emerald-400">Uploaded Documents & Clearance</h4>
-                  
-                  <div className="space-y-3">
-                    {/* Degree Certificate */}
-                    <div className="bg-slate-900/60 p-3.5 border border-slate-850/60 rounded-xl flex items-center justify-between gap-4">
-                      <div>
-                        <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold block mb-0.5">Academic Degree Certificates</span>
-                        {inspectCandidate.certificates_url ? (
-                          <span className="text-emerald-400 text-xs font-bold flex items-center gap-1">
-                            <Check className="w-3.5 h-3.5" /> File Uploaded
-                          </span>
-                        ) : (
-                          <span className="text-slate-500 text-xs italic font-medium">No certificate uploaded</span>
-                        )}
+              <Section title="Documents">
+                <div className="divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-white/[0.06]">
+                  {[
+                    { label: 'Degree certificate', url: inspectCandidate.certificates_url, action: 'View certificate' },
+                    { label: 'Police clearance', url: inspectCandidate.police_clearance_url, action: 'View clearance' },
+                  ].map((doc) => (
+                    <div key={doc.label} className="flex items-center justify-between gap-4 bg-ink-850/40 px-4 py-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-slate-400">
+                          <FileText className="h-4 w-4" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white">{doc.label}</p>
+                          {doc.url ? (
+                            <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-emerald-300">
+                              <Check className="h-3.5 w-3.5" /> Uploaded
+                            </p>
+                          ) : (
+                            <p className="mt-0.5 text-xs text-slate-500">Not uploaded</p>
+                          )}
+                        </div>
                       </div>
-                      {inspectCandidate.certificates_url && (
-                        <a 
-                          href={inspectCandidate.certificates_url} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold font-mono uppercase tracking-wider rounded-lg transition"
-                        >
-                          View Certificate
-                        </a>
-                      )}
+                      {doc.url && <LinkButton href={doc.url}>{doc.action}</LinkButton>}
                     </div>
-
-                    {/* Police Clearance */}
-                    <div className="bg-slate-900/60 p-3.5 border border-slate-850/60 rounded-xl flex items-center justify-between gap-4">
-                      <div>
-                        <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold block mb-0.5">Police Clearance Certificate</span>
-                        {inspectCandidate.police_clearance_url ? (
-                          <span className="text-emerald-400 text-xs font-bold flex items-center gap-1">
-                            <Check className="w-3.5 h-3.5" /> Clearance Uploaded
-                          </span>
-                        ) : (
-                          <span className="text-slate-500 text-xs italic font-medium">No clearance uploaded</span>
-                        )}
-                      </div>
-                      {inspectCandidate.police_clearance_url && (
-                        <a 
-                          href={inspectCandidate.police_clearance_url} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold font-mono uppercase tracking-wider rounded-lg transition"
-                        >
-                          View Clearance
-                        </a>
-                      )}
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
+              </Section>
 
-              {/* Full text parsed from resume PDF uploads */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center bg-slate-950/10 p-1 rounded-lg">
-                  <h4 className="text-[10px] uppercase font-mono font-bold tracking-widest text-[#7145FF]">System Parsed Resume Text Content</h4>
-                  <button 
-                    onClick={() => {
-                      if (typeof window !== 'undefined' && window.navigator && window.navigator.clipboard) {
-                        window.navigator.clipboard.writeText(inspectCandidate.resume_text || '');
-                        alert('Resume text copied to clipboard successfully!');
-                      }
-                    }} 
-                    type="button"
-                    className="text-[10px] font-mono font-bold text-slate-400 hover:text-white bg-slate-800 px-3 py-1 rounded transition max-w-max cursor-pointer"
-                  >
-                    COPY TO CLIPBOARD
-                  </button>
+              <Section
+                title="Resume text"
+                description="Extracted from the uploaded resume and used for matching."
+                action={
+                  <Button size="sm" variant="secondary" icon={Copy} onClick={handleCopyResume} type="button">
+                    Copy
+                  </Button>
+                }
+              >
+                <div className="max-h-96 select-text overflow-y-auto whitespace-pre-wrap rounded-xl border border-white/[0.06] bg-ink-950/60 p-5 text-xs leading-relaxed text-slate-300">
+                  {inspectCandidate.resume_text || <span className="text-slate-500">No resume text available.</span>}
                 </div>
-                
-                <div className="bg-slate-950 p-6 rounded-2xl border border-slate-850 text-xs text-emerald-400/90 font-mono whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto selection:bg-slate-800 scrolling-touch select-text">
-                  {inspectCandidate.resume_text || 'NO_PHYSICAL_RESUME_PAYLOAD_DEPLOYED_FOR_MATCHING'}
-                </div>
-
-                <p className="text-[10.5px] italic text-slate-400 text-center leading-normal">
-                  This text document matches standard embeddings extracted upon initial upload. Secure recruitment policies apply under South African POPIA regulations.
-                </p>
-              </div>
+                <p className="text-xs text-slate-500">Candidate data is handled in line with POPIA.</p>
+              </Section>
             </div>
           )}
 
-          {/* PANEL 2: VIDEO INTERVIEW & READINESS */}
+          {/* VIDEO INTERVIEW */}
           {inspectTab === 'video' && (
-            <div className="space-y-6 animate-fade-in font-sans">
-              {(() => {
-                const readiness = inspectCandidate.video_interviews?.[0];
-                if (!readiness) {
-                  return (
-                    <div className="text-center py-12 bg-slate-950/20 border border-dashed border-slate-800 rounded-3xl p-8 space-y-4">
-                      <div className="w-16 h-16 bg-slate-950 border border-slate-850 rounded-2xl flex items-center justify-center mx-auto text-slate-655">
-                        <ShieldAlert className="w-8 h-8 text-slate-500" />
-                      </div>
-                      <div className="max-w-md mx-auto space-y-1.5">
-                        <h3 className="font-bold text-white text-base">Video Interview Incomplete</h3>
-                        <p className="text-xs text-slate-450 leading-relaxed">
-                          This candidate has not recorded their video interview or completed their initial readiness screen yet. Remind them to complete it via their profile settings.
-                        </p>
-                      </div>
+            <div className="animate-fade-in">
+              {!readiness ? (
+                <EmptyState
+                  icon={Video}
+                  title="No video interview yet"
+                  description="This candidate hasn't recorded their video interview or completed the readiness screen."
+                />
+              ) : (
+                <div className="space-y-8">
+                  <Section
+                    title="Recording"
+                    action={readiness.status === 'PENDING_REVIEW' ? <Badge tone="warning" dot>Awaiting review</Badge> : <StatusBadge status={readiness.status} />}
+                  >
+                    <div className="relative aspect-video overflow-hidden rounded-xl border border-white/[0.06] bg-black">
+                      <LaunchpathMuxPlayer
+                        videoUrl={readiness?.video_url as string | undefined}
+                        poster={LAUNCHPATH_POSTER_SVG}
+                        className="h-full w-full"
+                      />
                     </div>
-                  );
-                }
+                  </Section>
 
-                // Else, render the video readiness report
-                let scoresColor = "text-emerald-400 border-emerald-500/20 bg-emerald-500/5";
-                if (readiness.score < 55) scoresColor = "text-red-400 border-red-500/20 bg-red-500/5";
-                else if (readiness.score < 75) scoresColor = "text-yellow-400 border-yellow-500/20 bg-yellow-500/5";
-
-                let parsedQuestions: any[] = [];
-                try {
-                  parsedQuestions = typeof readiness.questions === 'string' 
-                    ? JSON.parse(readiness.questions) 
-                    : (readiness.questions || []);
-                } catch (e) {
-                  parsedQuestions = [];
-                }
-
-                return (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                    
-                    {/* Left Column: Video stream, Score slider and Coaching Summary editable box */}
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider block">Candidate Stream Presentation Recording</span>
-                          {readiness.status === 'PENDING_REVIEW' && (
-                            <span className="bg-amber-500/15 text-amber-500 border border-amber-500/30 text-[9px] font-bold px-2 py-0.5 rounded uppercase font-mono animate-pulse">
-                              Awaiting Review & Rating
-                            </span>
-                          )}
-                        </div>
-                        <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-slate-800 relative shadow-lg">
-                          <LaunchpathMuxPlayer 
-                            videoUrl={readiness?.video_url as string | undefined} 
-                            poster={LAUNCHPATH_POSTER_SVG}
-                            className="w-full h-full"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Manual Overall Score Modification widget */}
-                      <div className="p-5 bg-slate-950/60 rounded-2xl border border-slate-850 space-y-3">
-                        <div className="flex justify-between items-center font-mono">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-1">
-                            <Award className="w-3.5 h-3.5 text-amber-500" /> Overall Readiness Quotient
-                          </span>
-                          <span className={`text-sm font-bold px-2.5 py-0.5 rounded border ${scoresColor}`}>
-                            {manualScore}% Assigned
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <input 
-                            type="range" 
-                            min="0" 
-                            max="100" 
-                            className="w-full h-2 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-[#7145FF] border border-slate-800"
-                            value={manualScore}
-                            onChange={(e) => setManualScore(Number(e.target.value))}
-                          />
-                          <input 
-                            type="number"
-                            min="0"
-                            max="100"
-                            className="w-16 bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-center text-xs font-mono font-bold text-white focus:outline-none focus:border-[#7145FF]"
-                            value={manualScore}
-                            onChange={(e) => setManualScore(Math.max(0, Math.min(100, Number(e.target.value))))}
-                          />
-                        </div>
-                        <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-[#7145FF] to-indigo-500 transition-all duration-300" 
-                            style={{ width: `${manualScore}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Recruiter Coaching Comment */}
-                      <div className="p-5 bg-[#7145FF]/5 rounded-2xl border border-[#7145FF]/15 space-y-3">
-                        <span className="text-[10px] font-mono font-bold text-violet-400 uppercase tracking-widest block">Recruiter Executive Summary & Coaching Feedback</span>
-                        <textarea
-                          className="w-full h-28 bg-slate-900/80 border border-slate-800/80 rounded-xl p-3 text-xs focus:outline-none focus:border-[#7145FF] text-slate-200 leading-relaxed font-sans placeholder-slate-500"
-                          value={manualFeedback}
-                          onChange={(e) => setManualFeedback(e.target.value)}
-                          placeholder="Type manual review summary, evaluation rationale & candidate coaching notes here..."
-                          rows={4}
+                  <Section
+                    title="Overall score"
+                    action={<Badge tone={scoreTone(manualScore)}><span className="tabular-nums">{manualScore}%</span></Badge>}
+                  >
+                    <div className="space-y-3 rounded-xl border border-white/[0.06] bg-ink-850/40 p-4">
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          aria-label="Overall score"
+                          className="h-1.5 w-full cursor-pointer accent-brand-lime"
+                          value={manualScore}
+                          onChange={(e) => setManualScore(Number(e.target.value))}
+                        />
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          aria-label="Overall score value"
+                          className="h-9 w-20 rounded-lg border border-white/[0.08] bg-ink-950/60 text-center text-sm font-medium tabular-nums text-white focus:border-brand-lime/50 focus:outline-none focus:ring-4 focus:ring-brand-lime/10"
+                          value={manualScore}
+                          onChange={(e) => setManualScore(Math.max(0, Math.min(100, Number(e.target.value))))}
                         />
                       </div>
                     </div>
+                  </Section>
 
-                    {/* Right Column: Answers, Speech transcripts, and Question scores */}
-                    <div className="space-y-4 flex flex-col max-h-[85vh] overflow-y-auto pr-2 custom-scrollbar">
-                      <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-                        <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest block">Editable Speech Transcripts & Question Ratings ({manualQuestions.length})</span>
-                        <span className="text-[9px] text-slate-400">Click text below to correct speech transcripts</span>
-                      </div>
-                      
-                      <div className="space-y-4 pr-1">
-                        {manualQuestions.map((q: any, qi: number) => {
-                          const qScore = q.questionScore ?? q.score ?? q.question_score ?? 0;
-                          return (
-                            <div key={q.id || qi} className="p-4 bg-slate-950/40 border border-slate-850 rounded-2xl space-y-3 text-xs animate-fade-in">
-                              <div className="flex justify-between items-center bg-slate-950/80 p-2.5 rounded-xl border border-slate-850 font-semibold text-slate-200 gap-2">
-                                <span className="truncate">Q0{q.id || qi + 1}: {q.title}</span>
-                                <div className="flex items-center gap-2 shrink-0 animate-fade-in">
-                                  <span className="text-[10px] font-mono font-bold text-slate-405">Score:</span>
-                                  <input 
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    className="w-12 bg-slate-900 border border-slate-850 rounded-lg py-1 px-1.5 text-center text-[10px] font-mono font-bold text-[#a385ff] focus:outline-none focus:border-[#7145FF]"
-                                    value={qScore}
-                                    onChange={(e) => handleQuestionScoreChange(qi, Number(e.target.value))}
-                                  />
-                                  <span className="text-[#a385ff] text-[10px] font-mono">%</span>
-                                </div>
-                              </div>
-                              <div className="space-y-1">
-                                <span className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest block font-sans">Corrected Speech Transcript:</span>
-                                <textarea
-                                  className="w-full bg-slate-900/60 border border-slate-800/60 rounded-xl p-2.5 text-xs text-slate-300 focus:outline-none focus:border-[#7145FF] transition-all leading-relaxed placeholder-slate-505 font-sans"
-                                  value={q.transcript || ''}
-                                  onChange={(e) => handleQuestionTranscriptChange(qi, e.target.value)}
-                                  placeholder="No transcript generated for this response. Add manual transcription or notes here..."
-                                  rows={2}
+                  <Section title="Feedback" description="Shared with the candidate as coaching notes.">
+                    <Textarea
+                      rows={4}
+                      value={manualFeedback}
+                      onChange={(e) => setManualFeedback(e.target.value)}
+                      placeholder="Summary, rationale and coaching notes"
+                    />
+                  </Section>
+
+                  <Section
+                    title={`Questions (${manualQuestions.length})`}
+                    description="Correct transcripts and adjust per-question scores."
+                  >
+                    <div className="space-y-3">
+                      {manualQuestions.map((q: any, qi: number) => {
+                        const qScore = q.questionScore ?? q.score ?? q.question_score ?? 0;
+                        return (
+                          <div key={q.id || qi} className="space-y-3 rounded-xl border border-white/[0.06] bg-ink-850/40 p-4">
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="min-w-0 text-sm font-medium text-white">
+                                <span className="mr-2 text-slate-500 tabular-nums">Q{q.id || qi + 1}</span>
+                                {q.title}
+                              </p>
+                              <label className="flex shrink-0 items-center gap-2 text-xs text-slate-400">
+                                Score
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  className="h-8 w-16 rounded-lg border border-white/[0.08] bg-ink-950/60 text-center text-xs font-medium tabular-nums text-white focus:border-brand-lime/50 focus:outline-none focus:ring-4 focus:ring-brand-lime/10"
+                                  value={qScore}
+                                  onChange={(e) => handleQuestionScoreChange(qi, Number(e.target.value))}
                                 />
-                              </div>
+                                %
+                              </label>
                             </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Scoring Actions and submit state indications */}
-                      <div className="pt-4 border-t border-slate-800 space-y-3 shrink-0">
-                        {submitError && (
-                          <div className="p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-400 font-medium font-sans">
-                            ⚠️ {submitError}
+                            <Textarea
+                              rows={3}
+                              aria-label={`Transcript for question ${q.id || qi + 1}`}
+                              className="text-xs"
+                              value={q.transcript || ''}
+                              onChange={(e) => handleQuestionTranscriptChange(qi, e.target.value)}
+                              placeholder="No transcript. Add one manually."
+                            />
                           </div>
-                        )}
-                        {submitSuccess && (
-                          <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-400 font-bold flex items-center gap-2 font-sans">
-                            <Check className="w-4 h-4 text-emerald-400 shrink-0 animate-scale-in" /> Evaluation Successfully Approved & Published!
-                          </div>
-                        )}
-                        
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={handleSaveGrades}
-                            disabled={isSubmitting}
-                            className="flex-1 bg-[#7145FF] hover:bg-[#5b32e6] disabled:bg-slate-800 text-white p-3.5 rounded-xl text-xs font-extrabold uppercase tracking-widest transition shadow-lg shadow-[#7145FF]/10 cursor-pointer flex items-center justify-center gap-2 font-mono"
-                          >
-                            {isSubmitting ? (
-                              <>
-                                <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0" />
-                                Publishing Grades...
-                              </>
-                            ) : (
-                              <>
-                                <Save className="w-4 h-4" /> Save Score & Approve Interview
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-
+                        );
+                      })}
                     </div>
+                  </Section>
 
+                  <div className="space-y-3 border-t border-white/[0.06] pt-6">
+                    {submitError && <ErrorAlert message={submitError} />}
+                    <div className="flex justify-end">
+                      <Button variant="primary" icon={Save} loading={isSubmitting} onClick={handleSaveGrades}>
+                        Save score and approve
+                      </Button>
+                    </div>
                   </div>
-                );
-              })()}
+                </div>
+              )}
             </div>
           )}
 
-          {/* PANEL 3: POSITION MATCHES MATRIX */}
+          {/* MATCHES */}
           {inspectTab === 'matches' && (
-            <div className="space-y-6 animate-fade-in font-sans">
-              <div className="flex justify-between items-center bg-slate-950/40 p-4 border border-slate-805 rounded-2xl">
-                <div>
-                  <h4 className="font-bold text-white text-sm">Targeted Compatibility Matrix</h4>
-                  <p className="text-xs text-slate-400 mt-1">Cross-referencing candidate qualifications with live system open position mandates.</p>
-                </div>
-                <span className="px-2.5 py-0.5 font-mono text-[10px] font-extrabold bg-[#7145FF]/10 text-[#a385ff] rounded border border-[#7145FF]/20">
-                  Matches found: {inspectCandidate.job_matches?.length || 0}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {inspectCandidate.job_matches && inspectCandidate.job_matches.length > 0 ? (
-                  inspectCandidate.job_matches.map((m: any, idx: number) => {
-                    const score = m.match_score;
-                    let progressColor = "bg-[#7145FF]";
-                    let badgeStyle = "bg-[#7145FF]/10 text-white border-[#7145FF]/20";
-                    if (score >= 85) {
-                      progressColor = "bg-emerald-500";
-                      badgeStyle = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
-                    } else if (score < 60) {
-                      progressColor = "bg-slate-500";
-                      badgeStyle = "bg-slate-800 text-slate-400 border-slate-700";
-                    }
-
-                    return (
-                      <div key={m.id || idx} className="bg-slate-950/50 border border-slate-850 rounded-2xl overflow-hidden p-5 flex flex-col space-y-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 font-bold">Computed compatibility</span>
-                            <h4 className="font-bold text-white text-sm mt-0.5">{m.job?.title || 'External Matching Task'}</h4>
-                            <p className="text-xs text-[#a385ff] font-semibold">{m.job?.company || 'LaunchPath Network'}</p>
+            <div className="animate-fade-in">
+              {matches.length === 0 ? (
+                <EmptyState
+                  icon={TrendingUp}
+                  title="No matches yet"
+                  description="Run a rescore or create a match manually in Matchmaker."
+                />
+              ) : (
+                <Section title="Job matches" description="How this candidate compares with open roles.">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {matches.map((m: any, idx: number) => {
+                      const score = m.match_score;
+                      const tone: BadgeTone = score >= 85 ? 'success' : score < 60 ? 'neutral' : 'info';
+                      const barColor = score >= 85 ? 'bg-emerald-400' : score < 60 ? 'bg-slate-500' : 'bg-sky-400';
+                      return (
+                        <div key={m.id || idx} className="space-y-4 rounded-xl border border-white/[0.06] bg-ink-850/40 p-5">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium text-white">{m.job?.title || 'Untitled role'}</p>
+                              <p className="mt-0.5 truncate text-xs text-slate-400">{m.job?.company || 'LaunchPath'}</p>
+                            </div>
+                            <Badge tone={tone}><span className="tabular-nums">{score}% fit</span></Badge>
                           </div>
-                          <span className={`px-2.5 py-0.5 font-mono font-extrabold rounded-full border text-xs ${badgeStyle}`}>
-                            {score}% Fit
-                          </span>
-                        </div>
 
-                        <div className="space-y-1.5">
-                          <div className="w-full h-1.5 bg-slate-900 border border-slate-800 rounded-full overflow-hidden">
-                            <div className={`h-full ${progressColor}`} style={{ width: `${score}%` }} />
+                          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]">
+                            <div className={cx('h-full rounded-full', barColor)} style={{ width: `${score}%` }} />
                           </div>
-                        </div>
 
-                        {/* Skills alignment */}
-                        <div className="grid grid-cols-2 gap-4 pt-1 text-xs">
-                          <div className="space-y-1">
-                            <span className="font-bold font-mono tracking-wide text-emerald-400 uppercase text-[9.5px]">Matched Skills</span>
-                            <p className="text-slate-355 p-2 bg-slate-900/40 border border-slate-855 rounded-xl min-h-12 leading-relaxed font-mono">
-                              {m.matched_skills || 'No skills mapped'}
-                            </p>
+                          <div className="grid grid-cols-2 gap-3 text-xs">
+                            <div className="space-y-1">
+                              <p className="text-slate-500">Matched skills</p>
+                              <p className="leading-relaxed text-slate-300">{m.matched_skills || 'None mapped'}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-slate-500">Missing skills</p>
+                              <p className="leading-relaxed text-slate-300">{m.missing_skills || 'None'}</p>
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            <span className="font-bold font-mono tracking-wide text-red-400 uppercase text-[9.5px]">Missing Skills</span>
-                            <p className="text-slate-355 p-2 bg-slate-900/40 border border-slate-855 rounded-xl min-h-12 leading-relaxed font-mono">
-                              {m.missing_skills || 'None (100% Fit Alignment)'}
-                            </p>
+
+                          <div className="space-y-3 border-t border-white/[0.06] pt-4 text-xs">
+                            <div className="space-y-1">
+                              <p className="text-slate-500">Summary</p>
+                              <p className="leading-relaxed text-slate-300">{m.fit_summary || 'Pending'}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-slate-500">Recommendation</p>
+                              <p className="leading-relaxed text-slate-300">{m.recommendation || 'Pending'}</p>
+                            </div>
                           </div>
                         </div>
+                      );
+                    })}
+                  </div>
+                </Section>
+              )}
+            </div>
+          )}
 
-                        {/* Analytical summaries */}
-                        <div className="space-y-2 pt-2 border-t border-slate-850 text-xs">
-                          <div className="space-y-0.5">
-                            <span className="font-bold text-slate-500 uppercase text-[9px] tracking-wider block">Fit Summary Inference</span>
-                            <p className="text-slate-300 leading-relaxed font-medium">{m.fit_summary || 'Fit synthesis pending.'}</p>
-                          </div>
-                          <div className="space-y-0.5 pt-1.5 border-t border-slate-850/60 font-sans">
-                            <span className="font-bold text-[#a385ff] uppercase text-[9px] tracking-wider block">Recruitment Advice</span>
-                            <p className="text-slate-300 italic">{m.recommendation || 'Recommendation pipeline pending.'}</p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
+          {/* PIPELINE */}
+          {inspectTab === 'pipeline' && (
+            <div className="space-y-8 animate-fade-in">
+              <Section title="Applications" description={`${applications.length} submitted`}>
+                {applications.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-white/[0.08]">
+                    <EmptyState icon={FileText} title="No applications yet" />
+                  </div>
                 ) : (
-                  <div className="col-span-2 text-center py-12 bg-slate-950/10 border border-dashed border-slate-800 rounded-3xl p-6">
-                    <p className="text-xs text-slate-550 italic">No direct position matching embeddings generated inside database yet. Run force-rescore or create manual linkages inside manual Matchmaker panel.</p>
+                  <Table>
+                    <THead>
+                      <Th>Position</Th>
+                      <Th>Company</Th>
+                      <Th>Applied</Th>
+                      <Th align="right">Status</Th>
+                    </THead>
+                    <TBody>
+                      {applications.map((app: any, idx: number) => (
+                        <Tr key={app.id || idx}>
+                          <Td className="font-medium text-white">{app.job?.title || 'Deleted position'}</Td>
+                          <Td className="text-slate-400">{app.job?.company || 'LaunchPath client'}</Td>
+                          <Td className="whitespace-nowrap text-slate-400">
+                            {app.applied_at ? new Date(app.applied_at).toLocaleString('en-US', { dateStyle: 'medium' }) : 'N/A'}
+                          </Td>
+                          <Td align="right">
+                            <Badge tone={applicationTone(app.status)} dot>{app.status}</Badge>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </TBody>
+                  </Table>
+                )}
+              </Section>
+
+              <Section title="Scheduled interviews">
+                {candidateInterviews.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-white/[0.08]">
+                    <EmptyState icon={Calendar} title="No interviews scheduled" />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {candidateInterviews.map((iv: any) => (
+                      <div key={iv.id} className="space-y-3 rounded-xl border border-white/[0.06] bg-ink-850/40 p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-white">{iv.application?.job?.title || 'Open position'}</p>
+                            <p className="mt-0.5 truncate text-xs text-slate-400">
+                              {iv.application?.job?.company || 'Employer'} · #{iv.id}
+                            </p>
+                          </div>
+                          <Badge tone={interviewTone(iv.status)} dot>{iv.status}</Badge>
+                        </div>
+                        <p className="inline-flex items-center gap-2 text-xs text-slate-300">
+                          <Clock className="h-3.5 w-3.5 text-slate-500" />
+                          {new Date(iv.proposed_time).toLocaleString()}
+                        </p>
+                        {iv.notes && (
+                          <p className="border-t border-white/[0.06] pt-3 text-xs leading-relaxed text-slate-400">{iv.notes}</p>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
-              </div>
+              </Section>
             </div>
           )}
-
-          {/* PANEL 4: HIRING PIPELINE & APPLICATIONS */}
-          {inspectTab === 'pipeline' && (
-            <div className="space-y-8 animate-fade-in font-sans">
-              
-              {/* Active job applications */}
-              <div className="space-y-4">
-                <div className="border-b border-slate-800 pb-2 flex justify-between items-center">
-                  <h4 className="font-bold text-white text-sm flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-emerald-400" /> Active Job Application Profiles
-                  </h4>
-                  <span className="text-[10px] font-mono font-bold text-slate-505">Registered: {inspectCandidate.applications?.length || 0}</span>
-                </div>
-
-                <div className="bg-slate-950/40 border border-slate-850 rounded-2xl overflow-hidden">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead className="bg-[#7145FF]/5 border-b border-slate-855 text-slate-550 leading-normal font-mono">
-                      <tr className="uppercase">
-                        <th className="px-5 py-3">Applied Position</th>
-                        <th className="px-5 py-3">Company Client</th>
-                        <th className="px-5 py-3">Submission Date</th>
-                        <th className="px-5 py-3 text-center">Pipeline Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-855 bg-slate-950/10">
-                      {inspectCandidate.applications && inspectCandidate.applications.length > 0 ? (
-                        inspectCandidate.applications.map((app: any, idx: number) => {
-                          let statusCls = "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
-                          if (['Interviewing', 'Offered'].includes(app.status)) {
-                            statusCls = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
-                          } else if (app.status === 'Rejected' || app.status === 'Declined') {
-                            statusCls = "bg-red-500/10 text-red-400 border-red-500/20";
-                          } else if (app.status === 'Reviewed') {
-                            statusCls = "bg-blue-500/10 text-blue-400 border-blue-500/15";
-                          }
-
-                          return (
-                            <tr key={app.id || idx} className="hover:bg-slate-900/30 transition-colors">
-                              <td className="px-5 py-3.5 font-bold text-white">{app.job?.title || 'Deleted Position'}</td>
-                              <td className="px-5 py-3.5 text-slate-350 font-semibold">{app.job?.company || 'LaunchPath Client'}</td>
-                              <td className="px-5 py-3.5 font-mono text-slate-455">
-                                {app.applied_at ? new Date(app.applied_at).toLocaleString('en-US', { dateStyle: 'medium' }) : 'N/A'}
-                              </td>
-                              <td className="px-5 py-3.5 text-center">
-                                <span className={`inline-block px-2.5 py-0.5 rounded-full border text-[9.5px] uppercase font-mono font-bold tracking-wider ${statusCls}`}>
-                                  {app.status}
-                                </span>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      ) : (
-                        <tr>
-                          <td colSpan={4} className="px-5 py-6 text-center text-slate-500 italic">This candidate has not submitted applications directly yet.</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Physical scheduled interviews */}
-              <div className="space-y-4">
-                <div className="border-b border-slate-800 pb-2">
-                  <h4 className="font-bold text-white text-sm flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-violet-400" /> Physical & Proposed Scheduled Interviews
-                  </h4>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {(() => {
-                    const matchIv = (interviews || []).filter((iv: any) => iv.candidate_id === inspectCandidate.id);
-                    if (matchIv.length === 0) {
-                      return (
-                        <p className="col-span-2 text-xs text-slate-500 italic p-6 bg-slate-950/20 border border-dashed border-slate-800 rounded-2xl text-center">
-                          No physical or zoom interviews scheduled for this candidate yet.
-                        </p>
-                      );
-                    }
-
-                    return matchIv.map((iv: any) => {
-                      let statusBadge = "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
-                      if (iv.status === 'Confirmed') statusBadge = "bg-emerald-500/10 text-emerald-400 border-emerald-500/25";
-                      else if (iv.status === 'Cancelled') statusBadge = "bg-red-500/10 text-red-400 border-red-500/20";
-
-                      return (
-                        <div key={iv.id} className="p-4 bg-slate-950/40 border border-slate-850 rounded-2xl space-y-3 font-sans animate-fade-in">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="text-[10px] font-mono text-slate-505 font-bold uppercase">INTERVIEW_ID: #{iv.id}</p>
-                              <h5 className="font-bold text-white text-xs mt-0.5">{iv.application?.job?.title || 'Open Position'}</h5>
-                              <p className="text-slate-450 text-[11.5px] mt-0.5">{iv.application?.job?.company || 'Employer Tenant'}</p>
-                            </div>
-                            <span className={`text-[9px] uppercase font-mono font-bold tracking-wider px-2.5 py-0.5 rounded border ${statusBadge}`}>
-                              {iv.status}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 p-2.5 bg-slate-900 border border-slate-850 rounded-xl text-xs font-mono text-slate-300">
-                            <Clock className="w-3.5 h-3.5 text-[#a385ff]" />
-                            <span>{new Date(iv.proposed_time).toLocaleString()}</span>
-                          </div>
-                          {iv.notes && (
-                            <p className="text-xs text-slate-400 italic p-2 bg-slate-900/30 border border-slate-800 rounded-xl font-sans leading-relaxed">
-                              Notes: {iv.notes}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    });
-                  })()}
-                </div>
-              </div>
-
-            </div>
-          )}
-
         </div>
-
-        {/* Footer controls */}
-        <div className="p-5 border-t border-slate-800/80 bg-slate-950 flex justify-between items-center select-none">
-          <span className="text-[10px] font-mono text-slate-550 leading-relaxed max-w-sm">
-            Superadmin Candidate Dossier inspection view. Actions logged dynamically to platform logs.
-          </span>
-          <button 
-            onClick={() => setInspectCandidate(null)} 
-            className="px-6 py-2.5 bg-[#7145FF] hover:bg-[#5b32e6] text-white rounded-xl text-xs font-bold transition shadow-md shadow-[#7145FF]/10 cursor-pointer font-sans uppercase tracking-wider"
-          >
-            Completed Inspection
-          </button>
-        </div>
-
-      </div>
+      </aside>
     </div>
   );
 }

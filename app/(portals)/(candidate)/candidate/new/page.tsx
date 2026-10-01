@@ -1,10 +1,19 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, DragEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useTheme } from 'next-themes';
-import { Sun, Moon, PlusCircle, Upload, FileText, Sparkles, ShieldCheck, RefreshCw, Briefcase } from 'lucide-react';
-import CandidateNavbar from '@/components/CandidateNavbar';
+import { FileUp, FileText, Sparkles, Target, CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
+import PortalShell from '@/components/portal/PortalShell';
+import PortalLoader, { Spinner } from '@/components/PortalLoader';
+import { useToast } from '@/components/ToastNotification';
+import { Alert, Button, Card, PageHeader, buttonClasses, cx } from '@/components/portal/ui';
+
+const NEXT_STEPS = [
+  { icon: FileUp, title: 'Upload your CV', description: 'A PDF of your latest CV.' },
+  { icon: Sparkles, title: 'We read it for you', description: 'Our AI picks out your skills, studies and experience.' },
+  { icon: Target, title: 'See your matches', description: 'We rank open roles by how well they fit you.' },
+];
 
 export default function CandidateNewPage() {
   const [user, setUser] = useState<any>(null);
@@ -13,19 +22,22 @@ export default function CandidateNewPage() {
   const [resumeTask, setResumeTask] = useState<any>(null);
   const [completedTaskIds, setCompletedTaskIds] = useState<Record<number, boolean>>({});
   const [hasInitializedTask, setHasInitializedTask] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const { error: toastError, success: toastSuccess } = useToast();
 
   const [loadingStep, setLoadingStep] = useState(0);
 
-  const loadingSteps = useMemo(() => [
-    { text: 'Verifying credentials...', icon: ShieldCheck, color: 'text-emerald-500' },
-    { text: 'Syncing talent profile...', icon: Sparkles, color: 'text-blue-500 animate-pulse' },
-    { text: 'Analyzing active market vacancies...', icon: Briefcase, color: 'text-violet-550 dark:text-violet-400' },
-    { text: 'Finalizing your matches...', icon: RefreshCw, color: 'text-blue-500 animate-spin' },
-  ], []);
+  const loadingSteps = useMemo(
+    () => [
+      { text: 'Checking your session...' },
+      { text: 'Loading your profile...' },
+      { text: 'Looking at open roles...' },
+      { text: 'Getting things ready...' },
+    ],
+    [],
+  );
 
   // Dynamic status text update
   useEffect(() => {
@@ -35,10 +47,6 @@ export default function CandidateNewPage() {
     }, 1200);
     return () => clearInterval(interval);
   }, [loading, user, loadingSteps.length]);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const fetchSession = useCallback(async () => {
     try {
@@ -78,7 +86,7 @@ export default function CandidateNewPage() {
 
             // On initial mount, if the task is already finished, mark it as handled so we don't redirect
             if (!hasInitializedTask && isFinished) {
-              setCompletedTaskIds(prev => ({ ...prev, [task.id]: true }));
+              setCompletedTaskIds((prev) => ({ ...prev, [task.id]: true }));
               setHasInitializedTask(true);
               setResumeTask(null);
               return;
@@ -93,14 +101,14 @@ export default function CandidateNewPage() {
 
             if (task.status === 'COMPLETED') {
               setResumeTask(task);
-              setCompletedTaskIds(prev => ({ ...prev, [task.id]: true }));
+              setCompletedTaskIds((prev) => ({ ...prev, [task.id]: true }));
               setTimeout(() => {
                 setResumeTask(null);
                 router.push('/candidate/dashboard'); // take them back to dashboard to see results
               }, 3000);
             } else if (task.status === 'FAILED') {
               setResumeTask(task);
-              setCompletedTaskIds(prev => ({ ...prev, [task.id]: true }));
+              setCompletedTaskIds((prev) => ({ ...prev, [task.id]: true }));
             } else {
               setResumeTask(task);
             }
@@ -138,15 +146,30 @@ export default function CandidateNewPage() {
       if (res.ok) {
         const data = await res.json();
         setResumeTask({ status: 'PROCESSING', progress: 0, id: data.taskId });
+        toastSuccess('CV uploaded. We’re reading it now.');
       } else {
         const errorData = await res.json();
-        alert('Error uploading resume: ' + errorData.error);
+        toastError('We couldn’t upload your CV: ' + errorData.error);
       }
     } catch (err: any) {
-      alert('Error uploading resume: ' + err.message);
+      toastError('We couldn’t upload your CV: ' + err.message);
     } finally {
       setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragActive(false);
+    if (uploading) return;
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      toastError('Please upload your CV as a PDF.');
+      return;
+    }
+    handleResumeUpload({ preventDefault: () => {}, target: { files: e.dataTransfer.files } } as unknown as React.ChangeEvent<HTMLInputElement>);
   };
 
   const handleLogout = async () => {
@@ -157,138 +180,163 @@ export default function CandidateNewPage() {
   };
 
   if (loading || !user) {
-    const StepIcon = loadingSteps[loadingStep].icon;
-    return (
-      <div 
-        style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}
-        className="h-screen w-full bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 relative overflow-hidden transition-colors duration-500 select-none animate-fade-in"
-      >
-        {/* Subtle glowing elements in the background */}
-        <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/10 dark:bg-blue-600/5 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-96 h-96 bg-violet-500/10 dark:bg-violet-600/5 rounded-full blur-3xl pointer-events-none animate-pulse delay-700"></div>
-
-        <div className="relative flex flex-col items-center max-w-sm w-full text-center space-y-8">
-          
-          {/* Main animated loading widget */}
-          <div className="relative w-28 h-28 flex items-center justify-center">
-            {/* Outer Spinning Ring */}
-            <div className="absolute inset-0 rounded-full border-4 border-slate-200/50 dark:border-slate-800/50"></div>
-            <div className="absolute inset-0 rounded-full border-4 border-t-blue-600 border-r-transparent border-b-transparent border-l-transparent animate-spin ring-1 ring-blue-500/10" style={{ animationDuration: '1.2s' }}></div>
-            
-            {/* Middle Reverse Spinning Pulsing Ring */}
-            <div className="absolute inset-3 rounded-full border-4 border-slate-200/50 dark:border-slate-800/50"></div>
-            <div className="absolute inset-3 rounded-full border-4 border-b-violet-500 border-t-transparent border-r-transparent border-l-transparent animate-spin ring-1 ring-violet-500/10" style={{ animationDuration: '0.8s', animationDirection: 'reverse' }}></div>
-            
-            {/* Inner pulsing container holding the live-updating stage icon */}
-            <div className="absolute inset-6 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-lg border border-slate-100 dark:border-slate-800 transition-colors duration-500">
-              <StepIcon className={`w-6 h-6 ${loadingSteps[loadingStep].color} transition-all duration-300`} />
-            </div>
-          </div>
-
-          {/* Stepper Status Headings */}
-          <div className="space-y-2">
-            <h3 className="text-xl font-extrabold text-slate-905 dark:text-white tracking-tight">
-              Loading LaunchPath
-            </h3>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wide uppercase">
-              Please wait while we sync
-            </p>
-          </div>
-
-          {/* Interactive feedback loader bar */}
-          <div className="w-full space-y-4">
-            <div className="relative h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-100 dark:border-slate-900">
-              <div 
-                className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-[#7145FF] to-[#F7AFF0] rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${((loadingStep + 1) / loadingSteps.length) * 100}%` }}
-              ></div>
-            </div>
-
-            {/* Stepped Status Item row */}
-            <div className="flex items-center justify-center gap-3 px-4 py-2.5 bg-white dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60 rounded-xl shadow-sm backdrop-blur-sm min-h-[46px]">
-              <span className="flex h-2.5 w-2.5 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-600"></span>
-              </span>
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-300 transition-all duration-300">
-                {loadingSteps[loadingStep].text}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <PortalLoader portal="CANDIDATE" title="Loading LaunchPath" subtitle={loadingSteps[loadingStep].text} />;
   }
 
-  return (
-    <div className="w-full h-screen bg-slate-50 dark:bg-slate-950 flex flex-col overflow-hidden font-sans text-slate-900 dark:text-slate-100 transition-colors">
-      
-      {/* Top Navbar */}
-      <CandidateNavbar
-        user={user}
-        onLogout={handleLogout}
-      />
+  const status = resumeTask?.status;
+  const isComplete = status === 'COMPLETED';
+  const isFailed = status === 'FAILED';
+  const isProcessing = !!resumeTask && !isComplete && !isFailed;
+  const progress = isComplete ? 100 : Math.round(resumeTask?.progress || 0);
+  const activeStep = isComplete ? 3 : isProcessing ? 1 : 0;
 
-      <main className="flex-grow flex flex-col min-w-0 overflow-hidden">
-        {/* Content Section */}
-        <div className="flex-1 overflow-y-auto p-8 max-w-4xl mx-auto w-full">
-          <div className="space-y-8">
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors text-center max-w-2xl mx-auto">
-              <div className="bg-[#7145FF]/10 p-4 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-4 text-[#7145FF]">
-                <PlusCircle className="w-8 h-8" />
+  return (
+    <PortalShell portal="candidate" user={user} onLogout={handleLogout} title="Upload your CV">
+      <div className="mx-auto max-w-2xl space-y-6">
+        <PageHeader
+          title="Upload your CV"
+          description="Add your latest CV and we'll match you with roles that fit your skills and studies. It only takes a minute."
+        />
+
+        <Card className="sm:p-8">
+          {isComplete ? (
+            /* ---------------------------- Success ---------------------------- */
+            <div className="flex flex-col items-center py-6 text-center animate-scale-in" role="status" aria-live="polite">
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-navy text-brand-lime">
+                <CheckCircle2 className="h-7 w-7" />
+              </span>
+              <h2 className="mt-5 text-lg font-semibold text-brand-navy">Your CV is ready</h2>
+              <p className="mt-1.5 max-w-sm text-sm text-slate-500">
+                We&apos;ve read your CV and lined up roles that suit you. Taking you to your matches now.
+              </p>
+              <Link href="/candidate/dashboard?tab=Jobs" className={cx(buttonClasses({ variant: 'accent', size: 'lg' }), 'mt-6')}>
+                See your matches <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          ) : isProcessing ? (
+            /* --------------------------- Processing -------------------------- */
+            <div className="py-4" role="status" aria-live="polite">
+              <div className="flex items-center gap-4">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-brand-navy ring-1 ring-inset ring-slate-200">
+                  <Spinner className="h-5 w-5" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-base font-semibold text-brand-navy">
+                    {progress >= 100 ? 'Finishing up your matches' : 'Reading your CV'}
+                  </h2>
+                  <p className="mt-0.5 text-sm text-slate-500">This usually takes under a minute. Feel free to stay on this page.</p>
+                </div>
               </div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Build New Profile Context</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                LaunchPath uses intelligent parsing to extract matching metrics. Instantly compile custom vectors by dragging or browsing your latest PDF resume in the zone below!
+              <div className="mt-6">
+                <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
+                  <span>{progress < 40 ? 'Extracting your details' : progress < 80 ? 'Understanding your skills' : 'Ranking open roles'}</span>
+                  <span className="font-medium tabular-nums text-brand-navy">{progress}%</span>
+                </div>
+                <div
+                  className="h-2 w-full overflow-hidden rounded-full bg-slate-100"
+                  role="progressbar"
+                  aria-label="CV processing progress"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={progress}
+                >
+                  <div className="h-full rounded-full bg-brand-navy transition-all duration-500 ease-out" style={{ width: `${Math.max(4, progress)}%` }} />
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* ------------------------------ Idle ----------------------------- */
+            <div className="space-y-4">
+              {isFailed && (
+                <Alert tone="danger">
+                  We couldn&apos;t read that CV. Please try again with a text-based PDF (not a scanned image).
+                </Alert>
+              )}
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label="Upload your CV as a PDF"
+                onClick={() => !uploading && fileInputRef.current?.click()}
+                onKeyDown={(e) => {
+                  if ((e.key === 'Enter' || e.key === ' ') && !uploading) {
+                    e.preventDefault();
+                    fileInputRef.current?.click();
+                  }
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragActive(true);
+                }}
+                onDragLeave={() => setDragActive(false)}
+                onDrop={handleDrop}
+                className={cx(
+                  'flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy/30',
+                  dragActive ? 'border-brand-navy bg-brand-navy/[0.03]' : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-50',
+                )}
+              >
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-brand-navy shadow-sm ring-1 ring-inset ring-slate-200">
+                  {uploading ? <Spinner className="h-6 w-6" /> : <FileText className="h-6 w-6" />}
+                </span>
+                <p className="mt-4 text-[15px] font-semibold text-brand-navy">
+                  {uploading ? 'Uploading your CV' : dragActive ? 'Drop it here' : 'Drag and drop your CV here'}
+                </p>
+                <p className="mt-1 text-sm text-slate-500">or choose a file from your device</p>
+                <Button
+                  type="button"
+                  variant="accent"
+                  icon={FileUp}
+                  loading={uploading}
+                  className="mt-5"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                >
+                  {uploading ? 'Uploading' : 'Choose a PDF'}
+                </Button>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={handleResumeUpload}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              <p className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
+                <ShieldCheck className="h-3.5 w-3.5" /> PDF format only. Your CV is stored securely.
               </p>
             </div>
+          )}
+        </Card>
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden transition-colors">
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
-                <h3 className="font-bold text-lg flex items-center gap-2"><Upload className="w-5 h-5 text-blue-600"/> Upload PDF Resume</h3>
-              </div>
-              
-              {resumeTask && resumeTask.status !== 'FAILED' ? (
-                <div className="p-8 m-6 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950">
-                  <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-2">Resume Processing Queue</h4>
-                  <p className="text-sm text-slate-500 mb-6">Your resume is currently being processed by our AI to extract skills and find the best job matches.</p>
-                  
-                  <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-4 mb-2 overflow-hidden border border-slate-300 dark:border-slate-700 shadow-inner">
-                    <div className="bg-[#7145FF] h-4 rounded-full transition-all duration-500 ease-out flex items-center justify-end px-2" style={{ width: `${resumeTask.progress}%` }}>
-                      {resumeTask.progress > 10 && <span className="text-[10px] text-white font-bold">{resumeTask.progress}%</span>}
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center text-xs font-mono text-slate-600 dark:text-slate-400">
-                    <span>Status: <strong className="text-[#7145FF] dark:text-violet-400">{resumeTask.status}</strong></span>
-                    <span>{resumeTask.progress === 100 ? 'Finalizing matches...' : 'Extracting match metrics...'}</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-12 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700 m-6 rounded-xl bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 transition relative cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                  <FileText className="w-16 h-16 text-slate-400 dark:text-slate-500 mb-4" />
-                  <p className="font-bold text-slate-700 dark:text-slate-300 mb-1 text-center">Drag and drop your updated PDF resume here</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 text-center">Uploading triggers bulk processing of your skill extractions</p>
-                  <button 
-                    disabled={uploading}
-                    onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                    className="bg-[#7145FF] hover:bg-[#5b32e6] text-white font-bold py-2.5 px-6 rounded-xl shadow disabled:opacity-50 transition"
+        {/* What happens next */}
+        <Card>
+          <h2 className="text-sm font-semibold text-brand-navy">What happens next</h2>
+          <ol className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {NEXT_STEPS.map((step, idx) => {
+              const done = idx < activeStep;
+              const current = idx === activeStep;
+              return (
+                <li key={step.title} className="flex gap-3 sm:flex-col sm:gap-2">
+                  <span
+                    className={cx(
+                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors',
+                      done ? 'bg-brand-lime text-brand-navy' : current ? 'bg-brand-navy text-brand-lime' : 'bg-slate-100 text-slate-500',
+                    )}
                   >
-                    {uploading ? 'Initiating Task...' : 'Browse PDF Files'}
-                  </button>
-                  <input 
-                    type="file" 
-                    accept="application/pdf" 
-                    ref={fileInputRef} 
-                    className="hidden" 
-                    onChange={handleResumeUpload} 
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+                    {done ? <CheckCircle2 className="h-4 w-4" /> : <step.icon className="h-4 w-4" />}
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-brand-navy">{step.title}</p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-slate-500">{step.description}</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </Card>
+      </div>
+    </PortalShell>
   );
 }

@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import CandidateNavbar from '@/components/CandidateNavbar';
+import { AlertTriangle, CheckCircle2, X } from 'lucide-react';
 import { useToast } from '@/components/ToastNotification';
+import PortalShell from '@/components/portal/PortalShell';
+import { Button, IconButton } from '@/components/portal/ui';
+import { Spinner } from '@/components/PortalLoader';
 
 // Import modular subcomponents
 import JobFeedTab from './components/JobFeedTab';
@@ -10,6 +13,71 @@ import ApplicationsTab from './components/ApplicationsTab';
 import ProfileTab from './components/ProfileTab';
 import InboxTab from './components/InboxTab';
 import SettingsTab from './components/SettingsTab';
+
+/** Slim banner shown while a CV is being read in the background. */
+function ResumeTaskBanner({ task, onOpenProfile, onDismiss }: { task: any; onOpenProfile: () => void; onDismiss: () => void }) {
+  const status = String(task?.status || '').toUpperCase();
+  const progress = Math.max(0, Math.min(100, Math.round(Number(task?.progress) || 0)));
+
+  if (status === 'FAILED') {
+    return (
+      <div role="alert" className="mb-6 flex flex-col gap-3 rounded-2xl border border-rose-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(10,27,61,0.04)] animate-fade-in sm:flex-row sm:items-center">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
+          <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-brand-navy">We could not read your CV</p>
+          <p className="mt-0.5 text-sm text-slate-500">Try uploading it again as a text-based PDF (not a scan or photo).</p>
+        </div>
+        <div className="flex items-center gap-1">
+          <Button size="sm" variant="secondary" onClick={onOpenProfile}>
+            Upload again
+          </Button>
+          <IconButton icon={X} label="Dismiss" onClick={onDismiss} />
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'COMPLETED') {
+    return (
+      <div role="status" className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(10,27,61,0.04)] animate-fade-in">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+          <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-brand-navy">Your CV is ready</p>
+          <p className="mt-0.5 text-sm text-slate-500">We have updated your job matches.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div role="status" aria-live="polite" className="mb-6 flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(10,27,61,0.04)] animate-fade-in">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-navy text-brand-lime">
+        <Spinner className="h-4 w-4" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="truncate text-sm font-semibold text-brand-navy">{status === 'QUEUED' ? 'Your CV is in the queue' : 'Reading your CV'}</p>
+          <span className="shrink-0 text-xs font-medium tabular-nums text-slate-500">{progress}%</span>
+        </div>
+        <div
+          className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100"
+          role="progressbar"
+          aria-label="CV analysis progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress}
+        >
+          <div className="h-full rounded-full bg-brand-navy transition-[width] duration-500 ease-out" style={{ width: `${Math.max(progress, 4)}%` }} />
+        </div>
+        <p className="mt-1.5 hidden text-xs text-slate-500 sm:block">We are matching your skills to open roles. This usually takes under a minute.</p>
+      </div>
+    </div>
+  );
+}
 
 export interface CandidateDashboardProps {
   data: any;
@@ -458,129 +526,133 @@ export default function CandidateDashboard({
   };
 
   return (
-    // Brand shell: navy header (via CandidateNavbar) sits on a light neutral canvas
-    // so lime (#A6F23C) accents inside the tab content still pop. No dark-mode split —
-    // matches the single fixed navy/lime theme used on the landing page and navbar.
-    <div className="w-full h-screen bg-[#F5F6F8] flex flex-col overflow-hidden text-[#0A1B3D]">
-      {/* Top Navbar */}
-      <CandidateNavbar
-        user={user}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        applicationsCount={applications?.length || 0}
-        unreadNotificationsCount={unreadNotificationsCount}
-        onLogout={onLogout}
-        onTabChange={() => setSelectedJob(null)}
-      />
+    <PortalShell
+      portal="candidate"
+      user={user}
+      onLogout={onLogout}
+      activeTab={activeTab}
+      onTabChange={(t) => {
+        setActiveTab(t);
+        setSelectedJob(null);
+      }}
+      badges={{ Applications: applications?.length || 0, Inbox: unreadNotificationsCount }}
+    >
+      {resumeTask && (
+        <ResumeTaskBanner
+          task={resumeTask}
+          onOpenProfile={() => {
+            setActiveTab('Profile');
+            setSelectedJob(null);
+          }}
+          onDismiss={() => setResumeTask(null)}
+        />
+      )}
 
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="flex-1 overflow-y-auto p-4 sm:p-8">
-          {/* TAB 1: JOB BROWSER & SAVED JOBS */}
-          {(activeTab === 'Jobs' || activeTab === 'Saved' || activeTab === 'AllJobs') && (
-            <JobFeedTab
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              matches={matches}
-              allJobs={allJobs}
-              savedJobsMap={savedJobsMap}
-              selectedJob={selectedJob}
-              setSelectedJob={setSelectedJob}
-              handleSaveJob={handleSaveJob}
-              handleApply={handleApply}
-              applications={applications}
-              user={user}
-            />
-          )}
+      {/* TAB 1: JOB BROWSER & SAVED JOBS */}
+      {(activeTab === 'Jobs' || activeTab === 'Saved' || activeTab === 'AllJobs') && (
+        <JobFeedTab
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          matches={matches}
+          allJobs={allJobs}
+          savedJobsMap={savedJobsMap}
+          selectedJob={selectedJob}
+          setSelectedJob={setSelectedJob}
+          handleSaveJob={handleSaveJob}
+          handleApply={handleApply}
+          applications={applications}
+          user={user}
+        />
+      )}
 
-          {/* TAB 2: APPLICATIONS STATUS */}
-          {activeTab === 'Applications' && (
-            <ApplicationsTab
-              applications={applications}
-              handleUpdateInterview={handleUpdateInterview}
-            />
-          )}
+      {/* TAB 2: APPLICATIONS STATUS */}
+      {activeTab === 'Applications' && (
+        <ApplicationsTab
+          applications={applications}
+          handleUpdateInterview={handleUpdateInterview}
+          setActiveTab={setActiveTab}
+        />
+      )}
 
-          {/* TAB 3: PROFILE MANAGEMENT */}
-          {activeTab === 'Profile' && (
-            <ProfileTab
-              user={user}
-              isEditingProfile={isEditingProfile}
-              setIsEditingProfile={setIsEditingProfile}
-              isSavingProfile={isSavingProfile}
-              isEditingResume={isEditingResume}
-              setIsEditingResume={setIsEditingResume}
-              profileName={profileName}
-              setProfileName={setProfileName}
-              profileTitle={profileTitle}
-              setProfileTitle={setProfileTitle}
-              profileExp={profileExp}
-              setProfileExp={setProfileExp}
-              profilePhone={profilePhone}
-              setProfilePhone={setProfilePhone}
-              profileLinkedin={profileLinkedin}
-              setProfileLinkedin={setProfileLinkedin}
-              profileGithub={profileGithub}
-              setProfileGithub={setProfileGithub}
-              profilePortfolioUrl={profilePortfolioUrl}
-              setProfilePortfolioUrl={setProfilePortfolioUrl}
-              profileCvUrl={profileCvUrl}
-              setProfileCvUrl={setProfileCvUrl}
-              profileStudyInstitution={profileStudyInstitution}
-              setProfileStudyInstitution={setProfileStudyInstitution}
-              profileStudySpecialisation={profileStudySpecialisation}
-              setProfileStudySpecialisation={setProfileStudySpecialisation}
-              profileSeekingRoles={profileSeekingRoles}
-              setProfileSeekingRoles={setProfileSeekingRoles}
-              profileCertificatesUrl={profileCertificatesUrl}
-              setProfileCertificatesUrl={setProfileCertificatesUrl}
-              profilePoliceClearanceUrl={profilePoliceClearanceUrl}
-              setProfilePoliceClearanceUrl={setProfilePoliceClearanceUrl}
-              profileQualifications={profileQualifications}
-              setProfileQualifications={setProfileQualifications}
-              profileSkills={profileSkills}
-              setProfileSkills={setProfileSkills}
-              profileInterests={profileInterests}
-              setProfileInterests={setProfileInterests}
-              profileCareerDirection={profileCareerDirection}
-              setProfileCareerDirection={setProfileCareerDirection}
-              profileWorkExperience={profileWorkExperience}
-              setProfileWorkExperience={setProfileWorkExperience}
-              profileResumeText={profileResumeText}
-              setProfileResumeText={setProfileResumeText}
-              handleSaveProfile={handleSaveProfile}
-              handleLinkedInConnect={handleLinkedInConnect}
-              syncingLinkedIn={syncingLinkedIn}
-              resumeTask={resumeTask}
-              uploading={uploading}
-              handleResumeUpload={handleResumeUpload}
-            />
-          )}
+      {/* TAB 3: PROFILE MANAGEMENT */}
+      {activeTab === 'Profile' && (
+        <ProfileTab
+          user={user}
+          isEditingProfile={isEditingProfile}
+          setIsEditingProfile={setIsEditingProfile}
+          isSavingProfile={isSavingProfile}
+          isEditingResume={isEditingResume}
+          setIsEditingResume={setIsEditingResume}
+          profileName={profileName}
+          setProfileName={setProfileName}
+          profileTitle={profileTitle}
+          setProfileTitle={setProfileTitle}
+          profileExp={profileExp}
+          setProfileExp={setProfileExp}
+          profilePhone={profilePhone}
+          setProfilePhone={setProfilePhone}
+          profileLinkedin={profileLinkedin}
+          setProfileLinkedin={setProfileLinkedin}
+          profileGithub={profileGithub}
+          setProfileGithub={setProfileGithub}
+          profilePortfolioUrl={profilePortfolioUrl}
+          setProfilePortfolioUrl={setProfilePortfolioUrl}
+          profileCvUrl={profileCvUrl}
+          setProfileCvUrl={setProfileCvUrl}
+          profileStudyInstitution={profileStudyInstitution}
+          setProfileStudyInstitution={setProfileStudyInstitution}
+          profileStudySpecialisation={profileStudySpecialisation}
+          setProfileStudySpecialisation={setProfileStudySpecialisation}
+          profileSeekingRoles={profileSeekingRoles}
+          setProfileSeekingRoles={setProfileSeekingRoles}
+          profileCertificatesUrl={profileCertificatesUrl}
+          setProfileCertificatesUrl={setProfileCertificatesUrl}
+          profilePoliceClearanceUrl={profilePoliceClearanceUrl}
+          setProfilePoliceClearanceUrl={setProfilePoliceClearanceUrl}
+          profileQualifications={profileQualifications}
+          setProfileQualifications={setProfileQualifications}
+          profileSkills={profileSkills}
+          setProfileSkills={setProfileSkills}
+          profileInterests={profileInterests}
+          setProfileInterests={setProfileInterests}
+          profileCareerDirection={profileCareerDirection}
+          setProfileCareerDirection={setProfileCareerDirection}
+          profileWorkExperience={profileWorkExperience}
+          setProfileWorkExperience={setProfileWorkExperience}
+          profileResumeText={profileResumeText}
+          setProfileResumeText={setProfileResumeText}
+          handleSaveProfile={handleSaveProfile}
+          handleLinkedInConnect={handleLinkedInConnect}
+          syncingLinkedIn={syncingLinkedIn}
+          resumeTask={resumeTask}
+          uploading={uploading}
+          handleResumeUpload={handleResumeUpload}
+        />
+      )}
 
-          {/* TAB 4: MAILBOX & NOTIFICATIONS */}
-          {activeTab === 'Inbox' && (
-            <InboxTab
-              notifications={notifications}
-              markAllAsRead={markAllAsRead}
-              markAsRead={markAsRead}
-            />
-          )}
+      {/* TAB 4: MAILBOX & NOTIFICATIONS */}
+      {activeTab === 'Inbox' && (
+        <InboxTab
+          notifications={notifications}
+          markAllAsRead={markAllAsRead}
+          markAsRead={markAsRead}
+        />
+      )}
 
-          {/* TAB 5: SECURITY SETTINGS */}
-          {activeTab === 'Settings' && (
-            <SettingsTab
-              email={email}
-              setEmail={setEmail}
-              currentPassword={currentPassword}
-              setCurrentPassword={setCurrentPassword}
-              newPassword={newPassword}
-              setNewPassword={setNewPassword}
-              confirmPassword={confirmPassword}
-              setConfirmPassword={setConfirmPassword}
-              handleUpdateSettings={handleUpdateSettings}
-            />
-          )}
-        </div>
-      </main>
-    </div>
+      {/* TAB 5: SECURITY SETTINGS */}
+      {activeTab === 'Settings' && (
+        <SettingsTab
+          email={email}
+          setEmail={setEmail}
+          currentPassword={currentPassword}
+          setCurrentPassword={setCurrentPassword}
+          newPassword={newPassword}
+          setNewPassword={setNewPassword}
+          confirmPassword={confirmPassword}
+          setConfirmPassword={setConfirmPassword}
+          handleUpdateSettings={handleUpdateSettings}
+        />
+      )}
+    </PortalShell>
   );
 }

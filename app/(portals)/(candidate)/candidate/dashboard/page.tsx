@@ -45,9 +45,8 @@ export default function CandidateDashboardPage() {
   };
 
   if (loading || !data) {
-    return <PortalLoader portal="CANDIDATE" title="Loading LaunchPath" />;
+    return <PortalLoader portal="CANDIDATE" title="Loading your dashboard" />;
   }
-
 
   return <CandidateDashboard data={data} user={data.user} onRefresh={fetchDashboardData} onLogout={handleLogout} />;
 }

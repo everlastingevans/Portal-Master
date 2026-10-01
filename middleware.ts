@@ -89,8 +89,22 @@ export async function middleware(req: NextRequest) {
   requestHeaders.set('x-resolved-tenant-id', tenantId);
 
   // 3. AUTHENTICATION & ROUTE GUARDS
+  // Signed-in users skip the login / sign-up / chooser screens and go straight to their portal
+  const isEntryPage = pathname === '/login' || pathname === '/register' || pathname === '/portal';
+  const entryToken = req.cookies.get('auth-token')?.value;
+  if (isEntryPage && entryToken) {
+    try {
+      const { payload } = await jwtVerify(entryToken, JWT_SECRET);
+      const role = String(payload.role).toUpperCase();
+      const portal = role === 'SUPERADMIN' ? '/admin/dashboard' : role === 'EMPLOYER' || role === 'CLIENT' ? '/employer/dashboard' : '/candidate/dashboard';
+      return applySecureHeaders(NextResponse.redirect(new URL(portal, req.url)));
+    } catch {
+      // Invalid/expired token: fall through and show the page
+    }
+  }
+
   // Public routes to bypass auth
-  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron');
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron') || pathname === '/api/contact';
   const isPublicAsset = pathname.startsWith('/_next') || pathname.includes('.');
 
   if (isAuthRoute || isPublicAsset) {
@@ -104,8 +118,11 @@ export async function middleware(req: NextRequest) {
 
   if (!token) {
     // Redirect unsigned user to login if accessing protected Portal (optional)
-    if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/employer') || pathname.startsWith('/candidate')) {
-      return applySecureHeaders(NextResponse.redirect(new URL('/login', req.url)));
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/employer') || pathname.startsWith('/candidate') || pathname.startsWith('/onboarding')) {
+      // Remember where they were heading so login can send them back
+      const loginUrl = new URL('/login', req.url);
+      loginUrl.searchParams.set('next', pathname + req.nextUrl.search);
+      return applySecureHeaders(NextResponse.redirect(loginUrl));
     }
     // Allow pass-through for public marketing pages or handle 401 on APIs
     if (pathname.startsWith('/api')) {

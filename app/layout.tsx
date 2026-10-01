@@ -2,26 +2,25 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { POPIAConsent } from "@/components/POPIAConsent";
 import { ToastProvider } from "@/components/ToastNotification";
-import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { GoogleAnalytics } from "@next/third-parties/google";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
+// Brand typeface, self-hosted from /public/fonts
+const lexendDeca = localFont({
+  src: [
+    { path: "../public/fonts/LexendDeca-Thin.ttf", weight: "100", style: "normal" },
+    { path: "../public/fonts/LexendDeca-ExtraLight.ttf", weight: "200", style: "normal" },
+    { path: "../public/fonts/LexendDeca-Light.ttf", weight: "300", style: "normal" },
+    { path: "../public/fonts/LexendDeca-Regular.ttf", weight: "400", style: "normal" },
+    { path: "../public/fonts/LexendDeca-Medium.ttf", weight: "500", style: "normal" },
+    { path: "../public/fonts/LexendDeca-SemiBold.ttf", weight: "600", style: "normal" },
+    { path: "../public/fonts/LexendDeca-Bold.ttf", weight: "700", style: "normal" },
+    { path: "../public/fonts/LexendDeca-ExtraBold.ttf", weight: "800", style: "normal" },
+    { path: "../public/fonts/LexendDeca-Black.ttf", weight: "900", style: "normal" },
+  ],
+  variable: "--font-lexend",
   display: "swap",
 });
 
@@ -44,11 +43,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" suppressHydrationWarning className={lexendDeca.variable}>
       <body>
         <Analytics />
         <SpeedInsights/>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        {/* Each surface owns its palette (light portals, dark admin, navy marketing),
+            so OS dark mode must not flip `dark:` variants on and half-theme pages. */}
+        <ThemeProvider attribute="class" forcedTheme="light" enableSystem={false}>
           <ToastProvider>
             {children}
             <POPIAConsent />

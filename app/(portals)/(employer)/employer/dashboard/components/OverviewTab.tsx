@@ -1,8 +1,44 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Clock, Search, PlusCircle, Briefcase, Users, Lock } from 'lucide-react';
+import {
+  Plus,
+  Briefcase,
+  Users,
+  Inbox,
+  CalendarClock,
+  Pencil,
+  Lock,
+  CreditCard,
+  ArrowRight,
+  FileText,
+  Sparkles,
+  MapPin,
+} from 'lucide-react';
+import {
+  PageHeader,
+  Card,
+  CardHeader,
+  StatCard,
+  Badge,
+  StatusBadge,
+  MatchScore,
+  Button,
+  buttonClasses,
+  IconButton,
+  SearchInput,
+  Segmented,
+  Table,
+  THead,
+  Th,
+  TBody,
+  Tr,
+  Td,
+  Identity,
+  EmptyState,
+  cx,
+} from '@/components/portal/ui';
 
 interface OverviewTabProps {
   jobs: any[];
@@ -13,6 +49,53 @@ interface OverviewTabProps {
   handleStartEdit: (job: any) => void;
   setSelectedJobFilter: (id: any) => void;
   setActiveTab: (tab: string) => void;
+  /** Optional: open an applicant's profile straight from the overview. */
+  setSelectedApplicant?: (app: any) => void;
+  /** Optional: used to hide candidate details for roles that are still locked. */
+  isJobUnlocked?: (jobId: any) => boolean;
+}
+
+type JobFilter = 'all' | 'ACTIVE' | 'PENDING' | 'CLOSED';
+
+const isAwaitingReview = (a: any) =>
+  (!a.status || a.status === 'Pending') && (!a.interviews || a.interviews.length === 0);
+
+function formatSalary(job: any) {
+  if (!job.salary_min && !job.salary_max) return null;
+  const fmt = (n: any) => `R${Number(n).toLocaleString('en-ZA')}`;
+  if (job.salary_min && job.salary_max) return `${fmt(job.salary_min)} – ${fmt(job.salary_max)}`;
+  if (job.salary_min) return `From ${fmt(job.salary_min)}`;
+  return `Up to ${fmt(job.salary_max)}`;
+}
+
+function formatDateTime(value: any) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString('en-ZA', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDate(value: any) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
+}
+
+function JobStatus({ status }: { status?: string }) {
+  if (status === 'PENDING') {
+    return (
+      <Badge tone="warning" dot>
+        Awaiting payment
+      </Badge>
+    );
+  }
+  if (!status || status === 'ACTIVE') {
+    return (
+      <Badge tone="success" dot>
+        Live
+      </Badge>
+    );
+  }
+  return <StatusBadge status={status} />;
 }
 
 export default function OverviewTab({
@@ -24,295 +107,399 @@ export default function OverviewTab({
   handleStartEdit,
   setSelectedJobFilter,
   setActiveTab,
+  setSelectedApplicant,
+  isJobUnlocked,
 }: OverviewTabProps) {
+  const [jobFilter, setJobFilter] = useState<JobFilter>('all');
 
-  const renderBadges = (
-    fieldVal: any,
-    bgClass: string,
-    textClass: string,
-    borderClass: string
-  ) => {
-    if (!fieldVal) return null;
-    let list: string[] = [];
-    if (Array.isArray(fieldVal)) {
-      list = fieldVal;
-    } else if (typeof fieldVal === 'string') {
-      list = fieldVal
-        .split(',')
-        .map((s: string) => s.trim())
-        .filter(Boolean);
-    }
-    if (list.length === 0) return null;
-    return (
-      <div className="flex flex-wrap gap-1.5">
-        {list.slice(0, 8).map((item, idx) => (
-          <span
-            key={idx}
-            className={`px-2 py-0.5 text-[11px] font-semibold rounded-md ${bgClass} ${textClass} ${borderClass} border`}
-          >
-            {item}
-          </span>
-        ))}
-      </div>
-    );
+  const unlocked = (jobId: any) => {
+    if (isJobUnlocked) return isJobUnlocked(jobId);
+    const job = jobs.find((j: any) => String(j.id) === String(jobId));
+    return job ? job.status === 'ACTIVE' : false;
   };
 
-  return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* Top Dashboard Header & Stats Row */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-[#0A1B3D]">Active Postings</h2>
-          <p className="text-sm text-slate-500">
-            Manage your active recruitment drives, see applicant volumes, and post new vacancies.
-          </p>
-        </div>
-        <Link
-          href="/employer/new"
-          className="bg-[#A6F23C] hover:bg-[#C8FF7A] text-[#0A1B3D] font-bold px-5 py-2.5 rounded-full text-sm transition shadow-sm flex items-center justify-center gap-2 self-start md:self-auto cursor-pointer"
-        >
-          <PlusCircle className="w-4 h-4" />
-          Create New Post
-        </Link>
-      </div>
+  const stats = useMemo(() => {
+    const now = Date.now();
+    const allInterviews = (applications || []).flatMap((a: any) =>
+      (a.interviews || []).map((iv: any) => ({ ...iv, application: a }))
+    );
+    const upcoming = allInterviews
+      .filter((iv: any) => new Date(iv.proposed_time).getTime() >= now && String(iv.status).toLowerCase() !== 'cancelled')
+      .sort((a: any, b: any) => new Date(a.proposed_time).getTime() - new Date(b.proposed_time).getTime());
+    return {
+      live: jobs.filter((j: any) => j.status === 'ACTIVE').length,
+      awaitingPayment: jobs.filter((j: any) => j.status === 'PENDING').length,
+      applicants: (applications || []).length,
+      awaitingReview: (applications || []).filter(isAwaitingReview).length,
+      interviewsTotal: allInterviews.length,
+      upcoming,
+    };
+  }, [jobs, applications]);
 
-      {/* Quick Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-sm transition-colors">
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">
-            Total Job Postings
-          </p>
-          <p className="text-3xl font-bold text-[#0A1B3D]">{jobs?.length || 0}</p>
-        </div>
-        <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-sm transition-colors">
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">
-            Received Applications
-          </p>
-          <p className="text-3xl font-bold text-[#0A1B3D]">{applications?.length || 0}</p>
-        </div>
-        <div className="bg-white border border-slate-200 p-5 rounded-xl shadow-sm transition-colors">
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">
-            Unscheduled Pipeline
-          </p>
-          <p className="text-3xl font-bold text-[#0A1B3D]">
-            {
-              (applications || []).filter(
-                (a: any) => !a.interviews || a.interviews.length === 0
-              ).length
-            }
-          </p>
-        </div>
-      </div>
+  const countsByJob = useMemo(() => {
+    const map: Record<string, { total: number; fresh: number }> = {};
+    (applications || []).forEach((a: any) => {
+      const key = String(a.job_id);
+      map[key] = map[key] || { total: 0, fresh: 0 };
+      map[key].total += 1;
+      if (isAwaitingReview(a)) map[key].fresh += 1;
+    });
+    return map;
+  }, [applications]);
 
-      {/* Search & Filter section */}
-      <div className="relative">
-        <span className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-          <Search className="w-5 h-5 text-slate-400" />
-        </span>
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search postings by role title, description, skills, or tech stack..."
-          className="w-full pl-11 pr-4 py-3 border border-slate-200 rounded-full text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#A6F23C] text-[#0A1B3D] placeholder-slate-400 transition-colors"
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery('')}
-            className="absolute inset-y-0 right-1.5 my-1.5 px-4 flex items-center text-xs font-bold text-slate-500 hover:text-[#0A1B3D] hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
-          >
-            Clear
-          </button>
-        )}
-      </div>
+  const visibleJobs = filteredJobs.filter((j: any) => jobFilter === 'all' || (j.status || 'ACTIVE') === jobFilter);
 
-      {/* Jobs list */}
-      {!filteredJobs || filteredJobs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 bg-white border border-slate-200 rounded-xl shadow-sm text-center transition-colors">
-          <Briefcase className="w-12 h-12 text-slate-300 mb-4" />
-          <h3 className="text-lg font-bold text-slate-800">
-            No Job Postings Found
-          </h3>
-          <p className="text-sm text-slate-500 mt-2 mb-6 max-w-sm">
-            {searchQuery
-              ? 'No job roles match your current search criteria. Try a different query or clear the filter.'
-              : 'Get started by posting your first role to LaunchPath and find the perfect candidate today.'}
-          </p>
-          {searchQuery ? (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold px-5 py-2.5 rounded-full transition cursor-pointer"
-            >
-              Clear Search
-            </button>
-          ) : (
-            <Link
-              href="/employer/new"
-              className="bg-[#A6F23C] hover:bg-[#C8FF7A] text-[#0A1B3D] font-bold px-5 py-2.5 rounded-full text-sm transition shadow-sm flex items-center gap-2 cursor-pointer"
-            >
-              <PlusCircle className="w-4 h-4" />
-              Create New Post
-            </Link>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredJobs.map((job: any) => {
-            const jobAppsCount = (applications || []).filter(
-              (app: any) => app.job_id === job.id
-            ).length;
+  const latestApplicants = useMemo(
+    () =>
+      (applications || [])
+        .filter((a: any) => unlocked(a.job_id))
+        .sort((a: any, b: any) => new Date(b.applied_at || 0).getTime() - new Date(a.applied_at || 0).getTime())
+        .slice(0, 5),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [applications, jobs, isJobUnlocked]
+  );
 
-            return (
-              <div
-                key={job.id}
-                className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-205 flex flex-col md:flex-row md:items-start justify-between gap-6"
-              >
-                <div className="flex-1 space-y-4">
-                  {/* Title & Status */}
-                  <div className="flex items-start justify-between sm:justify-start gap-3 flex-wrap">
-                    <h3 className="font-bold text-lg text-[#0A1B3D] tracking-tight">
-                      {job.title}
-                    </h3>
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
-                        job.status === 'ACTIVE'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : job.status === 'PENDING'
-                          ? 'bg-amber-50 text-amber-700 border-amber-200 font-extrabold'
-                          : 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                      }`}
-                    >
-                      {job.status === 'PENDING' ? 'PENDING PAYMENT' : (job.status || 'ACTIVE')}
-                    </span>
-                  </div>
+  const openApplicants = (jobId: any) => {
+    setSelectedJobFilter(jobId);
+    setActiveTab('Applicants');
+  };
 
-                  {/* Metadata row */}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-medium text-slate-500">
-                    {job.company && (
-                      <>
-                        <span className="font-bold text-slate-800">
-                          {job.company}
-                        </span>
-                        <span className="text-slate-300">•</span>
-                      </>
-                    )}
-                    <span className="flex items-center gap-1 flex-shrink-0">
-                      <Clock className="w-3.5 h-3.5 text-slate-400" />
-                      {job.years_experience
-                        ? `${job.years_experience} Experience`
-                        : 'No experience limit'}
-                    </span>
-                    <span className="text-slate-300">•</span>
-                    <span className="flex-shrink-0">{job.location || 'Remote'}</span>
-                    {(job.salary_min || job.salary_max) && (
-                      <>
-                        <span className="text-slate-300">•</span>
-                        <span className="text-[#0A1B3D] font-semibold flex-shrink-0">
-                          {job.salary_min && job.salary_max
-                            ? `R${Number(job.salary_min).toLocaleString()} - R${Number(
-                                job.salary_max
-                              ).toLocaleString()}`
-                            : job.salary_min
-                            ? `From R${Number(job.salary_min).toLocaleString()}`
-                            : `Up to R${Number(job.salary_max).toLocaleString()}`}
-                        </span>
-                      </>
-                    )}
-                    <span className="text-slate-300">•</span>
-                    <span className="flex-shrink-0">Job ID: #{job.id}</span>
-                  </div>
+  const openApplicant = (app: any) => {
+    setSelectedJobFilter(app.job_id);
+    setSelectedApplicant?.(app);
+    setActiveTab('Applicants');
+  };
 
-                  {/* Rich HTML Description snippet */}
-                  <div
-                    className="text-sm text-slate-600 line-clamp-2 prose prose-slate prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: job.description }}
-                  />
+  const postJobLink = (
+    <Link href="/employer/new" className={buttonClasses({ variant: 'accent' })}>
+      <Plus className="h-4 w-4" />
+      Post a job
+    </Link>
+  );
 
-                  {/* Skills / Tech stacks block */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-                    {((job.mandatory_skills && job.mandatory_skills.length > 0) ||
-                      (typeof job.mandatory_skills === 'string' && job.mandatory_skills)) && (
-                      <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                          Mandatory Skills
-                        </span>
-                        {renderBadges(
-                          job.mandatory_skills,
-                          'bg-[#A6F23C]/15',
-                          'text-[#0A1B3D]',
-                          'border-[#A6F23C]/30'
-                        )}
-                      </div>
-                    )}
-                    {((job.tech_stack && job.tech_stack.length > 0) ||
-                      (typeof job.tech_stack === 'string' && job.tech_stack)) && (
-                      <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                          Tech Stack / Tools
-                        </span>
-                        {renderBadges(
-                          job.tech_stack,
-                          'bg-purple-50',
-                          'text-purple-700',
-                          'border-purple-100'
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right Hand Actions & Stats */}
-                <div className="flex flex-row md:flex-col items-center justify-between md:justify-center md:items-end gap-4 min-w-[150px] border-t md:border-t-0 border-slate-100 pt-4 md:pt-0">
-                  {/* Match Counts */}
-                  <div className="text-left md:text-right">
-                    <span className="text-xs text-slate-400 font-bold block uppercase tracking-wider mb-0.5">
-                      Matches
-                    </span>
-                    <span className="text-sm font-bold text-[#0A1B3D] flex items-center gap-1.5">
-                      <Users className="w-4 h-4 text-slate-400" />
-                      {jobAppsCount} {jobAppsCount === 1 ? 'Candidate' : 'Candidates'}
-                    </span>
-                  </div>
-
-                  {/* Action buttons */}
-                  <div className="flex flex-wrap gap-2 justify-end">
-                    {job.status === 'PENDING' && (
-                      <Link
-                        href={`/employer/payment?jobId=${job.id}`}
-                        className="bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs px-4 py-1.5 rounded-full transition cursor-pointer border-none flex items-center justify-center gap-1 shadow-sm"
-                      >
-                        Resume Payment
-                      </Link>
-                    )}
-                    <button
-                      onClick={() => handleStartEdit(job)}
-                      className="bg-[#A6F23C]/15 hover:bg-[#A6F23C]/25 text-[#0A1B3D] font-bold text-xs px-4 py-1.5 rounded-full transition cursor-pointer border-none"
-                    >
-                      Edit Posting
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedJobFilter(job.id);
-                        setActiveTab('Applicants');
-                      }}
-                      className="bg-slate-100 hover:bg-slate-200 font-bold text-xs text-slate-700 px-4 py-1.5 rounded-full transition cursor-pointer border-none flex items-center justify-center gap-1 shadow-sm"
-                    >
-                      {job.status === 'PENDING' ? (
-                        <>
-                          <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                          <span>View Applicants (Locked)</span>
-                        </>
-                      ) : (
-                        <span>View Applicants</span>
-                      )}
-                    </button>
-                  </div>
-                </div>
+  /* ---------------------------- First-time employer --------------------------- */
+  if (jobs.length === 0) {
+    const steps = [
+      { icon: FileText, title: 'Describe the role', text: 'Add the title, must-have skills and salary range.' },
+      { icon: CreditCard, title: 'Activate it', text: 'A once-off R1,999 per role. No subscriptions or placement fees.' },
+      { icon: Sparkles, title: 'Review matched applicants', text: 'See each candidate’s match score, CV and interview recording.' },
+    ];
+    return (
+      <div className="space-y-8">
+        <PageHeader title="Hiring overview" description="Post your first role to start receiving matched applicants." />
+        <Card className="overflow-hidden" padded={false}>
+          <div className="grid grid-cols-1 lg:grid-cols-5">
+            <div className="p-6 sm:p-10 lg:col-span-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-navy text-brand-lime">
+                <Briefcase className="h-5 w-5" />
+              </span>
+              <h2 className="mt-5 text-xl font-semibold tracking-tight text-brand-navy">Welcome to LaunchPath</h2>
+              <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-600">
+                Tell us who you&apos;re looking for and we&apos;ll match your role with candidates whose skills fit.
+              </p>
+              <div className="mt-6">
+                <Link href="/employer/new" className={buttonClasses({ variant: 'accent', size: 'lg' })}>
+                  <Plus className="h-4 w-4" />
+                  Post your first job
+                </Link>
               </div>
-            );
-          })}
+            </div>
+            <ol className="space-y-5 border-t border-slate-100 bg-slate-50/60 p-6 sm:p-10 lg:col-span-2 lg:border-l lg:border-t-0">
+              {steps.map((step, i) => (
+                <li key={step.title} className="flex gap-4">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-semibold text-brand-navy ring-1 ring-slate-200">
+                    {i + 1}
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-brand-navy">{step.title}</p>
+                    <p className="mt-0.5 text-sm text-slate-500">{step.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  /* --------------------------------- Default --------------------------------- */
+  return (
+    <div className="space-y-8">
+      <PageHeader
+        title="Hiring overview"
+        description="Your open roles, new applicants and upcoming interviews at a glance."
+        actions={postJobLink}
+      />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          label="Live roles"
+          value={stats.live}
+          icon={Briefcase}
+          hint={
+            stats.awaitingPayment > 0
+              ? `${stats.awaitingPayment} awaiting payment`
+              : `${jobs.length} ${jobs.length === 1 ? 'role' : 'roles'} in total`
+          }
+        />
+        <StatCard
+          label="Applicants"
+          value={stats.applicants}
+          icon={Users}
+          hint={`Across ${jobs.length} ${jobs.length === 1 ? 'role' : 'roles'}`}
+          onClick={() => setActiveTab('Applicants')}
+        />
+        <StatCard
+          label="Awaiting review"
+          value={stats.awaitingReview}
+          icon={Inbox}
+          tone={stats.awaitingReview > 0 ? 'attention' : 'default'}
+          hint={stats.awaitingReview > 0 ? 'No decision or interview yet' : 'You’re all caught up'}
+          onClick={() => setActiveTab('Applicants')}
+        />
+        <StatCard
+          label="Upcoming interviews"
+          value={stats.upcoming.length}
+          icon={CalendarClock}
+          hint={`${stats.interviewsTotal} scheduled in total`}
+        />
+      </div>
+
+      {/* Job listings */}
+      <section className="space-y-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-[15px] font-semibold text-brand-navy">Your roles</h2>
+            <p className="mt-0.5 text-sm text-slate-500">Edit a listing or jump straight to its applicants.</p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Segmented<JobFilter>
+              size="sm"
+              value={jobFilter}
+              onChange={setJobFilter}
+              options={[
+                { value: 'all', label: 'All', count: jobs.length },
+                { value: 'ACTIVE', label: 'Live', count: stats.live },
+                { value: 'PENDING', label: 'Awaiting payment', count: stats.awaitingPayment },
+                { value: 'CLOSED', label: 'Closed', count: jobs.filter((j: any) => j.status === 'CLOSED').length },
+              ]}
+            />
+            <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Search roles or skills" className="w-full sm:w-64" />
+          </div>
         </div>
-      )}
+
+        {visibleJobs.length === 0 ? (
+          <Card padded={false}>
+            <EmptyState
+              icon={Briefcase}
+              title="No roles match"
+              description="Try a different search term or filter."
+              action={
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setJobFilter('all');
+                  }}
+                >
+                  Clear filters
+                </Button>
+              }
+            />
+          </Card>
+        ) : (
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block">
+              <Table>
+                <THead>
+                  <Th>Role</Th>
+                  <Th>Status</Th>
+                  <Th>Applicants</Th>
+                  <Th>Salary</Th>
+                  <Th align="right">
+                    <span className="sr-only">Actions</span>
+                  </Th>
+                </THead>
+                <TBody>
+                  {visibleJobs.map((job: any) => {
+                    const counts = countsByJob[String(job.id)] || { total: 0, fresh: 0 };
+                    return (
+                      <Tr key={job.id}>
+                        <Td className="max-w-[320px]">
+                          <p className="truncate font-medium text-brand-navy">{job.title}</p>
+                          <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-slate-500">
+                            <MapPin className="h-3 w-3 shrink-0" />
+                            {job.location || 'Remote'}
+                            {job.years_experience && <span className="text-slate-400">· {job.years_experience} experience</span>}
+                          </p>
+                        </Td>
+                        <Td>
+                          <JobStatus status={job.status} />
+                        </Td>
+                        <Td>
+                          <span className="font-medium tabular-nums text-brand-navy">{counts.total}</span>
+                          {counts.fresh > 0 && <span className="ml-2 text-xs text-amber-700">{counts.fresh} new</span>}
+                        </Td>
+                        <Td className="whitespace-nowrap text-sm">{formatSalary(job) || <span className="text-slate-400">Not set</span>}</Td>
+                        <Td align="right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {job.status === 'PENDING' && (
+                              <Link href={`/employer/payment?jobId=${job.id}`} className={buttonClasses({ variant: 'primary', size: 'sm' })}>
+                                <CreditCard className="h-3.5 w-3.5" />
+                                Complete payment
+                              </Link>
+                            )}
+                            <IconButton icon={Pencil} label={`Edit ${job.title}`} onClick={() => handleStartEdit(job)} />
+                            <Button size="sm" icon={job.status === 'PENDING' ? Lock : undefined} onClick={() => openApplicants(job.id)}>
+                              Applicants
+                            </Button>
+                          </div>
+                        </Td>
+                      </Tr>
+                    );
+                  })}
+                </TBody>
+              </Table>
+            </div>
+
+            {/* Mobile cards */}
+            <ul className="space-y-3 md:hidden">
+              {visibleJobs.map((job: any) => {
+                const counts = countsByJob[String(job.id)] || { total: 0, fresh: 0 };
+                const salary = formatSalary(job);
+                return (
+                  <li key={job.id}>
+                    <Card className="p-5" padded={false}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-medium text-brand-navy">{job.title}</p>
+                          <p className="mt-0.5 text-xs text-slate-500">
+                            {job.location || 'Remote'}
+                            {salary && ` · ${salary}`}
+                          </p>
+                        </div>
+                        <JobStatus status={job.status} />
+                      </div>
+                      <p className="mt-3 text-sm text-slate-600">
+                        <span className="font-medium tabular-nums text-brand-navy">{counts.total}</span>{' '}
+                        {counts.total === 1 ? 'applicant' : 'applicants'}
+                        {counts.fresh > 0 && <span className="text-amber-700"> · {counts.fresh} new</span>}
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {job.status === 'PENDING' && (
+                          <Link href={`/employer/payment?jobId=${job.id}`} className={buttonClasses({ variant: 'primary', size: 'sm' })}>
+                            Complete payment
+                          </Link>
+                        )}
+                        <Button size="sm" icon={Pencil} onClick={() => handleStartEdit(job)}>
+                          Edit
+                        </Button>
+                        <Button size="sm" icon={job.status === 'PENDING' ? Lock : undefined} onClick={() => openApplicants(job.id)}>
+                          Applicants
+                        </Button>
+                      </div>
+                    </Card>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
+      </section>
+
+      {/* Activity */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader
+            title="Latest applicants"
+            description="Most recent applications to your live roles."
+            action={
+              latestApplicants.length > 0 && (
+                <Button size="sm" variant="ghost" onClick={() => setActiveTab('Applicants')}>
+                  View all
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              )
+            }
+          />
+          {latestApplicants.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title="No applicants yet"
+              description={
+                stats.live > 0
+                  ? 'New applications to your live roles will appear here.'
+                  : 'Activate a role to start receiving applicants.'
+              }
+            />
+          ) : (
+            <ul className="-mx-2 divide-y divide-slate-100">
+              {latestApplicants.map((app: any) => (
+                <li key={app.id}>
+                  <button
+                    type="button"
+                    onClick={() => openApplicant(app)}
+                    className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-3 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy/30"
+                  >
+                    <Identity name={app.candidate?.name} sub={app.job?.title} />
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="hidden sm:inline">
+                        <MatchScore score={app.matchContext?.match_score} />
+                      </span>
+                      <span className="text-xs tabular-nums text-slate-500">{formatDate(app.applied_at)}</span>
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <Card>
+          <CardHeader
+            title="Upcoming interviews"
+            description="Interviews you’ve proposed or confirmed."
+            action={
+              <Link href="/employer/update" className={buttonClasses({ variant: 'ghost', size: 'sm' })}>
+                Manage
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            }
+          />
+          {stats.upcoming.length === 0 ? (
+            <EmptyState
+              icon={CalendarClock}
+              title="Nothing scheduled"
+              description="Open an applicant’s profile to propose an interview time."
+            />
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {stats.upcoming.slice(0, 5).map((iv: any) => (
+                <li key={iv.id} className="flex items-center justify-between gap-3 py-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-xl bg-slate-50 ring-1 ring-inset ring-slate-200">
+                      <span className="text-[10px] font-medium leading-none text-slate-500">
+                        {new Date(iv.proposed_time).toLocaleDateString('en-ZA', { month: 'short' })}
+                      </span>
+                      <span className="mt-0.5 text-sm font-semibold leading-none text-brand-navy">{new Date(iv.proposed_time).getDate()}</span>
+                    </span>
+                    <div className="min-w-0">
+                      <p className={cx('truncate text-sm font-medium text-brand-navy')}>{iv.application?.candidate?.name || 'Candidate'}</p>
+                      <p className="truncate text-xs text-slate-500">
+                        {formatDateTime(iv.proposed_time)}
+                        {iv.application?.job?.title && ` · ${iv.application.job.title}`}
+                      </p>
+                    </div>
+                  </div>
+                  <StatusBadge status={iv.status} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

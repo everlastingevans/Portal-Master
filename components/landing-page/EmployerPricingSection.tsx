@@ -1,117 +1,105 @@
-"use client";
-
-import { Check, ShieldCheck, ArrowRight, Zap, Mail, Users } from "lucide-react";
+import { Check } from "lucide-react";
 import { Reveal } from "./Reveal";
-import Link from "next/link";
+import { Container, Cta, SectionHeading, cx } from "./primitives";
 
-export const EmployerPricingSection = () => {
-  const includedItems = [
-    "Role posting on LaunchPath",
-    "Review of the employer's hiring requirements",
-    "Candidate screening and matching",
-    "A curated shortlist of relevant candidates",
-    "Candidate profiles delivered directly by email",
-    "No need to scan through hundreds of unrelated CVs"
-  ];
+const PLANS = [
+  {
+    name: "For employers",
+    price: "R1,999",
+    unit: "per role",
+    note: "Once-off. No placement commission. No hidden costs.",
+    features: [
+      "Your role posted on LaunchPath",
+      "A review of your hiring requirements",
+      "Candidate screening and matching",
+      "A curated shortlist of relevant candidates",
+      "Candidate profiles delivered by email",
+      "No scanning through hundreds of unrelated CVs",
+    ],
+    cta: { label: "Post a role", href: "/register?type=client" },
+    featured: true,
+  },
+  {
+    name: "For job seekers",
+    price: "Free",
+    unit: "always",
+    note: "Everything you need to get seen and get hired.",
+    features: [
+      "Profile built from your CV or LinkedIn",
+      "Jobs ranked by how well you fit",
+      "Interview practice with AI feedback",
+      "Application tracking and updates",
+    ],
+    cta: { label: "Create your profile", href: "/register?type=talent" },
+    featured: false,
+  },
+];
 
-  return (
-    <section id="employer-pricing" className="bg-[#0A1B3D] relative overflow-hidden px-6 py-24 md:py-32 border-y border-slate-900">
-      {/* Background glow effects to match Hero design */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(189,245,0,0.03),transparent_50%)]" />
-      <div className="absolute top-1/2 right-10 w-80 h-80 bg-blue-950/20 rounded-full blur-3xl pointer-events-none" />
+export const EmployerPricingSection = () => (
+  <section id="pricing" className="relative scroll-mt-20 overflow-hidden bg-brand-navy py-24 md:py-32">
+    <div aria-hidden className="pointer-events-none absolute inset-0">
+      <div className="absolute left-1/2 top-0 h-[480px] w-[900px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse,rgba(166,242,60,0.12),transparent_65%)]" />
+    </div>
 
-      <div className="mx-auto max-w-[1400px] relative z-10">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center max-w-6xl mx-auto">
-          
-          {/* Left Column: Core Value Proposition */}
-          <div className="lg:col-span-7 space-y-6">
-            <Reveal>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#bdf500]/10 rounded-full border border-[#bdf500]/20">
-                <ShieldCheck className="w-4 h-4 text-[#bdf500]" />
-                <span className="text-[11px] font-bold text-[#bdf500] uppercase tracking-wider font-mono">
-                  Transparent Flat-Rate Sourcing
-                </span>
-              </div>
-            </Reveal>
+    <Container className="relative">
+      <Reveal>
+        <SectionHeading
+          align="center"
+          tone="dark"
+          eyebrow="Pricing"
+          title="Simple, flat pricing built for SMEs."
+          description="Tell us who you need. We review your requirements, match the role with relevant candidates and email you a curated shortlist of vetted talent."
+        />
+      </Reveal>
 
-            <Reveal delay={60}>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-[1.15] tracking-tight">
-                Post a role and access vetted talent for R1,999
-              </h2>
-            </Reveal>
-
-            <Reveal delay={120}>
-              <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-xl">
-                Tell us who you need. LaunchPath will review your requirements, match the role with relevant candidates and send you a curated shortlist of vetted talent by email.
+      <div className="mx-auto mt-16 grid max-w-5xl gap-5 lg:grid-cols-[1.15fr_1fr]">
+        {PLANS.map((plan, i) => (
+          <Reveal key={plan.name} delay={i * 100}>
+            <div
+              className={cx(
+                "relative flex h-full flex-col rounded-[28px] p-8 sm:p-10",
+                plan.featured ? "bg-white text-brand-navy shadow-[0_40px_80px_-32px_rgba(0,0,0,0.6)]" : "bg-white/[0.04] text-white ring-1 ring-inset ring-white/10",
+              )}
+            >
+              <p className={cx("text-[15px] font-medium", plan.featured ? "text-slate-500" : "text-white/60")}>{plan.name}</p>
+              <p className="mt-4 flex items-baseline gap-2">
+                <span className="text-5xl font-semibold tracking-tight">{plan.price}</span>
+                <span className={cx("text-[15px]", plan.featured ? "text-slate-500" : "text-white/60")}>{plan.unit}</span>
               </p>
-            </Reveal>
+              <p className={cx("mt-3 text-sm", plan.featured ? "text-slate-500" : "text-white/60")}>{plan.note}</p>
 
-            {/* Quick trust badges */}
-            <Reveal delay={180}>
-              <div className="flex flex-wrap gap-4 pt-4">
-                <div className="flex items-center gap-2 text-xs text-slate-400 font-semibold bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-2.5">
-                  <Zap className="w-4 h-4 text-[#bdf500]" />
-                  <span>No Success Fees</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-slate-400 font-semibold bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-2.5">
-                  <Mail className="w-4 h-4 text-[#bdf500]" />
-                  <span>Shortlists to your Email</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-slate-400 font-semibold bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-2.5">
-                  <Users className="w-4 h-4 text-[#bdf500]" />
-                  <span>Saves Hours of Sifting</span>
-                </div>
-              </div>
-            </Reveal>
-          </div>
-
-          {/* Right Column: Premium Monolithic Pricing Card */}
-          <div className="lg:col-span-5 w-full">
-            <Reveal delay={200}>
-              <div className="bg-[#031535]/80 backdrop-blur-md rounded-3xl p-8 border border-[#bdf500]/20 shadow-2xl relative">
-                {/* Visual accent top edge */}
-                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#bdf500]/60 to-transparent rounded-t-3xl" />
-
-                <div className="space-y-6">
-                  <div>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">LaunchPath Flat-Rate</span>
-                    <div className="flex items-baseline gap-1 mt-2">
-                      <span className="text-4xl sm:text-5xl font-black text-white tracking-tight">R1,999</span>
-                      <span className="text-sm text-slate-300 font-semibold">per role posted</span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-2">Once-off payment. No placements commission. No hidden costs.</p>
-                  </div>
-
-                  <div className="h-px bg-slate-800/80" />
-
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 font-mono">Everything Included</h4>
-                    <ul className="space-y-3">
-                      {includedItems.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-3">
-                          <span className="w-5 h-5 bg-[#bdf500]/10 text-[#bdf500] rounded-full flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">✓</span>
-                          <span className="text-sm text-slate-300 leading-snug">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="pt-4">
-                    <Link
-                      href="/employer/new"
-                      className="w-full bg-[#A6F23C] hover:bg-[#aee000] text-slate-950 font-black py-4 px-6 rounded-full text-center block text-sm transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-[#bdf500]/10 flex items-center justify-center gap-2"
+              <ul className={cx("mt-8 space-y-3.5 border-t pt-8", plan.featured ? "border-slate-100" : "border-white/10")}>
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-start gap-3 text-[15px]">
+                    <span
+                      className={cx(
+                        "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
+                        plan.featured ? "bg-brand-navy text-brand-lime" : "bg-white/10 text-brand-lime",
+                      )}
                     >
-                      <span>Post a Role</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-          </div>
+                      <Check className="h-3 w-3" strokeWidth={3} />
+                    </span>
+                    <span className={plan.featured ? "text-slate-700" : "text-white/80"}>{f}</span>
+                  </li>
+                ))}
+              </ul>
 
-        </div>
+              <div className="mt-auto pt-10">
+                <Cta href={plan.cta.href} variant={plan.featured ? "navy" : "outline-light"} arrow className="w-full">
+                  {plan.cta.label}
+                </Cta>
+              </div>
+            </div>
+          </Reveal>
+        ))}
       </div>
-    </section>
-  );
-};
+
+      <p className="mt-10 text-center text-sm text-white/50">
+        Hiring at volume or recruiting for clients?{" "}
+        <a href="#contact" className="font-medium text-brand-lime hover:text-brand-lime-soft">
+          Let’s talk
+        </a>
+      </p>
+    </Container>
+  </section>
+);

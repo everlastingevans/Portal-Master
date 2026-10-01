@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Building } from 'lucide-react';
+import { Globe, MapPin, ImageUp, Link2, Save } from 'lucide-react';
+import { SectionLoader } from '@/components/PortalLoader';
+import { PageHeader, Card, Section, Field, Input, Textarea, Button, Avatar, Badge } from '@/components/portal/ui';
 
 interface ProfileTabProps {
   user: any;
@@ -26,6 +28,14 @@ interface ProfileTabProps {
   handleProfileSubmit: (e: React.FormEvent) => void;
 }
 
+function displayUrl(url: string) {
+  return url.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+}
+
+function hrefFor(url: string) {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
 export default function ProfileTab({
   user,
   profileLoading,
@@ -48,207 +58,227 @@ export default function ProfileTab({
   profileSaving,
   handleProfileSubmit,
 }: ProfileTabProps) {
+  const readLogoFile = (file?: File | null) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setProfileLogo(event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const openFilePicker = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e: any) => readLogoFile(e.target.files?.[0]);
+    input.click();
+  };
+
+  const isDataLogo = profileLogo.startsWith('data:');
+
   return (
-    <div className="max-w-3xl mx-auto bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors mb-12">
-      <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-5 mb-6">
-        <div className="p-2.5 bg-[#5D3FD3]/10 text-[#5D3FD3] rounded-xl">
-          <Building className="w-6 h-6" />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold dark:text-white">Company Profile</h2>
-          <p className="text-xs text-slate-500">Update your company details, website, overview, and branding logo.</p>
-        </div>
-      </div>
+    <div className="space-y-8">
+      <PageHeader title="Company profile" description="This is how your company appears to candidates on your job listings." />
 
       {profileLoading ? (
-        <div className="py-12 text-center text-slate-500">Loading company profile details...</div>
+        <Card>
+          <SectionLoader label="Loading company profile" />
+        </Card>
       ) : (
-        <form onSubmit={handleProfileSubmit} className="space-y-6">
-          
-          <h3 className="text-sm font-bold text-[#5D3FD3] uppercase tracking-wider">Contact Person Info</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">Full Name</label>
-              <input 
-                type="text" 
-                value={profileName} 
-                onChange={e => setProfileName(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
-                placeholder="e.g. John Doe"
-              />
+        <>
+          {/* Candidate-facing preview */}
+          <Card padded={false} className="overflow-hidden">
+            <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-6 py-3">
+              <p className="text-xs font-medium text-slate-500">Candidate view</p>
+              <Badge tone="neutral">Preview</Badge>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">Job Title</label>
-              <input 
-                type="text" 
-                value={profileTitle} 
-                onChange={e => setProfileTitle(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
-                placeholder="e.g. Talent Acquisition Lead"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">Email Address (Read-only)</label>
-              <input 
-                type="email" 
-                value={user?.email || ''} 
-                disabled 
-                className="w-full text-sm p-2.5 border border-slate-100 dark:border-slate-800 dark:bg-slate-900 text-slate-400 rounded-xl cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">Contact Phone</label>
-              <input 
-                type="text" 
-                value={profilePhone} 
-                onChange={e => setProfilePhone(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
-                placeholder="e.g. +27 11 123 4567"
-              />
-            </div>
-          </div>
-
-          <hr className="border-slate-100 dark:border-slate-800" />
-          <h3 className="text-sm font-bold text-[#5D3FD3] uppercase tracking-wider">Company Brand & Details</h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">Company Name</label>
-              <input 
-                type="text" 
-                value={profileCompanyName} 
-                onChange={e => setProfileCompanyName(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
-                placeholder="e.g. LaunchPath Inc."
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">Company Website</label>
-              <input 
-                type="text" 
-                value={profileWebsite} 
-                onChange={e => setProfileWebsite(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
-                placeholder="e.g. https://launchpath.com"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">Location / Headquarters</label>
-              <input 
-                type="text" 
-                value={profileLocation} 
-                onChange={e => setProfileLocation(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
-                placeholder="e.g. Rosebank, Johannesburg"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">Logo URL (Optional)</label>
-              <input 
-                type="text" 
-                value={profileLogo} 
-                onChange={e => setProfileLogo(e.target.value)} 
-                className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl"
-                placeholder="e.g. https://domain.com/logo.png"
-              />
-            </div>
-          </div>
-
-          {/* DRAG AND DROP FILE UPLOADER FOR LOGO */}
-          <div>
-            <label className="block text-xs font-bold text-slate-500 mb-2">Upload Company Logo</label>
-            <div 
-              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-              onDrop={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const file = e.dataTransfer.files?.[0];
-                if (file && file.type.startsWith('image/')) {
-                  const reader = new FileReader();
-                  reader.onload = (event) => {
-                    if (event.target?.result) {
-                      setProfileLogo(event.target.result as string);
-                    }
-                  };
-                  reader.readAsDataURL(file);
-                }
-              }}
-              className="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-[#5D3FD3] dark:hover:border-[#5D3FD3] rounded-2xl p-6 text-center cursor-pointer bg-slate-50/50 dark:bg-slate-950/20 transition-all flex flex-col items-center justify-center gap-3"
-              onClick={() => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.onchange = (e: any) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      if (event.target?.result) {
-                        setProfileLogo(event.target.result as string);
-                      }
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                };
-                input.click();
-              }}
-            >
-              {profileLogo ? (
-                <div className="flex items-center gap-4 text-left justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={profileLogo} alt="Logo preview" className="w-16 h-16 rounded-xl object-cover border border-slate-200 dark:border-slate-800 bg-white" />
-                  <div>
-                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">Logo Selected & Loaded</p>
-                    <p className="text-[10px] text-slate-400 mt-1">Click or drag another image to replace.</p>
-                    <button 
-                      type="button" 
-                      onClick={(e) => { e.stopPropagation(); setProfileLogo(''); }} 
-                      className="text-red-500 hover:text-red-600 text-xs font-bold mt-2"
-                    >
-                      Remove Logo
-                    </button>
+            <div className="p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                <Avatar name={profileCompanyName || 'Company'} src={profileLogo || undefined} size="lg" />
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate text-lg font-semibold text-brand-navy">{profileCompanyName || 'Your company name'}</h2>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+                    {profileLocation && (
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {profileLocation}
+                      </span>
+                    )}
+                    {profileWebsite && (
+                      <a
+                        href={hrefFor(profileWebsite)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex min-w-0 items-center gap-1.5 text-brand-navy hover:underline"
+                      >
+                        <Globe className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{displayUrl(profileWebsite)}</span>
+                      </a>
+                    )}
                   </div>
+                  <p className="mt-3 line-clamp-4 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+                    {profileDescription || (
+                      <span className="text-slate-400">Add a short overview so candidates know what you do and why they should join.</span>
+                    )}
+                  </p>
                 </div>
-              ) : (
-                <>
-                  <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-450 text-xl font-bold">
-                    📁
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">Drag & drop your company logo here</p>
-                    <p className="text-[10px] text-slate-400 mt-1">Supports PNG, JPG, or SVG up to 2MB (converts to Base64 data)</p>
-                  </div>
-                </>
-              )}
+              </div>
             </div>
-          </div>
+          </Card>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">Company Description</label>
-            <textarea 
-              value={profileDescription} 
-              onChange={e => setProfileDescription(e.target.value)} 
-              rows={4}
-              className="w-full text-sm p-2.5 border border-slate-200 dark:border-slate-700 dark:bg-slate-950 rounded-xl font-sans"
-              placeholder="Provide a brief description of what your company does, its culture, and mission..."
-            />
-          </div>
+          <Card>
+            <form onSubmit={handleProfileSubmit}>
+              <Section title="Company details" description="Shown on every job you post.">
+                <Field label="Company name" htmlFor="cp-company">
+                  <Input
+                    id="cp-company"
+                    type="text"
+                    value={profileCompanyName}
+                    onChange={(e) => setProfileCompanyName(e.target.value)}
+                    placeholder="e.g. Acme Logistics (Pty) Ltd"
+                    required
+                  />
+                </Field>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field label="Website" htmlFor="cp-website" optional>
+                    <Input
+                      id="cp-website"
+                      type="text"
+                      icon={Globe}
+                      value={profileWebsite}
+                      onChange={(e) => setProfileWebsite(e.target.value)}
+                      placeholder="www.example.co.za"
+                    />
+                  </Field>
+                  <Field label="Head office" htmlFor="cp-location" optional>
+                    <Input
+                      id="cp-location"
+                      type="text"
+                      icon={MapPin}
+                      value={profileLocation}
+                      onChange={(e) => setProfileLocation(e.target.value)}
+                      placeholder="e.g. Rosebank, Johannesburg"
+                    />
+                  </Field>
+                </div>
+                <Field label="Company overview" htmlFor="cp-description" hint="Two or three sentences on what you do, your culture and your mission.">
+                  <Textarea
+                    id="cp-description"
+                    value={profileDescription}
+                    onChange={(e) => setProfileDescription(e.target.value)}
+                    rows={5}
+                    placeholder="What does your company do, and what is it like to work there?"
+                  />
+                </Field>
+              </Section>
 
-          <button 
-            type="submit" 
-            disabled={profileSaving}
-            className="w-full bg-[#5D3FD3] hover:bg-[#5b32e6] text-white font-bold py-3.5 rounded-xl transition cursor-pointer disabled:opacity-50"
-          >
-            {profileSaving ? 'Saving Changes...' : 'Save Company Profile'}
-          </button>
-        </form>
+              <Section title="Logo" description="A square image works best. It appears next to your job listings.">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label={profileLogo ? 'Replace company logo' : 'Upload company logo'}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    readLogoFile(e.dataTransfer.files?.[0]);
+                  }}
+                  onClick={openFilePicker}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      openFilePicker();
+                    }
+                  }}
+                  className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy/30 sm:flex-row sm:text-left"
+                >
+                  {profileLogo ? (
+                    <>
+                      <Avatar name={profileCompanyName || 'Logo'} src={profileLogo} size="lg" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-brand-navy">Logo added</p>
+                        <p className="mt-0.5 text-xs text-slate-500">Click or drop another image to replace it.</p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setProfileLogo('');
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-slate-400 ring-1 ring-slate-200">
+                        <ImageUp className="h-5 w-5" />
+                      </span>
+                      <div>
+                        <p className="text-sm font-medium text-brand-navy">Drop your logo here, or click to upload</p>
+                        <p className="mt-0.5 text-xs text-slate-500">PNG, JPG or SVG</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <Field label="Or use an image URL" htmlFor="cp-logo" optional>
+                  <Input
+                    id="cp-logo"
+                    type="text"
+                    icon={Link2}
+                    value={isDataLogo ? '' : profileLogo}
+                    onChange={(e) => setProfileLogo(e.target.value)}
+                    placeholder={isDataLogo ? 'Using uploaded image' : 'https://example.co.za/logo.png'}
+                  />
+                </Field>
+              </Section>
+
+              <Section title="Contact person" description="Who candidates and the LaunchPath team should contact. Not shown publicly.">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field label="Full name" htmlFor="cp-name">
+                    <Input id="cp-name" type="text" value={profileName} onChange={(e) => setProfileName(e.target.value)} placeholder="e.g. Thandi Mokoena" />
+                  </Field>
+                  <Field label="Job title" htmlFor="cp-title" optional>
+                    <Input
+                      id="cp-title"
+                      type="text"
+                      value={profileTitle}
+                      onChange={(e) => setProfileTitle(e.target.value)}
+                      placeholder="e.g. HR Manager"
+                    />
+                  </Field>
+                  <Field label="Email" htmlFor="cp-email" hint="Contact support to change your sign-in email.">
+                    <Input id="cp-email" type="email" value={user?.email || ''} disabled />
+                  </Field>
+                  <Field label="Phone" htmlFor="cp-phone" optional>
+                    <Input
+                      id="cp-phone"
+                      type="tel"
+                      value={profilePhone}
+                      onChange={(e) => setProfilePhone(e.target.value)}
+                      placeholder="e.g. +27 11 123 4567"
+                    />
+                  </Field>
+                </div>
+              </Section>
+
+              <div className="mt-8 flex justify-end border-t border-slate-100 pt-6">
+                <Button type="submit" variant="primary" icon={Save} loading={profileSaving}>
+                  Save profile
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </>
       )}
     </div>
   );

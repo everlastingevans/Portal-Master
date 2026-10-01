@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, User, Building, Sparkles, RefreshCw } from 'lucide-react';
+import { Shield, User, Building, RefreshCw } from 'lucide-react';
 import { useToast } from './ToastNotification';
 
 interface ThanosSidebarWidgetProps {
@@ -28,7 +28,7 @@ export function ThanosSidebarWidget({ currentRole }: ThanosSidebarWidgetProps) {
       if (res.ok) {
         const result = await res.json();
         
-        toast(`${result.message || 'Thanos mode updated successfully'} 🛡️`, 'success');
+        toast(result.message || 'Switched view', 'success');
         
         setTimeout(() => {
           if (targetRole === 'CANDIDATE') {
@@ -56,60 +56,37 @@ export function ThanosSidebarWidget({ currentRole }: ThanosSidebarWidgetProps) {
 
   const active = String(currentRole || 'SUPERADMIN').toUpperCase();
 
+  const options = [
+    { role: 'SUPERADMIN' as const, label: 'Admin', icon: Shield },
+    { role: 'CANDIDATE' as const, label: 'Candidate', icon: User },
+    { role: 'EMPLOYER' as const, label: 'Employer', icon: Building },
+  ];
+
   return (
-    <div className="bg-slate-900/60 border border-[#7145FF]/30 rounded-xl p-3 mb-4 mx-2">
-      <div className="flex items-center justify-between mb-2 select-none">
-        <span className="text-[9px] uppercase font-bold tracking-wider text-violet-400 font-sans flex items-center gap-1">
-          <Sparkles className="w-3 h-3 text-violet-400 animate-pulse" />
-          Thanos Switcher
-        </span>
-        {switching && (
-          <RefreshCw className="w-3 h-3 text-violet-400 animate-spin" />
-        )}
+    <div className="mx-3 mb-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+      <div className="mb-2 flex items-center justify-between select-none">
+        <span className="text-[11px] font-medium text-white/50">View platform as</span>
+        {switching && <RefreshCw className="h-3 w-3 animate-spin text-brand-lime" />}
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        {/* Admin Button */}
-        <button
-          onClick={() => handleRoleSwitch('SUPERADMIN')}
-          disabled={switching}
-          className={`w-full flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition cursor-pointer ${
-            active === 'SUPERADMIN'
-              ? 'bg-[#7145FF] text-white shadow-sm shadow-[#7145FF]/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-          }`}
-        >
-          <Shield className="w-3.5 h-3.5" />
-          <span>Super Admin</span>
-        </button>
-
-        {/* Candidate Button */}
-        <button
-          onClick={() => handleRoleSwitch('CANDIDATE')}
-          disabled={switching}
-          className={`w-full flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition cursor-pointer ${
-            active === 'CANDIDATE'
-              ? 'bg-[#7145FF] text-white shadow-sm shadow-[#7145FF]/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-          }`}
-        >
-          <User className="w-3.5 h-3.5" />
-          <span>Candidate Space</span>
-        </button>
-
-        {/* Employer Button */}
-        <button
-          onClick={() => handleRoleSwitch('EMPLOYER')}
-          disabled={switching}
-          className={`w-full flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-bold transition cursor-pointer ${
-            active === 'EMPLOYER'
-              ? 'bg-[#7145FF] text-white shadow-sm shadow-[#7145FF]/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-          }`}
-        >
-          <Building className="w-3.5 h-3.5" />
-          <span>Employer Space</span>
-        </button>
+      <div className="grid grid-cols-3 gap-1 rounded-lg bg-black/20 p-1">
+        {options.map(({ role, label, icon: Icon }) => {
+          const isActive = active === role;
+          return (
+            <button
+              key={role}
+              onClick={() => !isActive && handleRoleSwitch(role)}
+              disabled={switching}
+              aria-pressed={isActive}
+              className={`flex cursor-pointer flex-col items-center gap-1 rounded-md px-1 py-1.5 text-[10px] font-medium transition-colors disabled:cursor-wait ${
+                isActive ? 'bg-brand-lime text-brand-navy' : 'text-white/50 hover:bg-white/[0.06] hover:text-white'
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

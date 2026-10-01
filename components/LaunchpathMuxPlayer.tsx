@@ -7,10 +7,10 @@ import dynamic from 'next/dynamic';
 const MuxPlayer = dynamic(() => import('@mux/mux-player-react'), { 
   ssr: false,
   loading: () => (
-    <div className="absolute inset-0 flex items-center justify-center bg-slate-950">
-      <div className="flex flex-col items-center gap-3 text-slate-400 font-sans">
-        <div className="w-8 h-8 rounded-full border-2 border-slate-700 border-t-[#7145FF] animate-spin" />
-        <span className="text-xs font-semibold tracking-wider font-mono">LOADING STREAM PLAYER...</span>
+    <div className="absolute inset-0 flex items-center justify-center bg-brand-navy">
+      <div className="flex flex-col items-center gap-3 text-white/60">
+        <div className="w-7 h-7 rounded-full border-2 border-white/15 border-t-brand-lime animate-spin" />
+        <span className="text-xs">Loading video…</span>
       </div>
     </div>
   )
@@ -35,7 +35,7 @@ export default function LaunchpathMuxPlayer({
   const isMock = playbackId.startsWith('mock_playback_');
 
   return (
-    <div className={`relative w-full h-full bg-slate-950 overflow-hidden ${className}`}>
+    <div className={`relative w-full h-full bg-brand-navy overflow-hidden ${className}`}>
       {isMuxPlayback && !isMock ? (
         <MuxPlayer
           playbackId={playbackId}
@@ -43,8 +43,8 @@ export default function LaunchpathMuxPlayer({
           className="w-full h-full object-cover"
           poster={poster}
           streamType="on-demand"
-          primaryColor="#7145FF"
-          secondaryColor="#1e1b4b"
+          primaryColor="#A6F23C"
+          secondaryColor="#0A1B3D"
         />
       ) : (
         <MuxPlayer
@@ -52,8 +52,8 @@ export default function LaunchpathMuxPlayer({
           metadata={{ video_title: 'Launchpath Professional Presentation' }}
           className="w-full h-full object-cover"
           poster={poster}
-          primaryColor="#7145FF"
-          secondaryColor="#1e1b4b"
+          primaryColor="#A6F23C"
+          secondaryColor="#0A1B3D"
         />
       )}
     </div>

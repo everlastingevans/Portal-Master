@@ -1,10 +1,48 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { 
-  CheckCircle2, User, Sparkles, BadgeCheck, ShieldAlert, FileText, Upload 
+import { useState, useRef, useMemo, ReactNode, DragEvent } from 'react';
+import {
+  CheckCircle2,
+  Circle,
+  FileText,
+  FileUp,
+  Pencil,
+  Phone,
+  Mail,
+  Linkedin,
+  Github,
+  Globe,
+  ExternalLink,
+  Upload,
+  X,
+  Briefcase,
+  GraduationCap,
+  Compass,
+  Tags,
+  FolderOpen,
+  ShieldCheck,
+  Lightbulb,
+  ArrowRight,
+  LucideIcon,
 } from 'lucide-react';
-import { getProfileCompletion, getResumeStrength } from './DashboardHelpers';
+import { useToast } from '@/components/ToastNotification';
+import { Spinner } from '@/components/PortalLoader';
+import {
+  Alert,
+  Avatar,
+  Badge,
+  BadgeTone,
+  Button,
+  Card,
+  CardHeader,
+  Field,
+  Input,
+  Section,
+  Select,
+  Textarea,
+  cx,
+} from '@/components/portal/ui';
+import { getResumeStrength } from './DashboardHelpers';
 
 export interface ProfileTabProps {
   user: any;
@@ -59,6 +97,128 @@ export interface ProfileTabProps {
   handleResumeUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
 }
 
+/* ----------------------------- Helpers ---------------------------------- */
+
+const splitList = (value?: string | null) =>
+  String(value || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+const prettyUrl = (url: string) => url.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '');
+
+/** Client-side completeness checklist, ordered by how much each item helps matching. */
+function getCompleteness(u: any) {
+  const items = [
+    { key: 'cv', label: 'Upload your CV', done: !!u?.resume_text, hint: 'Upload your CV so we can match you to the right roles.' },
+    { key: 'basics', label: 'Name and headline', done: !!u?.name && !!u?.professional_title, hint: 'Add a short headline, like "BCom Accounting graduate".' },
+    { key: 'skills', label: 'Skills', done: !!u?.skills, hint: 'List your key skills so employers can find you.' },
+    { key: 'experience', label: 'Experience', done: !!u?.work_experience, hint: 'Add internships, projects, part-time work or volunteering.' },
+    { key: 'education', label: 'Education', done: !!u?.qualifications || !!u?.study_institution, hint: 'Tell employers where and what you studied.' },
+    { key: 'direction', label: 'Career direction', done: !!u?.seeking_roles || !!u?.career_direction, hint: 'Share the roles you are looking for next.' },
+    { key: 'phone', label: 'Phone number', done: !!u?.phone, hint: 'Add a phone number so recruiters can reach you quickly.' },
+    { key: 'links', label: 'Links', done: !!u?.linkedin_url || !!u?.github_url || !!u?.portfolio_url, hint: 'Link your LinkedIn, GitHub or portfolio.' },
+  ];
+  const done = items.filter((i) => i.done).length;
+  return { items, done, total: items.length, percent: Math.round((done / items.length) * 100), next: items.find((i) => !i.done) };
+}
+
+function strengthTone(score: number): { label: string; tone: BadgeTone } {
+  if (score === 0) return { label: 'No CV yet', tone: 'neutral' };
+  if (score >= 80) return { label: 'Strong', tone: 'success' };
+  if (score >= 60) return { label: 'Good', tone: 'info' };
+  if (score >= 40) return { label: 'Fair', tone: 'warning' };
+  return { label: 'Needs work', tone: 'danger' };
+}
+
+/* --------------------------- Small view parts --------------------------- */
+
+function InfoCard({ icon: Icon, title, description, children }: { icon: LucideIcon; title: string; description?: string; children: ReactNode }) {
+  return (
+    <Card>
+      <div className="mb-4 flex items-start gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-500 ring-1 ring-inset ring-slate-200/80">
+          <Icon className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <h2 className="text-[15px] font-semibold text-brand-navy">{title}</h2>
+          {description && <p className="mt-0.5 text-sm text-slate-500">{description}</p>}
+        </div>
+      </div>
+      <div className="space-y-4">{children}</div>
+    </Card>
+  );
+}
+
+function DetailRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <dt className="text-xs font-medium text-slate-500">{label}</dt>
+      <dd className="mt-1 text-sm leading-relaxed text-slate-700">{children}</dd>
+    </div>
+  );
+}
+
+function Missing({ children, onAdd }: { children: ReactNode; onAdd: () => void }) {
+  return (
+    <span className="inline-flex flex-wrap items-center gap-x-2 text-sm text-slate-400">
+      {children}
+      <button type="button" onClick={onAdd} className="cursor-pointer font-medium text-brand-navy underline-offset-4 hover:underline">
+        Add
+      </button>
+    </span>
+  );
+}
+
+function Chips({ items, variant = 'solid' }: { items: string[]; variant?: 'solid' | 'outline' }) {
+  return (
+    <ul className="flex flex-wrap gap-1.5">
+      {items.map((item, idx) => (
+        <li
+          key={`${item}-${idx}`}
+          className={cx(
+            'rounded-lg px-2.5 py-1 text-[13px] font-medium',
+            variant === 'solid' ? 'bg-brand-navy/[0.05] text-brand-navy ring-1 ring-inset ring-brand-navy/10' : 'bg-white text-slate-600 ring-1 ring-inset ring-slate-200',
+          )}
+        >
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function LinkRow({ icon: Icon, label, href, onAdd }: { icon: LucideIcon; label: string; href?: string | null; onAdd: () => void }) {
+  return (
+    <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500 ring-1 ring-inset ring-slate-200/80">
+        <Icon className="h-4 w-4" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-slate-500">{label}</p>
+        {href ? (
+          <a href={href} target="_blank" rel="noopener noreferrer" className="block truncate text-sm font-medium text-brand-navy hover:underline">
+            {prettyUrl(href)}
+          </a>
+        ) : (
+          <Missing onAdd={onAdd}>Not added</Missing>
+        )}
+      </div>
+      {href && <ExternalLink className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden="true" />}
+    </div>
+  );
+}
+
+function LinkedInGlyph({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+    </svg>
+  );
+}
+
+/* ------------------------------- Component ------------------------------ */
+
 export default function ProfileTab({
   user,
   isEditingProfile,
@@ -112,11 +272,20 @@ export default function ProfileTab({
   handleResumeUpload,
 }: ProfileTabProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const completion = getProfileCompletion(user);
+  const { error: toastError, success: toastSuccess } = useToast();
+  const completeness = useMemo(() => getCompleteness(user), [user]);
   const strength = getResumeStrength(user?.resume_text);
+  const strengthMeta = strengthTone(strength.score);
 
   const [uploadingCert, setUploadingCert] = useState(false);
   const [uploadingClearance, setUploadingClearance] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+
+  const skills = splitList(user?.skills);
+  const interests = splitList(user?.interests);
+  const draftSkills = splitList(profileSkills);
+  const isProcessing = resumeTask && resumeTask.status !== 'FAILED';
+  const taskFailed = resumeTask?.status === 'FAILED';
 
   const handleFileUploadToS3 = async (file: File, category: 'documents'): Promise<string> => {
     const presignResponse = await fetch('/api/storage/presign', {
@@ -168,865 +337,719 @@ export default function ProfileTab({
     return publicUrl;
   };
 
+  const startEditing = () => {
+    setProfileName(user?.name || '');
+    setProfileTitle(user?.professional_title || '');
+    setProfileExp(user?.experience_level || 'Junior');
+    setProfileLinkedin(user?.linkedin_url || '');
+    setProfileGithub(user?.github_url || '');
+    setProfilePhone(user?.phone || '');
+    setProfileQualifications(user?.qualifications || '');
+    setProfileSkills(user?.skills || '');
+    setProfileInterests(user?.interests || '');
+    setProfileCareerDirection(user?.career_direction || '');
+    setProfileWorkExperience(user?.work_experience || '');
+    setProfilePortfolioUrl(user?.portfolio_url || '');
+    setProfileCvUrl(user?.cv_url || '');
+    setProfileStudyInstitution(user?.study_institution || '');
+    setProfileStudySpecialisation(user?.study_specialisation || '');
+    setProfileSeekingRoles(user?.seeking_roles || '');
+    setProfileCertificatesUrl(user?.certificates_url || '');
+    setProfilePoliceClearanceUrl(user?.police_clearance_url || '');
+    setIsEditingProfile(true);
+  };
+
+  const onResumeInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    await handleResumeUpload(e);
+    input.value = '';
+  };
+
+  const onDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragActive(false);
+    if (uploading || isProcessing) return;
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      toastError('Please upload your CV as a PDF.');
+      return;
+    }
+    const syntheticEvent = {
+      preventDefault: () => {},
+      target: { files: e.dataTransfer.files },
+      currentTarget: { files: e.dataTransfer.files },
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
+    handleResumeUpload(syntheticEvent);
+  };
+
+  const uploadDocument = async (
+    file: File | undefined,
+    setBusy: (v: boolean) => void,
+    setUrl: (v: string) => void,
+    label: string,
+  ) => {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const url = await handleFileUploadToS3(file, 'documents');
+      setUrl(url);
+      toastSuccess(`${label} uploaded. Save your profile to keep it.`);
+    } catch (err: any) {
+      toastError(`We couldn't upload your ${label.toLowerCase()}: ${err.message}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const contactItems = [
+    user?.email && { icon: Mail, label: user.email, href: `mailto:${user.email}` },
+    user?.phone && { icon: Phone, label: user.phone, href: `tel:${user.phone}` },
+    user?.linkedin_url && { icon: Linkedin, label: 'LinkedIn', href: user.linkedin_url, external: true },
+    user?.github_url && { icon: Github, label: 'GitHub', href: user.github_url, external: true },
+    user?.portfolio_url && { icon: Globe, label: 'Portfolio', href: user.portfolio_url, external: true },
+  ].filter(Boolean) as { icon: LucideIcon; label: string; href: string; external?: boolean }[];
+
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      {/* PROFILE COMPLETION DASHBOARD CARD */}
-      <div className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-          <div>
-            <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-              Profile Completion Status
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Complete your profile details to stand out to employers and qualify for our AI recommendation matching index.
-            </p>
-          </div>
-          <div className="text-right flex items-center gap-2 sm:flex-col sm:items-end">
-            <span className="text-2xl font-black text-[#5D3FD3] dark:text-violet-400">{completion.score}%</span>
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Complete</span>
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
-          <div 
-            className="h-full bg-gradient-to-r from-violet-500 via-indigo-500 to-emerald-500 transition-all duration-500" 
-            style={{ width: `${completion.score}%` }}
-          />
-        </div>
-
-        {/* Checklist summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-          {completion.items.map((item, idx) => (
-            <div key={idx} className="flex items-center gap-2 text-xs font-semibold p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-150 dark:border-slate-800">
-              {item.filled ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-              ) : (
-                <div className="w-4 h-4 rounded-full border border-dashed border-slate-300 dark:border-slate-700 flex-shrink-0" />
+    <div className="mx-auto max-w-5xl space-y-6">
+      {/* ------------------------------ Header ------------------------------ */}
+      <Card padded={false} className="overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px]">
+          <div className="p-6 sm:p-8">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex min-w-0 items-start gap-4">
+                <Avatar name={user?.name} src={user?.avatar_url || user?.image} size="lg" />
+                <div className="min-w-0">
+                  <h1 className="truncate text-xl font-semibold tracking-tight text-brand-navy sm:text-2xl">{user?.name || 'Your profile'}</h1>
+                  <p className="mt-0.5 text-sm text-slate-600">
+                    {user?.professional_title || <span className="text-slate-400">Add a headline so employers know what you do</span>}
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <Badge tone="brand">{user?.experience_level || 'Entry level'}</Badge>
+                    {user?.study_institution && <Badge>{user.study_institution}</Badge>}
+                  </div>
+                </div>
+              </div>
+              {!isEditingProfile && (
+                <Button variant="secondary" icon={Pencil} onClick={startEditing} className="self-start">
+                  Edit profile
+                </Button>
               )}
-              <span className={item.filled ? 'text-slate-800 dark:text-slate-200 truncate' : 'text-slate-400 dark:text-slate-505 line-through decoration-slate-250 dark:decoration-slate-800/50 truncate'}>
-                {item.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Header / Profile card */}
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
-        {!isEditingProfile ? (
-          <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-6">
-                <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/50 rounded-full flex flex-shrink-0 items-center justify-center border-4 border-white dark:border-slate-800 shadow">
-                  <User className="text-blue-600 dark:text-blue-400 w-8 h-8" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold dark:text-white">{user?.name || 'Talent'}</h2>
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">{user?.professional_title || 'No professional title set'}</p>
-                  <div className="flex flex-wrap items-center gap-2 mt-2.5">
-                    <span className="inline-block text-xs font-bold text-[#5D3FD3] dark:text-violet-405 bg-violet-100 dark:bg-[#5D3FD3]/20 px-3 py-1 rounded-full uppercase tracking-wider">
-                      {user?.experience_level || 'Entry-Level'}
-                    </span>
-                    {user?.linkedin_url && (
-                      <a href={user.linkedin_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 px-3 py-1 rounded-full hover:underline transition-all">
-                        LinkedIn
-                      </a>
-                    )}
-                    {user?.github_url && (
-                      <a href={user.github_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full hover:underline transition-all">
-                        GitHub
-                      </a>
-                    )}
-                    {user?.phone && (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/45 px-3 py-1 rounded-full">
-                        📞 {user.phone}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setProfileName(user?.name || '');
-                  setProfileTitle(user?.professional_title || '');
-                  setProfileExp(user?.experience_level || 'Junior');
-                  setProfileLinkedin(user?.linkedin_url || '');
-                  setProfileGithub(user?.github_url || '');
-                  setProfilePhone(user?.phone || '');
-                  setProfileQualifications(user?.qualifications || '');
-                  setProfileSkills(user?.skills || '');
-                  setProfileInterests(user?.interests || '');
-                  setProfileCareerDirection(user?.career_direction || '');
-                  setProfileWorkExperience(user?.work_experience || '');
-                  setProfilePortfolioUrl(user?.portfolio_url || '');
-                  setProfileCvUrl(user?.cv_url || '');
-                  setProfileStudyInstitution(user?.study_institution || '');
-                  setProfileStudySpecialisation(user?.study_specialisation || '');
-                  setProfileSeekingRoles(user?.seeking_roles || '');
-                  setProfileCertificatesUrl(user?.certificates_url || '');
-                  setProfilePoliceClearanceUrl(user?.police_clearance_url || '');
-                  setIsEditingProfile(true);
-                }}
-                className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 font-bold text-xs transition cursor-pointer"
-              >
-                Edit Details
-              </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-              <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60 space-y-4">
-                <div>
-                  <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
-                    Qualifications & Academic Background
-                  </h4>
-                  {user?.qualifications ? (
-                    <p className="text-sm text-slate-800 dark:text-slate-200 whitespace-pre-line leading-relaxed font-medium">
-                      {user.qualifications}
-                    </p>
-                  ) : (
-                    <p className="text-xs text-slate-405 dark:text-slate-500 italic">
-                      No qualification or academic background added yet. Click &quot;Edit Details&quot; to include them.
-                    </p>
-                  )}
-                </div>
-
-                <div className="pt-3 border-t border-slate-150/80 dark:border-slate-800/60 grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Institution Studied</span>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      {user?.study_institution || <span className="text-slate-400 italic font-normal">Not specified</span>}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Specialisation</span>
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      {user?.study_specialisation || <span className="text-slate-400 italic font-normal">Not specified</span>}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60 space-y-4">
-                <div>
-                  <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
-                    Key Skills & Interests
-                  </h4>
-                  {user?.skills ? (
-                    <div className="flex flex-wrap gap-1.5">
-                      {user.skills.split(',').map((sk: string, idx: number) => (
-                        <span key={idx} className="text-xs font-semibold px-2.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/40">
-                          {sk.trim()}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-405 dark:text-slate-500 italic">No skills listed yet.</p>
-                  )}
-                  {user?.interests && (
-                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 font-medium">
-                      <strong className="text-slate-500 dark:text-slate-500">Interests:</strong> {user.interests}
-                    </p>
-                  )}
-                </div>
-
-                <div className="pt-3 border-t border-slate-150/80 dark:border-slate-800/60">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">Roles Seeking</span>
-                  <p className="text-xs text-slate-800 dark:text-slate-200 font-bold">
-                    {user?.seeking_roles || <span className="text-slate-400 italic font-normal">Not specified yet</span>}
-                  </p>
-                </div>
-
-                {user?.career_direction && (
-                  <div className="pt-2.5 border-t border-slate-150/80 dark:border-slate-800/60">
-                    <h5 className="text-[10.5px] font-bold text-slate-400 dark:text-slate-505 uppercase tracking-wider mb-1.5">
-                      Career Direction
-                    </h5>
-                    <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">
-                      {user.career_direction}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* ACADEMIC CERTIFICATES & CLEARANCE */}
-              <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60 md:col-span-2 space-y-4">
-                <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                  Degree Certificates & Verification Clearances
-                </h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Certificates / Degree Box */}
-                  <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-lg flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400">
-                      <FileText className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Certificates & Degree PDFs</span>
-                      {user?.certificates_url ? (
-                        <div className="space-y-1 mt-1">
-                          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block truncate">Verified Degree / Certificates</span>
-                          <a 
-                            href={user.certificates_url} 
-                            target="_blank" 
-                            rel="noreferrer" 
-                            className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-bold hover:underline"
-                          >
-                            Download / View PDF
-                          </a>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-slate-400 italic block mt-1">No certificate or degree PDF uploaded yet.</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Police Clearance Box */}
-                  <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-lg flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Police Clearance Certificate</span>
-                      {user?.police_clearance_url ? (
-                        <div className="space-y-1 mt-1">
-                          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block truncate">Verified Police Clearance</span>
-                          <a 
-                            href={user.police_clearance_url} 
-                            target="_blank" 
-                            rel="noreferrer" 
-                            className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline"
-                          >
-                            Download / View PDF
-                          </a>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-slate-400 italic block mt-1">No police clearance certificate uploaded yet.</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60 md:col-span-2">
-                <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
-                  Work Experience, Internships, Projects & Volunteering
-                </h4>
-                {user?.work_experience ? (
-                  <p className="text-sm text-slate-800 dark:text-slate-200 whitespace-pre-line leading-relaxed font-medium">
-                    {user.work_experience}
-                  </p>
-                ) : (
-                  <p className="text-xs text-slate-405 dark:text-slate-500 italic">
-                    No work or volunteer experience described yet. Click &quot;Edit Details&quot; to include them.
-                  </p>
-                )}
-              </div>
-
-              <div className="p-5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800/60 md:col-span-2">
-                <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
-                  LinkedIn, GitHub & Portfolio Links
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-lg flex flex-col justify-between">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">LinkedIn URL</span>
-                    {user?.linkedin_url ? (
-                      <a href={user.linkedin_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 dark:text-blue-400 font-bold hover:underline truncate mt-1 block">
-                        {user.linkedin_url}
-                      </a>
-                    ) : (
-                      <span className="text-xs text-slate-405 italic mt-1">Not linked</span>
-                    )}
-                  </div>
-
-                  <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-lg flex flex-col justify-between">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">GitHub URL</span>
-                    {user?.github_url ? (
-                      <a href={user.github_url} target="_blank" rel="noreferrer" className="text-xs text-slate-700 dark:text-slate-300 font-bold hover:underline truncate mt-1 block">
-                        {user.github_url}
-                      </a>
-                    ) : (
-                      <span className="text-xs text-slate-405 italic mt-1">Not linked</span>
-                    )}
-                  </div>
-
-                  <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-lg flex flex-col justify-between">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Portfolio Website</span>
-                    {user?.portfolio_url ? (
-                      <a href={user.portfolio_url} target="_blank" rel="noreferrer" className="text-xs text-[#5D3FD3] dark:text-violet-400 font-bold hover:underline truncate mt-1 block">
-                        {user.portfolio_url}
-                      </a>
-                    ) : (
-                      <span className="text-xs text-slate-450 italic mt-1">Not linked</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+            {contactItems.length > 0 && (
+              <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-100 pt-5">
+                {contactItems.map(({ icon: Icon, label, href, external }) => (
+                  <li key={href} className="min-w-0">
+                    <a
+                      href={href}
+                      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                      className="inline-flex max-w-full items-center gap-1.5 text-sm text-slate-600 transition-colors hover:text-brand-navy"
+                    >
+                      <Icon className="h-4 w-4 shrink-0 text-slate-400" />
+                      <span className="truncate">{label}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-        ) : (
-          <form onSubmit={handleSaveProfile} className="space-y-4">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">Edit Professional Details</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  value={profileName}
-                  onChange={(e) => setProfileName(e.target.value)}
-                  required
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Professional Title</label>
-                <input
-                  type="text"
-                  value={profileTitle}
-                  onChange={(e) => setProfileTitle(e.target.value)}
-                  placeholder="e.g. Senior Software Engineer"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Experience Level</label>
-                <select
-                  value={profileExp}
-                  onChange={(e) => setProfileExp(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                >
-                  <option value="Junior">Junior</option>
-                  <option value="Mid-Level">Mid-Level</option>
-                  <option value="Senior">Senior</option>
-                  <option value="Lead">Lead</option>
-                  <option value="Executive">Executive</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Phone Number</label>
-                <input
-                  type="tel"
-                  value={profilePhone}
-                  onChange={(e) => setProfilePhone(e.target.value)}
-                  placeholder="e.g. +1 (555) 019-2834"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">LinkedIn Profile URL</label>
-                <input
-                  type="text"
-                  value={profileLinkedin}
-                  onChange={(e) => setProfileLinkedin(e.target.value)}
-                  placeholder="https://linkedin.com/in/username"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">GitHub Profile URL</label>
-                <input
-                  type="text"
-                  value={profileGithub}
-                  onChange={(e) => setProfileGithub(e.target.value)}
-                  placeholder="https://github.com/username"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Portfolio Link URL</label>
-                <input
-                  type="url"
-                  value={profilePortfolioUrl}
-                  onChange={(e) => setProfilePortfolioUrl(e.target.value)}
-                  placeholder="https://myportfolio.com"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                />
-              </div>
-            </div>
 
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-2">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-505 uppercase tracking-widest">Qualifications & Academic Background</h4>
-              <div>
-                <textarea
-                  value={profileQualifications}
-                  onChange={(e) => setProfileQualifications(e.target.value)}
-                  placeholder="e.g. B.Sc in Computer Science, Stanford University (2020-2024). Specializations in Software Engineering."
-                  rows={3}
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                />
-              </div>
+          {/* Completeness meter */}
+          <div className="flex flex-col justify-center gap-4 bg-brand-navy p-6 text-white sm:p-8">
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-sm font-medium text-white/70">Profile strength</p>
+              <p className="text-2xl font-semibold tabular-nums text-white">{completeness.percent}%</p>
             </div>
+            <div
+              className="h-2 w-full overflow-hidden rounded-full bg-white/10"
+              role="progressbar"
+              aria-label="Profile completeness"
+              aria-valuemin={0}
+              aria-valuemax={completeness.total}
+              aria-valuenow={completeness.done}
+            >
+              <div className="h-full rounded-full bg-brand-lime transition-all duration-700 ease-out" style={{ width: `${completeness.percent}%` }} />
+            </div>
+            <p className="text-xs text-white/60">
+              {completeness.done} of {completeness.total} complete
+            </p>
+            {completeness.next ? (
+              <div className="rounded-xl bg-white/[0.06] p-3 ring-1 ring-inset ring-white/10">
+                <p className="flex items-center gap-1.5 text-xs font-medium text-brand-lime">
+                  <ArrowRight className="h-3.5 w-3.5" /> Next step
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-white/80">{completeness.next.hint}</p>
+              </div>
+            ) : (
+              <p className="flex items-center gap-1.5 text-sm text-white/80">
+                <CheckCircle2 className="h-4 w-4 text-brand-lime" /> Your profile is complete. Nice work.
+              </p>
+            )}
+          </div>
+        </div>
+      </Card>
 
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-4">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-505 uppercase tracking-widest">Skills, Interests & Career Direction</h4>
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Key Skills (comma separated)</label>
-                  <input
-                    type="text"
-                    value={profileSkills}
-                    onChange={(e) => setProfileSkills(e.target.value)}
-                    placeholder="TypeScript, React, Node.js, Next.js, PostgreSQL"
-                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+      {isEditingProfile ? (
+        /* ---------------------------- Edit mode ---------------------------- */
+        <form onSubmit={handleSaveProfile} className="relative">
+          <Card className="sm:p-8">
+            <Section title="The basics" description="How you appear to employers across LaunchPath.">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Full name" htmlFor="pf-name">
+                  <Input id="pf-name" value={profileName} onChange={(e) => setProfileName(e.target.value)} required autoComplete="name" />
+                </Field>
+                <Field label="Headline" htmlFor="pf-title" optional>
+                  <Input id="pf-title" value={profileTitle} onChange={(e) => setProfileTitle(e.target.value)} placeholder="e.g. Junior software developer" />
+                </Field>
+                <Field label="Experience level" htmlFor="pf-exp">
+                  <Select id="pf-exp" value={profileExp} onChange={(e) => setProfileExp(e.target.value)}>
+                    <option value="Junior">Junior</option>
+                    <option value="Mid-Level">Mid-level</option>
+                    <option value="Senior">Senior</option>
+                    <option value="Lead">Lead</option>
+                    <option value="Executive">Executive</option>
+                  </Select>
+                </Field>
+                <Field label="Phone number" htmlFor="pf-phone" optional>
+                  <Input
+                    id="pf-phone"
+                    type="tel"
+                    icon={Phone}
+                    value={profilePhone}
+                    onChange={(e) => setProfilePhone(e.target.value)}
+                    placeholder="e.g. 082 123 4567"
+                    autoComplete="tel"
                   />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Interests</label>
-                    <input
-                      type="text"
-                      value={profileInterests}
-                      onChange={(e) => setProfileInterests(e.target.value)}
-                      placeholder="e.g. Artificial Intelligence, fintech, biotech"
-                      className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Career Direction</label>
-                    <input
-                      type="text"
-                      value={profileCareerDirection}
-                      onChange={(e) => setProfileCareerDirection(e.target.value)}
-                      placeholder="Seeking lead full stack positions, managing agile teams"
-                      className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                    />
-                  </div>
-                </div>
+                </Field>
               </div>
-            </div>
+            </Section>
 
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-4">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-505 uppercase tracking-widest">Education & Career Preferences</h4>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Institution Studied / Studying</label>
-                  <input
-                    type="text"
-                    value={profileStudyInstitution}
-                    onChange={(e) => setProfileStudyInstitution(e.target.value)}
-                    placeholder="e.g. Stanford University"
-                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Specialisation / Field of Study</label>
-                  <input
-                    type="text"
-                    value={profileStudySpecialisation}
-                    onChange={(e) => setProfileStudySpecialisation(e.target.value)}
-                    placeholder="e.g. Computer Science, software systems"
-                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">What roles are you seeking?</label>
-                <input
-                  type="text"
+            <Section title="About & career direction" description="Tell us what you're looking for so we can find the right matches.">
+              <Field label="Roles you're looking for" htmlFor="pf-roles" hint="Separate roles with commas." optional>
+                <Input
+                  id="pf-roles"
                   value={profileSeekingRoles}
                   onChange={(e) => setProfileSeekingRoles(e.target.value)}
-                  placeholder="e.g. Full Stack Developer, Product Engineer"
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                  placeholder="e.g. Graduate trainee, Junior data analyst"
                 />
-              </div>
-            </div>
+              </Field>
+              <Field label="Career direction" htmlFor="pf-direction" optional>
+                <Textarea
+                  id="pf-direction"
+                  rows={3}
+                  value={profileCareerDirection}
+                  onChange={(e) => setProfileCareerDirection(e.target.value)}
+                  placeholder="Where do you want your career to go in the next few years?"
+                />
+              </Field>
+            </Section>
 
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-4">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-505 uppercase tracking-widest">Verification Documents</h4>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Certificate Upload Field */}
-                <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Certificates & Degree PDFs</span>
-                    {profileCertificatesUrl && (
-                      <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 rounded flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> Uploaded
-                      </span>
-                    )}
-                  </div>
-                  
-                  <p className="text-xs text-slate-500">Upload degree or academic achievement certificates (PDF only).</p>
-                  
-                  {profileCertificatesUrl && (
-                    <div className="flex items-center gap-2 text-xs">
-                      <a href={profileCertificatesUrl} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline truncate max-w-[150px]">
-                        View current certificate
-                      </a>
-                      <button 
-                        type="button" 
-                        onClick={() => setProfileCertificatesUrl('')} 
-                        className="text-rose-500 hover:text-rose-700 font-semibold ml-auto"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="relative">
-                    <input 
-                      type="file" 
-                      accept="application/pdf"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setUploadingCert(true);
-                          try {
-                            const url = await handleFileUploadToS3(file, 'documents');
-                            setProfileCertificatesUrl(url);
-                          } catch (err: any) {
-                            alert('Failed to upload certificate: ' + err.message);
-                          } finally {
-                            setUploadingCert(false);
-                          }
-                        }
-                      }}
-                      className="hidden" 
-                      id="cert-file-input" 
-                    />
-                    <label 
-                      htmlFor="cert-file-input"
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer shadow-sm transition"
-                    >
-                      {uploadingCert ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"></div>
-                          Uploading to S3...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-4 h-4 text-slate-500" />
-                          Choose PDF Certificate
-                        </>
-                      )}
-                    </label>
-                  </div>
-                </div>
-
-                {/* Police Clearance Upload Field */}
-                <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Police Clearance Certificate</span>
-                    {profilePoliceClearanceUrl && (
-                      <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 rounded flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> Uploaded
-                      </span>
-                    )}
-                  </div>
-                  
-                  <p className="text-xs text-slate-500">Upload clean police clearance background-check document (PDF only).</p>
-                  
-                  {profilePoliceClearanceUrl && (
-                    <div className="flex items-center gap-2 text-xs">
-                      <a href={profilePoliceClearanceUrl} target="_blank" rel="noreferrer" className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline truncate max-w-[150px]">
-                        View current clearance
-                      </a>
-                      <button 
-                        type="button" 
-                        onClick={() => setProfilePoliceClearanceUrl('')} 
-                        className="text-rose-500 hover:text-rose-700 font-semibold ml-auto"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="relative">
-                    <input 
-                      type="file" 
-                      accept="application/pdf"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setUploadingClearance(true);
-                          try {
-                            const url = await handleFileUploadToS3(file, 'documents');
-                            setProfilePoliceClearanceUrl(url);
-                          } catch (err: any) {
-                            alert('Failed to upload police clearance: ' + err.message);
-                          } finally {
-                            setUploadingClearance(false);
-                          }
-                        }
-                      }}
-                      className="hidden" 
-                      id="clearance-file-input" 
-                    />
-                    <label 
-                      htmlFor="clearance-file-input"
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer shadow-sm transition"
-                    >
-                      {uploadingClearance ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-slate-500 border-t-transparent rounded-full animate-spin"></div>
-                          Uploading to S3...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-4 h-4 text-slate-500" />
-                          Choose PDF Clearance
-                        </>
-                      )}
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-2">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-widest">Work Experience, Internships, Projects & Volunteering</h4>
-              <div>
-                <textarea
+            <Section title="Experience" description="Internships, part-time work, projects and volunteering all count.">
+              <Field label="Work experience" htmlFor="pf-work" optional>
+                <Textarea
+                  id="pf-work"
+                  rows={6}
                   value={profileWorkExperience}
                   onChange={(e) => setProfileWorkExperience(e.target.value)}
-                  placeholder="Detail your work experience, internships, core projects, or volunteer work..."
-                  rows={4}
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                  placeholder="e.g. Vacation work at a Johannesburg audit firm (Dec 2024): reconciled supplier accounts and..."
+                />
+              </Field>
+            </Section>
+
+            <Section title="Education" description="Your qualifications and where you studied.">
+              <Field label="Qualifications" htmlFor="pf-quals" optional>
+                <Textarea
+                  id="pf-quals"
+                  rows={3}
+                  value={profileQualifications}
+                  onChange={(e) => setProfileQualifications(e.target.value)}
+                  placeholder="e.g. BSc Computer Science, University of Cape Town (2021 to 2024)"
+                />
+              </Field>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Institution" htmlFor="pf-inst" optional>
+                  <Input
+                    id="pf-inst"
+                    icon={GraduationCap}
+                    value={profileStudyInstitution}
+                    onChange={(e) => setProfileStudyInstitution(e.target.value)}
+                    placeholder="e.g. University of Pretoria"
+                  />
+                </Field>
+                <Field label="Field of study" htmlFor="pf-spec" optional>
+                  <Input
+                    id="pf-spec"
+                    value={profileStudySpecialisation}
+                    onChange={(e) => setProfileStudySpecialisation(e.target.value)}
+                    placeholder="e.g. Information systems"
+                  />
+                </Field>
+              </div>
+            </Section>
+
+            <Section title="Skills & interests" description="Skills power your job matches. Separate each one with a comma.">
+              <Field label="Skills" htmlFor="pf-skills" optional>
+                <Input
+                  id="pf-skills"
+                  value={profileSkills}
+                  onChange={(e) => setProfileSkills(e.target.value)}
+                  placeholder="e.g. Excel, SQL, Customer service, Python"
+                />
+              </Field>
+              {draftSkills.length > 0 && <Chips items={draftSkills} />}
+              <Field label="Interests" htmlFor="pf-interests" optional>
+                <Input
+                  id="pf-interests"
+                  value={profileInterests}
+                  onChange={(e) => setProfileInterests(e.target.value)}
+                  placeholder="e.g. Fintech, renewable energy, education"
+                />
+              </Field>
+            </Section>
+
+            <Section title="Documents & links" description="Verified documents and links help you stand out.">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="LinkedIn" htmlFor="pf-linkedin" optional>
+                  <Input
+                    id="pf-linkedin"
+                    icon={Linkedin}
+                    value={profileLinkedin}
+                    onChange={(e) => setProfileLinkedin(e.target.value)}
+                    placeholder="linkedin.com/in/your-name"
+                  />
+                </Field>
+                <Field label="GitHub" htmlFor="pf-github" optional>
+                  <Input
+                    id="pf-github"
+                    icon={Github}
+                    value={profileGithub}
+                    onChange={(e) => setProfileGithub(e.target.value)}
+                    placeholder="github.com/your-name"
+                  />
+                </Field>
+              </div>
+              <Field label="Portfolio website" htmlFor="pf-portfolio" optional>
+                <Input
+                  id="pf-portfolio"
+                  type="url"
+                  icon={Globe}
+                  value={profilePortfolioUrl}
+                  onChange={(e) => setProfilePortfolioUrl(e.target.value)}
+                  placeholder="https://your-portfolio.co.za"
+                />
+              </Field>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <DocumentUpload
+                  id="cert-file-input"
+                  title="Degree or certificates"
+                  description="PDF of your degree, diploma or certificates."
+                  url={profileCertificatesUrl}
+                  busy={uploadingCert}
+                  onRemove={() => setProfileCertificatesUrl('')}
+                  onFile={(file) => uploadDocument(file, setUploadingCert, setProfileCertificatesUrl, 'Certificate')}
+                />
+                <DocumentUpload
+                  id="clearance-file-input"
+                  title="Police clearance"
+                  description="PDF of your police clearance certificate."
+                  url={profilePoliceClearanceUrl}
+                  busy={uploadingClearance}
+                  onRemove={() => setProfilePoliceClearanceUrl('')}
+                  onFile={(file) => uploadDocument(file, setUploadingClearance, setProfilePoliceClearanceUrl, 'Police clearance')}
                 />
               </div>
-            </div>
+            </Section>
+          </Card>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={() => setIsEditingProfile(false)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg cursor-pointer transition"
-              >
+          {/* Sticky save bar */}
+          <div className="sticky bottom-4 z-20 mt-4 flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white/95 px-4 py-3 shadow-[0_12px_32px_-12px_rgba(10,27,61,0.25)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:px-5">
+            <p className="text-sm text-slate-500">Editing your profile. Save to update your matches.</p>
+            <div className="flex gap-2">
+              <Button type="button" variant="ghost" onClick={() => setIsEditingProfile(false)} className="flex-1 sm:flex-none">
                 Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSavingProfile}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-xs font-bold rounded-lg cursor-pointer transition flex items-center gap-1.5"
-              >
-                {isSavingProfile ? 'Saving...' : 'Save Details'}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
-
-      {/* LinkedIn profile sync integration */}
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors space-y-4 animate-fade-in">
-        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <svg className="w-5 h-5 text-[#0A66C2] fill-[#0A66C2]" viewBox="0 0 24 24">
-                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-              </svg>
-              LinkedIn Profile Integration
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Authenticate and sync your LinkedIn profile details directly to your dynamic LaunchPath profile.</p>
-          </div>
-          <button
-            type="button"
-            disabled={syncingLinkedIn}
-            onClick={handleLinkedInConnect}
-            className="px-4 py-2.5 bg-[#0a66c2] hover:bg-[#004182] disabled:bg-[#0a66c2]/50 text-white font-bold text-xs rounded-lg shadow-sm cursor-pointer transition flex items-center gap-2 border-none"
-          >
-            <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24">
-              <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-            </svg>
-            {syncingLinkedIn ? 'Connecting...' : 'Sync LinkedIn Data'}
-          </button>
-        </div>
-      </div>
-
-      {/* AI CV / Resume Optimizer & Strength Index Section */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-colors">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex justify-between items-center">
-          <h3 className="font-bold flex items-center gap-2 text-slate-900 dark:text-white font-heading uppercase text-xs tracking-wider">
-            <Sparkles className="w-4 h-4 text-[#5D3FD3] dark:text-violet-400"/> AI CV Optimizer & Strength Index
-          </h3>
-          <span className={`text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full ${strength.textColor} bg-slate-100 dark:bg-slate-800`}>
-            {strength.label}
-          </span>
-        </div>
-
-        <div className="p-6 space-y-6">
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              <span>Overall CV Strength</span>
-              <span className={`font-black text-sm ${strength.color}`}>{strength.score}% Score</span>
-            </div>
-            <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-[2px]">
-              <div 
-                className={`h-full bg-gradient-to-r ${strength.barColor} rounded-full transition-all duration-1000 ease-out`}
-                style={{ width: `${strength.score}%` }}
-              />
+              </Button>
+              <Button type="submit" variant="primary" loading={isSavingProfile} className="flex-1 sm:flex-none">
+                Save profile
+              </Button>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3.5 pt-2">
-            {[
-              { label: 'Contact Info', filled: strength.checks.contact },
-              { label: 'Key Skills', filled: strength.checks.skills },
-              { label: 'Work History', filled: strength.checks.experience },
-              { label: 'Education', filled: strength.checks.education },
-              { label: 'Action Metrics', filled: strength.checks.metrics },
-            ].map((check, idx) => (
-              <div 
-                key={idx} 
-                className="flex items-center gap-2 text-xs font-semibold p-2.5 bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-150 dark:border-slate-800"
-              >
-                {check.filled ? (
-                  <BadgeCheck className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                ) : (
-                  <ShieldAlert className="w-4 h-4 text-rose-500 flex-shrink-0 animate-pulse" />
-                )}
-                <span className={check.filled ? 'text-slate-700 dark:text-slate-300 truncate' : 'text-slate-405 dark:text-slate-500 truncate'}>
-                  {check.label}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="space-y-3 bg-violet-50/10 dark:bg-violet-955/5 p-4 sm:p-5 rounded-xl border border-violet-100/30 dark:border-violet-900/10">
-            <h4 className="text-xs font-black text-[#5D3FD3] dark:text-violet-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-yellow-500" />
-              <span>How to Improve Your CV Score</span>
-            </h4>
-            
-            <ul className="space-y-2.5 mt-3">
-              {strength.tips.map((tip, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-                  <span className="h-5 w-5 bg-violet-100/80 dark:bg-violet-900/30 rounded-full flex items-center justify-center text-[10px] text-[#5D3FD3] dark:text-violet-300 font-bold flex-shrink-0 mt-0.5">
-                    {idx + 1}
-                  </span>
-                  <span>{tip}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      {/* Resume viewer and editor */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-colors">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex justify-between items-center">
-          <h3 className="font-bold flex items-center gap-2 text-slate-900 dark:text-white">
-            <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400"/> Current Extracted Resume
-          </h3>
-          {user?.resume_text && !isEditingResume && (
-            <button
-              onClick={() => {
-                setProfileResumeText(user?.resume_text || '');
-                setIsEditingResume(true);
-              }}
-              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
-            >
-              Edit Resume Text
-            </button>
-          )}
-        </div>
-
-        <div className="p-6">
-          {isEditingResume ? (
-            <form onSubmit={handleSaveProfile} className="space-y-4">
-              <div>
-                <p className="text-xs text-slate-500 mb-2">
-                  You can directly edit the parsed plain-text used by our AI LaunchPath engine to recalculate compatibility scores. Saving updates will refresh relevant matches.
-                </p>
-                <textarea
-                  value={profileResumeText}
-                  onChange={(e) => setProfileResumeText(e.target.value)}
-                  required
-                  rows={12}
-                  className="w-full p-4 font-mono text-xs leading-relaxed bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="Paste or edit your resume text here..."
+        </form>
+      ) : (
+        /* ---------------------------- View mode ---------------------------- */
+        <>
+          {/* CV card */}
+          <Card padded={false} className="overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px]">
+              <div className="p-6">
+                <CardHeader
+                  title="Your CV"
+                  description={user?.resume_text ? 'We use your CV to match you with roles. Upload a newer version any time.' : 'Upload your CV and we’ll start matching you with roles.'}
                 />
+
+                {taskFailed && (
+                  <div className="mb-4">
+                    <Alert tone="danger">We couldn&apos;t read your last upload. Please try again with a text-based PDF.</Alert>
+                  </div>
+                )}
+
+                {isProcessing ? (
+                  <div className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-5" role="status" aria-live="polite">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-brand-navy ring-1 ring-inset ring-slate-200">
+                        <Spinner className="h-4 w-4" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-brand-navy">
+                          {resumeTask.progress >= 100 || resumeTask.status === 'COMPLETED' ? 'Finishing up your matches' : 'Reading your CV'}
+                        </p>
+                        <p className="text-xs text-slate-500">This usually takes under a minute. You can keep browsing.</p>
+                      </div>
+                      <span className="text-sm font-medium tabular-nums text-slate-600">{Math.round(resumeTask.progress || 0)}%</span>
+                    </div>
+                    <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-slate-200/70">
+                      <div
+                        className="h-full rounded-full bg-brand-navy transition-all duration-500 ease-out"
+                        style={{ width: `${Math.max(4, resumeTask.progress || 0)}%` }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Upload your CV as a PDF"
+                    onClick={() => !uploading && fileInputRef.current?.click()}
+                    onKeyDown={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && !uploading) {
+                        e.preventDefault();
+                        fileInputRef.current?.click();
+                      }
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragActive(true);
+                    }}
+                    onDragLeave={() => setDragActive(false)}
+                    onDrop={onDrop}
+                    className={cx(
+                      'flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy/30',
+                      dragActive ? 'border-brand-navy bg-brand-navy/[0.03]' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300 hover:bg-slate-50',
+                    )}
+                  >
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-brand-navy shadow-sm ring-1 ring-inset ring-slate-200">
+                      {uploading ? <Spinner className="h-5 w-5" /> : <FileUp className="h-5 w-5" />}
+                    </span>
+                    <p className="mt-3 text-sm font-medium text-brand-navy">
+                      {uploading ? 'Uploading your CV' : user?.resume_text ? 'Drop a newer CV here, or browse' : 'Drop your CV here, or browse'}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">PDF only. Text-based PDFs work best.</p>
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      ref={fileInputRef}
+                      className="hidden"
+                      onChange={onResumeInputChange}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                )}
+
+                <div className="mt-5 flex flex-col gap-3 rounded-xl border border-slate-200/80 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#0A66C2]/10 text-[#0A66C2]">
+                      <LinkedInGlyph className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium text-brand-navy">Import from LinkedIn</p>
+                      <p className="text-xs text-slate-500">Pull your latest LinkedIn details into your profile.</p>
+                    </div>
+                  </div>
+                  <Button type="button" variant="secondary" size="sm" loading={syncingLinkedIn} onClick={handleLinkedInConnect}>
+                    {syncingLinkedIn ? 'Connecting' : 'Sync LinkedIn'}
+                  </Button>
+                </div>
               </div>
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditingResume(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg cursor-pointer transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSavingProfile}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-xs font-bold rounded-lg cursor-pointer transition flex items-center gap-1.5"
-                >
-                  {isSavingProfile ? 'Saving...' : 'Save & Re-score'}
-                </button>
+
+              {/* CV strength */}
+              <div className="border-t border-slate-100 bg-slate-50/60 p-6 lg:border-l lg:border-t-0">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-brand-navy">CV strength</p>
+                  <Badge tone={strengthMeta.tone}>{strengthMeta.label}</Badge>
+                </div>
+                <p className="mt-3 text-3xl font-semibold tabular-nums tracking-tight text-brand-navy">
+                  {strength.score}
+                  <span className="text-base font-medium text-slate-400">/100</span>
+                </p>
+                <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-200/70">
+                  <div className="h-full rounded-full bg-brand-navy transition-all duration-700 ease-out" style={{ width: `${strength.score}%` }} />
+                </div>
+                <ul className="mt-5 space-y-2">
+                  {[
+                    { label: 'Contact details', filled: strength.checks.contact },
+                    { label: 'Skills section', filled: strength.checks.skills },
+                    { label: 'Work history', filled: strength.checks.experience },
+                    { label: 'Education', filled: strength.checks.education },
+                    { label: 'Measurable results', filled: strength.checks.metrics },
+                  ].map((check) => (
+                    <li key={check.label} className="flex items-center gap-2 text-sm">
+                      {check.filled ? (
+                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" aria-label="Included" />
+                      ) : (
+                        <Circle className="h-4 w-4 shrink-0 text-slate-300" aria-label="Missing" />
+                      )}
+                      <span className={check.filled ? 'text-slate-700' : 'text-slate-500'}>{check.label}</span>
+                    </li>
+                  ))}
+                </ul>
+                {strength.tips.length > 0 && (
+                  <div className="mt-5 border-t border-slate-200/70 pt-4">
+                    <p className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                      <Lightbulb className="h-3.5 w-3.5" /> Ways to improve
+                    </p>
+                    <ul className="mt-2 space-y-2">
+                      {strength.tips.slice(0, 3).map((tip, idx) => (
+                        <li key={idx} className="text-xs leading-relaxed text-slate-600">
+                          {tip}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-            </form>
-          ) : user?.resume_text ? (
-            <div className="space-y-4">
-              <div className="max-h-72 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl font-mono text-xs leading-relaxed text-slate-700 dark:text-slate-300 select-text whitespace-pre-wrap">
+            </div>
+          </Card>
+
+          {/* Grouped sections */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-2">
+              <InfoCard icon={Compass} title="About & career direction">
+                <dl className="space-y-4">
+                  <DetailRow label="Roles you're looking for">
+                    {splitList(user?.seeking_roles).length > 0 ? (
+                      <Chips items={splitList(user?.seeking_roles)} variant="outline" />
+                    ) : (
+                      <Missing onAdd={startEditing}>Not added yet.</Missing>
+                    )}
+                  </DetailRow>
+                  <DetailRow label="Career direction">
+                    {user?.career_direction ? (
+                      <span className="whitespace-pre-line">{user.career_direction}</span>
+                    ) : (
+                      <Missing onAdd={startEditing}>Not added yet.</Missing>
+                    )}
+                  </DetailRow>
+                </dl>
+              </InfoCard>
+
+              <InfoCard icon={Briefcase} title="Experience" description="Work, internships, projects and volunteering">
+                {user?.work_experience ? (
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-slate-700">{user.work_experience}</p>
+                ) : (
+                  <Missing onAdd={startEditing}>No experience added yet.</Missing>
+                )}
+              </InfoCard>
+
+              <InfoCard icon={GraduationCap} title="Education">
+                {user?.qualifications ? (
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-slate-700">{user.qualifications}</p>
+                ) : (
+                  <Missing onAdd={startEditing}>No qualifications added yet.</Missing>
+                )}
+                <dl className="grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
+                  <DetailRow label="Institution">{user?.study_institution || <span className="text-slate-400">Not specified</span>}</DetailRow>
+                  <DetailRow label="Field of study">{user?.study_specialisation || <span className="text-slate-400">Not specified</span>}</DetailRow>
+                </dl>
+              </InfoCard>
+            </div>
+
+            <div className="space-y-6">
+              <InfoCard icon={Tags} title="Skills & interests">
+                <dl className="space-y-4">
+                  <DetailRow label="Skills">
+                    {skills.length > 0 ? <Chips items={skills} /> : <Missing onAdd={startEditing}>No skills yet.</Missing>}
+                  </DetailRow>
+                  <DetailRow label="Interests">
+                    {interests.length > 0 ? <Chips items={interests} variant="outline" /> : <Missing onAdd={startEditing}>None added.</Missing>}
+                  </DetailRow>
+                </dl>
+              </InfoCard>
+
+              <InfoCard icon={FolderOpen} title="Documents & links">
+                <div className="space-y-3">
+                  <DocumentRow icon={FileText} label="Degree or certificates" href={user?.certificates_url} onAdd={startEditing} />
+                  <DocumentRow icon={ShieldCheck} label="Police clearance" href={user?.police_clearance_url} onAdd={startEditing} />
+                </div>
+                <div className="divide-y divide-slate-100 border-t border-slate-100 pt-4">
+                  <LinkRow icon={Linkedin} label="LinkedIn" href={user?.linkedin_url} onAdd={startEditing} />
+                  <LinkRow icon={Github} label="GitHub" href={user?.github_url} onAdd={startEditing} />
+                  <LinkRow icon={Globe} label="Portfolio" href={user?.portfolio_url} onAdd={startEditing} />
+                </div>
+              </InfoCard>
+            </div>
+          </div>
+
+          {/* CV text */}
+          <Card>
+            <CardHeader
+              title="CV text"
+              description="This is the text we read from your CV. Fix anything we got wrong to improve your matches."
+              action={
+                user?.resume_text && !isEditingResume ? (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    icon={Pencil}
+                    onClick={() => {
+                      setProfileResumeText(user?.resume_text || '');
+                      setIsEditingResume(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                ) : undefined
+              }
+            />
+            {isEditingResume ? (
+              <form onSubmit={handleSaveProfile} className="space-y-4">
+                <Field label="CV text" htmlFor="pf-resume-text" hint="Saving will re-score your job matches.">
+                  <Textarea
+                    id="pf-resume-text"
+                    value={profileResumeText}
+                    onChange={(e) => setProfileResumeText(e.target.value)}
+                    required
+                    rows={14}
+                    className="font-mono text-xs"
+                    placeholder="Paste or edit your CV text here"
+                  />
+                </Field>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="ghost" onClick={() => setIsEditingResume(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" variant="primary" loading={isSavingProfile}>
+                    Save and re-score
+                  </Button>
+                </div>
+              </form>
+            ) : user?.resume_text ? (
+              <div className="max-h-80 overflow-y-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-4 font-mono text-xs leading-relaxed text-slate-600 ring-1 ring-inset ring-slate-200/80">
                 {user.resume_text}
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Our system matches you against jobs based on the extracted resume metrics shown above. You can edit this text directly or upload a newer document below.
-              </p>
-            </div>
-          ) : (
-            <div className="text-center py-6 text-slate-500 dark:text-slate-400">
-              <p className="text-sm font-medium mb-1">No resume uploaded or extracted yet.</p>
-              <p className="text-xs">Upload a PDF below to populate your parsed profile and enable AI LaunchPath recommendations.</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Document upload / re-upload area */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-colors">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
-          <h3 className="font-bold flex items-center gap-2 text-slate-900 dark:text-white">
-            <Upload className="w-4 h-4 text-blue-600 dark:text-blue-400"/> {user?.resume_text ? 'Upload Newer Resume Document' : 'Upload Resume Document'}
-          </h3>
-        </div>
-        
-        {resumeTask && resumeTask.status !== 'FAILED' ? (
-          <div className="p-8 m-6 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950">
-            <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-2">Resume Processing Queue</h4>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">Your resume is currently being processed by our AI to extract skills and find the best job matches.</p>
-            
-            <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-4 mb-2 overflow-hidden border border-slate-300 dark:border-slate-700 shadow-inner">
-              <div className="bg-blue-600 h-4 rounded-full transition-all duration-500 ease-out flex items-center justify-end px-2" style={{ width: `${resumeTask.progress}%` }}>
-                {resumeTask.progress > 10 && <span className="text-[10px] text-white font-bold">{resumeTask.progress}%</span>}
+            ) : (
+              <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-4 text-sm text-slate-500 ring-1 ring-inset ring-slate-200/80">
+                <Upload className="h-4 w-4 shrink-0 text-slate-400" />
+                Upload your CV above and the text we extract will appear here.
               </div>
-            </div>
-            <div className="flex justify-between items-center text-xs font-mono text-slate-600 dark:text-slate-400">
-              <span>Status: <strong className="text-blue-600 dark:text-blue-400">{resumeTask.status}</strong></span>
-              <span>{resumeTask.progress === 100 ? 'Finalizing...' : 'Extracting match metrics...'}</span>
-            </div>
-          </div>
+            )}
+          </Card>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* --------------------------- Document helpers --------------------------- */
+
+function DocumentRow({ icon: Icon, label, href, onAdd }: { icon: LucideIcon; label: string; href?: string | null; onAdd: () => void }) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-inset ring-slate-200/70">
+      <span className={cx('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', href ? 'bg-emerald-50 text-emerald-600' : 'bg-white text-slate-400 ring-1 ring-inset ring-slate-200')}>
+        <Icon className="h-4 w-4" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-brand-navy">{label}</p>
+        {href ? (
+          <a href={href} target="_blank" rel="noreferrer" className="text-xs font-medium text-slate-600 underline-offset-4 hover:text-brand-navy hover:underline">
+            View PDF
+          </a>
         ) : (
-          <div 
-            className="p-8 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700 m-6 rounded-xl bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 transition relative cursor-pointer" 
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <FileText className="w-12 h-12 text-slate-400 dark:text-slate-505 mb-4" />
-            <p className="font-bold text-slate-800 dark:text-slate-200 mb-1">Drag and drop your updated PDF resume here</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">Uploading triggers bulk processing of your skill extractions</p>
-            <button 
-              disabled={uploading}
-              onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow disabled:opacity-50 text-sm cursor-pointer border-none"
-            >
-              {uploading ? 'Initiating Task...' : 'Browse Files'}
-            </button>
-            <input 
-              type="file" 
-              accept="application/pdf" 
-              ref={fileInputRef} 
-              className="hidden" 
-              onChange={handleResumeUpload} 
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
+          <button type="button" onClick={onAdd} className="cursor-pointer text-xs text-slate-500 underline-offset-4 hover:text-brand-navy hover:underline">
+            Not uploaded. Add it
+          </button>
         )}
       </div>
+      {href && <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" aria-label="Uploaded" />}
+    </div>
+  );
+}
+
+function DocumentUpload({
+  id,
+  title,
+  description,
+  url,
+  busy,
+  onRemove,
+  onFile,
+}: {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  busy: boolean;
+  onRemove: () => void;
+  onFile: (file: File | undefined) => void;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 p-4">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[13px] font-medium text-slate-700">{title}</p>
+          <p className="mt-0.5 text-xs text-slate-500">{description}</p>
+        </div>
+        {url && (
+          <Badge tone="success" dot>
+            Uploaded
+          </Badge>
+        )}
+      </div>
+
+      {url && (
+        <div className="mt-3 flex items-center gap-2 text-xs">
+          <a href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-medium text-brand-navy hover:underline">
+            <FileText className="h-3.5 w-3.5" /> View current file
+          </a>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="ml-auto inline-flex cursor-pointer items-center gap-1 font-medium text-rose-600 hover:text-rose-700"
+          >
+            <X className="h-3.5 w-3.5" /> Remove
+          </button>
+        </div>
+      )}
+
+      <input
+        type="file"
+        accept="application/pdf"
+        id={id}
+        className="peer sr-only"
+        disabled={busy}
+        onChange={(e) => {
+          const input = e.target;
+          onFile(input.files?.[0]);
+          input.value = '';
+        }}
+      />
+      <label
+        htmlFor={id}
+        className={cx(
+          'mt-3 flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white text-sm font-medium text-brand-navy ring-1 ring-inset ring-slate-200 transition-colors hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-navy/30',
+          busy && 'pointer-events-none opacity-60',
+        )}
+      >
+        {busy ? (
+          <>
+            <Spinner className="h-4 w-4" /> Uploading
+          </>
+        ) : (
+          <>
+            <Upload className="h-4 w-4 text-slate-500" /> {url ? 'Replace PDF' : 'Choose PDF'}
+          </>
+        )}
+      </label>
     </div>
   );
 }

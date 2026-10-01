@@ -1,181 +1,143 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import LaunchPathLogo from "@/assets/logo/launchpath-main.png";
 import { useState, useEffect } from "react";
+import LaunchPathLogo from "@/components/LaunchPathLogo";
+import { cx } from "./primitives";
 
-export const Logo = () => {
-  return (
-    <Link href="/" className="group flex items-center" aria-label="LaunchPath home">
-      <div className="relative h-[58px] sm:h-[64px] w-auto transition-transform duration-300 group-hover:scale-102">
-        <Image 
-          src={LaunchPathLogo} 
-          alt="LaunchPath Logo" 
-          height={40} 
-          priority 
-          className="h-[50px] w-[150px] object-contain"
-        />
-      </div>
-    </Link>
-  );
-};
+export const Logo = () => <LaunchPathLogo />;
 
 const navItems = [
-  { label: "Home", id: "top", href: "/#top" },
-  { label: "About Us", id: "about-us", href: "/#about-us" },
-  { label: "What We Do", id: "what-we-do", href: "/#what-we-do" },
-  { label: "Contact", id: "contact", href: "/#contact" },
+  { label: "For employers", id: "employers" },
+  { label: "For talent", id: "talent" },
+  { label: "How it works", id: "how-it-works" },
+  { label: "Pricing", id: "pricing" },
+  { label: "Contact", id: "contact" },
 ];
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("top");
+  const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
 
-  // Track which section is currently on screen to update the active background state
+  // Solid background once the user scrolls past the top of the hero
   useEffect(() => {
-    const observers: IntersectionObserver[] = [];
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-    navItems.forEach((item) => {
+  // Highlight the section currently in view
+  useEffect(() => {
+    const observers = navItems.map((item) => {
       const el = document.getElementById(item.id);
-      if (!el) return;
-
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setActiveSection(item.id);
-          }
-        },
-        { 
-          rootMargin: "-20% 0px -60% 0px" // Triggers when the section takes up the central viewport area
-        }
-      );
-
+      if (!el) return null;
+      const observer = new IntersectionObserver(([entry]) => entry.isIntersecting && setActiveSection(item.id), {
+        rootMargin: "-40% 0px -55% 0px",
+      });
       observer.observe(el);
-      observers.push(observer);
+      return observer;
     });
-
-    return () => observers.forEach((obs) => obs.disconnect());
+    return () => observers.forEach((o) => o?.disconnect());
   }, []);
 
-  // Sync hash fallback if user directly clicks a link
+  // Lock background scroll while the mobile menu is open
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace("#", "");
-      if (hash) setActiveSection(hash);
-    };
-
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, []);
-
-  // Lock background scroll when mobile drawer is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
+    document.body.style.overflow = isOpen ? "hidden" : "";
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
     };
   }, [isOpen]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0A1B3D]">
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4 md:px-12 md:py-5">
-        
-        {/* LOGO */}
+    <header
+      className={cx(
+        "fixed inset-x-0 top-0 z-50 transition-all duration-300",
+        scrolled || isOpen ? "bg-brand-navy/90 shadow-[0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl" : "bg-transparent",
+      )}
+    >
+      <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-6 px-5 sm:px-8">
         <div className="relative z-50">
-          <Logo />
+          <LaunchPathLogo className="h-9 sm:h-10" />
         </div>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1 bg-white/5 backdrop-blur-sm rounded-full p-1 border border-white/10">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
           {navItems.map((item) => {
             const active = activeSection === item.id;
             return (
-              <Link 
-                key={item.label} 
-                href={item.href} 
-                onClick={() => {
-                  setActiveSection(item.id);
-                  setIsOpen(false);
-                }}
-                className={`rounded-full px-5 py-2 text-[14px] font-medium transition-all duration-200 ${
-                  active 
-                    ? "bg-[#A6F23C] text-[#0A1B3D] shadow-md font-semibold" 
-                    : "text-white/80 hover:bg-[#C8FF7A] hover:text-[#0A1B3D]"
-                }`}
+              <Link
+                key={item.id}
+                href={`/#${item.id}`}
+                aria-current={active ? "true" : undefined}
+                className={cx(
+                  "relative rounded-full px-4 py-2 text-[14px] font-medium transition-colors",
+                  active ? "text-white" : "text-white/65 hover:text-white",
+                )}
               >
                 {item.label}
+                <span
+                  className={cx(
+                    "absolute inset-x-4 -bottom-0.5 h-[2px] rounded-full bg-brand-lime transition-transform duration-300",
+                    active ? "scale-x-100" : "scale-x-0",
+                  )}
+                />
               </Link>
             );
           })}
         </nav>
 
-        {/* CONTROLS WRAPPER */}
-        <div className="flex items-center gap-4 relative z-50">
-          {/* Desktop Only CTA */}
-          <Link 
-            href="/portal" 
-            className="group relative hidden md:inline-flex items-center justify-center overflow-hidden rounded-full bg-[#A6F23C] px-6 py-2.5 text-[14px] font-semibold text-[#0A1B3D] shadow-lg transition-all duration-300 hover:bg-[#C8FF7A] hover:scale-[1.03]"
+        <div className="relative z-50 flex items-center gap-2">
+          <Link href="/login" className="hidden h-10 items-center rounded-full px-4 text-[14px] font-medium text-white/80 transition-colors hover:text-white md:inline-flex">
+            Log in
+          </Link>
+          <Link
+            href="/portal"
+            className="hidden h-10 items-center rounded-full bg-brand-lime px-5 text-[14px] font-semibold text-brand-navy transition-colors hover:bg-brand-lime-soft md:inline-flex"
           >
-            Visit Portal
+            Get started
           </Link>
 
-          {/* Mobile Hamburger / Close Button */}
-          <button 
-            onClick={() => setIsOpen(!isOpen)} 
-            className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 rounded-full md:hidden border border-white/10 bg-white/5 focus:outline-none" 
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-full ring-1 ring-inset ring-white/15 lg:hidden"
             aria-label={isOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isOpen}
           >
-            <span className={`h-0.5 w-5 rounded-full transition-all duration-300 bg-white ${
-              isOpen ? "translate-y-2 rotate-45" : ""
-            }`} />
-            <span className={`h-0.5 w-5 rounded-full transition-all duration-300 bg-white ${
-              isOpen ? "opacity-0" : ""
-            }`} />
-            <span className={`h-0.5 w-5 rounded-full transition-all duration-300 bg-white ${
-              isOpen ? "-translate-y-2 -rotate-45" : ""
-            }`} />
+            <span className={cx("h-0.5 w-5 rounded-full bg-white transition-all duration-300", isOpen && "translate-y-2 rotate-45")} />
+            <span className={cx("h-0.5 w-5 rounded-full bg-white transition-all duration-300", isOpen && "opacity-0")} />
+            <span className={cx("h-0.5 w-5 rounded-full bg-white transition-all duration-300", isOpen && "-translate-y-2 -rotate-45")} />
           </button>
         </div>
+      </div>
 
-        {/* Mobile Navigation Drawer Overlay */}
-        <div className={`fixed inset-0 z-40 bg-[#0A1B3D] transition-all duration-300 md:hidden flex flex-col justify-center px-8 ${
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`} >
-          <nav className="flex flex-col gap-4 text-xl font-medium w-full">
-            {navItems.map((item) => {
-              const active = activeSection === item.id;
-              return (
-                <Link 
-                  key={item.label} 
-                  href={item.href} 
-                  onClick={() => {
-                    setActiveSection(item.id);
-                    setIsOpen(false);
-                  }}
-                  className={`transition-all rounded-xl px-4 py-3 duration-200 ${
-                    active 
-                      ? "bg-[#A6F23C] text-[#0A1B3D] font-semibold" 
-                      : "text-white/80 hover:bg-[#C8FF7A] hover:text-[#0A1B3D]"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-            <Link 
-              href="/portal" 
-              className="mt-6 w-full rounded-full bg-[#A6F23C] py-3.5 text-center text-base font-semibold text-[#0A1B3D] shadow-lg hover:bg-[#C8FF7A]"
+      {/* Mobile menu */}
+      <div
+        className={cx(
+          "fixed inset-0 top-[72px] z-40 bg-brand-navy px-5 pb-10 pt-6 transition-all duration-300 lg:hidden",
+          isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+        )}
+      >
+        <nav className="flex flex-col" aria-label="Mobile">
+          {navItems.map((item) => (
+            <Link
+              key={item.id}
+              href={`/#${item.id}`}
+              onClick={() => setIsOpen(false)}
+              className="border-b border-white/[0.08] py-4 text-xl font-medium text-white"
             >
-              Visit Portal
+              {item.label}
             </Link>
-          </nav>
+          ))}
+        </nav>
+        <div className="mt-8 grid gap-3">
+          <Link href="/portal" onClick={() => setIsOpen(false)} className="flex h-12 items-center justify-center rounded-full bg-brand-lime text-base font-semibold text-brand-navy">
+            Get started
+          </Link>
+          <Link href="/login" onClick={() => setIsOpen(false)} className="flex h-12 items-center justify-center rounded-full text-base font-medium text-white ring-1 ring-inset ring-white/20">
+            Log in
+          </Link>
         </div>
-
       </div>
     </header>
   );

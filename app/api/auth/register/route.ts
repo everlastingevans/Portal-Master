@@ -5,15 +5,21 @@ import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name, phone, role = 'CANDIDATE' } = await req.json();
+    const { email, password, name, phone, role: requestedRole } = await req.json();
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
+    if (String(password).length < 8) {
+      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 });
+    }
+
+    // Self-registration may only create candidate or employer accounts
+    const role = requestedRole === 'CLIENT' ? 'CLIENT' : 'CANDIDATE';
 
     const existingUser = await db.user.findUnique({ where: { email } });
     if (existingUser) {
-      return NextResponse.json({ error: 'Email already exists' }, { status: 400 });
+      return NextResponse.json({ error: 'An account with this email already exists. Try logging in instead.' }, { status: 400 });
     }
 
     const hashedPassword = hashPassword(password);

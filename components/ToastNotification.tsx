@@ -87,37 +87,37 @@ function ToastCard({ toast, onClose }: { toast: ToastItem; onClose: () => void }
 
   const config = {
     success: {
-      bg: 'bg-emerald-50 dark:bg-emerald-950/90',
-      border: 'border-emerald-200 dark:border-emerald-800/60',
-      text: 'text-emerald-800 dark:text-emerald-250',
+      bg: 'bg-emerald-50',
+      border: 'border-emerald-200',
+      text: 'text-emerald-800',
       iconText: 'text-emerald-500',
       icon: CheckCircle2,
     },
     error: {
-      bg: 'bg-rose-50 dark:bg-rose-950/90',
-      border: 'border-rose-200 dark:border-rose-800/60',
-      text: 'text-rose-800 dark:text-rose-250',
+      bg: 'bg-rose-50',
+      border: 'border-rose-200',
+      text: 'text-rose-800',
       iconText: 'text-rose-500',
       icon: XCircle,
     },
     warning: {
-      bg: 'bg-amber-50 dark:bg-amber-950/90',
-      border: 'border-amber-200 dark:border-amber-800/60',
-      text: 'text-amber-800 dark:text-amber-250',
+      bg: 'bg-amber-50',
+      border: 'border-amber-200',
+      text: 'text-amber-800',
       iconText: 'text-amber-500',
       icon: AlertCircle,
     },
     info: {
-      bg: 'bg-[#7145FF]/5 dark:bg-slate-900/95',
-      border: 'border-[#7145FF]/20 dark:border-[#7145FF]/20',
-      text: 'text-slate-800 dark:text-slate-200',
-      iconText: 'text-[#7145FF]',
+      bg: 'bg-white',
+      border: 'border-slate-200',
+      text: 'text-slate-800',
+      iconText: 'text-brand-navy',
       icon: Info,
     },
   }[toast.type] || {
-    bg: 'bg-white dark:bg-slate-900',
-    border: 'border-slate-200 dark:border-slate-800',
-    text: 'text-slate-800 dark:text-slate-250',
+    bg: 'bg-white',
+    border: 'border-slate-200',
+    text: 'text-slate-800',
     iconText: 'text-slate-500',
     icon: Info,
   };
@@ -141,7 +141,7 @@ function ToastCard({ toast, onClose }: { toast: ToastItem; onClose: () => void }
       </div>
       <button 
         onClick={onClose}
-        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-0.5 rounded-md flex-shrink-0"
+        className="text-slate-400 hover:text-slate-600 transition-colors p-0.5 rounded-md flex-shrink-0"
       >
         <X className="w-4 h-4" />
       </button>

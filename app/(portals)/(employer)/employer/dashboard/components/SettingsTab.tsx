@@ -1,40 +1,78 @@
 'use client';
 
 import React from 'react';
-import { ShieldAlert } from 'lucide-react';
+import { Download, ShieldCheck, Trash2 } from 'lucide-react';
+import { PageHeader, Card, Section, Field, Input, Button, Alert } from '@/components/portal/ui';
+import { useConfirm } from '@/components/portal/overlay';
+import { useToast } from '@/components/ToastNotification';
 
 interface SettingsTabProps {
   user: any;
 }
 
 export default function SettingsTab({ user }: SettingsTabProps) {
+  const askConfirm = useConfirm();
+  const toast = useToast();
+
+  const requestExport = () => {
+    toast.success('Data export requested. Our team will be in touch.');
+  };
+
+  const requestDeletion = async () => {
+    const ok = await askConfirm({
+      title: 'Delete your employer account?',
+      description:
+        'This is permanent. All your live job listings will be closed and applicant data will be anonymised. Our team will contact you to finalise the request.',
+      confirmLabel: 'Request deletion',
+      tone: 'danger',
+    });
+    if (ok) toast.info('Account deletion requested. Our team will contact you to finalise it.');
+  };
+
   return (
-    <div className="max-w-xl mx-auto bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
-      <h2 className="text-xl font-bold mb-6">Account Settings</h2>
-      
-      <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
-        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-          <ShieldAlert className="w-5 h-5 text-blue-500" />
-          Data Privacy & POPIA
-        </h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-          In accordance with the Protection of Personal Information Act (POPIA), you have the right to request an export of your company data and applicant records, or request complete deletion of your employer account.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <button 
-            className="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer" 
-            onClick={() => alert('Your data export request has been submitted. Prepare for a large zip file.')}
-          >
-            Request Data Export
-          </button>
-          <button 
-            className="px-4 py-2 border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 rounded-lg text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/20 transition cursor-pointer" 
-            onClick={() => { if(confirm('Are you sure you want to delete your employer account? This action is permanent, all active job posts will be closed, and applicant data will be anonymized.')) alert('Employer account deletion requested. Our team will contact you to finalize.'); }}
-          >
-            Delete Account & Data
-          </button>
-        </div>
-      </div>
+    <div className="space-y-8">
+      <PageHeader title="Settings" description="Manage your account and your data." />
+
+      <Card>
+        <Section title="Account" description="The details you sign in with.">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Name" htmlFor="st-name">
+              <Input id="st-name" value={user?.name || ''} disabled />
+            </Field>
+            <Field label="Email" htmlFor="st-email">
+              <Input id="st-email" value={user?.email || ''} placeholder="Not available" disabled />
+            </Field>
+          </div>
+          <p className="text-xs text-slate-500">Update your name and contact details on the Company profile page.</p>
+        </Section>
+
+        <Section
+          title="Privacy and POPIA"
+          description="Under the Protection of Personal Information Act you can request a copy of your data, or ask us to delete your account."
+        >
+          <Alert tone="info" icon={ShieldCheck}>
+            Requests are reviewed by the LaunchPath team, who will contact you to confirm the details.
+          </Alert>
+          <div className="flex flex-col gap-4 rounded-xl border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-brand-navy">Export your data</p>
+              <p className="mt-0.5 text-sm text-slate-500">Your company details, job listings and applicant records.</p>
+            </div>
+            <Button icon={Download} onClick={requestExport}>
+              Request export
+            </Button>
+          </div>
+          <div className="flex flex-col gap-4 rounded-xl border border-rose-200 bg-rose-50/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-rose-700">Delete account</p>
+              <p className="mt-0.5 text-sm text-slate-600">Closes all listings and anonymises applicant data. This can&apos;t be undone.</p>
+            </div>
+            <Button variant="danger" icon={Trash2} onClick={requestDeletion}>
+              Delete account
+            </Button>
+          </div>
+        </Section>
+      </Card>
     </div>
   );
 }

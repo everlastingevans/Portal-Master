@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   try {
     const session = await getSession();
-    if (!session || session.role !== 'CLIENT') {
+    if (!session || !['CLIENT', 'EMPLOYER'].includes(String(session.role).toUpperCase())) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

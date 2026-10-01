@@ -3,11 +3,10 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle2, ShieldCheck, Mail, ArrowRight, Sparkles, Building2 } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import PortalSidebar from '@/components/PortalSidebar';
-import ThemeToggle from '@/components/ThemeToggle';
+import { Check, Mail, Sparkles, Users, AlertCircle, MapPin, Building2, ArrowRight, Plus } from 'lucide-react';
 import PortalLoader from '@/components/PortalLoader';
+import PortalShell from '@/components/portal/PortalShell';
+import { Card, EmptyState, StatusBadge, buttonClasses } from '@/components/portal/ui';
 
 function EmployerPaymentSuccessInner() {
   const searchParams = useSearchParams();
@@ -19,15 +18,8 @@ function EmployerPaymentSuccessInner() {
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
 
   const loadData = useCallback(async () => {
-    if (!jobId) {
-      setError('No Job ID specified.');
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
       setError(null);
@@ -45,6 +37,11 @@ function EmployerPaymentSuccessInner() {
         return;
       }
       setUser(authData.user);
+
+      if (!jobId) {
+        setError('No job was specified for this confirmation.');
+        return;
+      }
 
       // Fetch job details
       const checkRes = await fetch(`/api/jobs/checkout?jobId=${jobId}`);
@@ -96,123 +93,121 @@ function EmployerPaymentSuccessInner() {
   };
 
   if (loading || !user) {
-    return <PortalLoader portal="EMPLOYER" title="Verifying payment confirmation" />;
+    return <PortalLoader portal="EMPLOYER" title="Confirming your payment" />;
   }
 
+  const isLive = String(job?.status || '').toUpperCase() === 'ACTIVE';
+
+  const nextSteps = [
+    {
+      icon: Sparkles,
+      title: 'We start matching',
+      body: 'Our team reviews your requirements and ranks the strongest available candidates.',
+    },
+    {
+      icon: Mail,
+      title: 'Shortlist within 5 working days',
+      body: (
+        <>
+          Vetted matches are sent to <span className="font-medium text-brand-navy">{user?.email}</span>.
+        </>
+      ),
+    },
+    {
+      icon: Users,
+      title: 'Applicants appear in your dashboard',
+      body: 'Review new applicants as they come in and invite the best ones to interview.',
+    },
+  ];
+
   return (
-    <div className="w-full h-screen bg-slate-50 dark:bg-slate-950 flex overflow-hidden font-sans text-slate-900 dark:text-slate-100 transition-colors">
-      
-      {/* Sidebar navigation */}
-      <PortalSidebar
-        role="EMPLOYER"
-        user={user}
-        onLogout={handleLogout}
-      />
+    <PortalShell portal="employer" user={user} onLogout={handleLogout} title={isLive ? 'Job published' : 'Payment received'}>
+      <div className="mx-auto max-w-2xl">
+        {error ? (
+          <Card padded={false}>
+            <EmptyState
+              icon={AlertCircle}
+              title="We couldn't load this confirmation"
+              description={error}
+              action={
+                <Link href="/employer/dashboard" className={buttonClasses({ variant: 'primary' })}>
+                  Go to dashboard
+                </Link>
+              }
+            />
+          </Card>
+        ) : (
+          <Card padded={false} className="overflow-hidden animate-scale-in">
+            <div className="px-6 pb-8 pt-10 text-center sm:px-10">
+              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-lime text-brand-navy shadow-[0_0_0_8px_rgba(166,242,60,0.18)]">
+                <Check className="h-7 w-7" strokeWidth={3} />
+              </span>
+              <h1 className="mt-6 text-2xl font-semibold tracking-tight text-brand-navy sm:text-[26px]">
+                {isLive ? 'Your job is live' : 'Payment received'}
+              </h1>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-600">
+                {isLive
+                  ? 'Thanks for your payment. Your role is now visible to matching candidates.'
+                  : 'Thanks for your payment. We’re activating your role and will notify you as soon as it’s live.'}
+              </p>
 
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Header */}
-        <header className="bg-white dark:bg-slate-900 h-16 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between pl-14 pr-4 md:px-8 flex-shrink-0 transition-colors">
-          <h1 className="text-xl font-bold dark:text-white">Payment Confirmed</h1>
-          <div className="flex items-center gap-6">
-            <div className="hidden sm:flex items-center gap-2 bg-[#5D3FD3]/10 dark:bg-[#5D3FD3]/20 text-[#5D3FD3] dark:text-violet-300 px-3 py-1 rounded-full text-sm font-semibold border border-[#5D3FD3]/20 dark:border-[#5D3FD3]/30">
-              <span className="w-2 h-2 bg-[#5D3FD3] dark:bg-[#5D3FD3] rounded-full"></span>
-              {user?.role || 'EMPLOYER'}
+              {job && (
+                <div className="mx-auto mt-6 max-w-md rounded-xl border border-slate-200/80 bg-slate-50/60 px-4 py-3.5 text-left">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="min-w-0 break-words text-sm font-semibold text-brand-navy">{job.title}</p>
+                    <StatusBadge status={job.status} />
+                  </div>
+                  <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                    {job.company && (
+                      <span className="inline-flex items-center gap-1.5">
+                        <Building2 className="h-3.5 w-3.5 text-slate-400" /> {job.company}
+                      </span>
+                    )}
+                    {job.location && (
+                      <span className="inline-flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5 text-slate-400" /> {job.location}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-            <ThemeToggle />
-          </div>
-        </header>
 
-        {/* Confirmation Body */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 flex items-center justify-center max-w-2xl mx-auto w-full">
-          {error ? (
-            <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 p-6 rounded-2xl text-center w-full">
-              <p className="text-red-600 dark:text-red-400 font-semibold mb-4">{error}</p>
-              <Link
-                href="/employer/dashboard"
-                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold px-6 py-2.5 rounded-xl text-sm"
-              >
-                Go to Dashboard
+            <div className="border-t border-slate-100 px-6 py-7 sm:px-10">
+              <h2 className="text-sm font-semibold text-brand-navy">What happens next</h2>
+              <ol className="mt-5 space-y-5">
+                {nextSteps.map((step) => (
+                  <li key={step.title} className="flex items-start gap-3.5">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500 ring-1 ring-inset ring-slate-200/80">
+                      <step.icon className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-brand-navy">{step.title}</p>
+                      <p className="mt-0.5 break-words text-sm text-slate-500">{step.body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-5 sm:flex-row sm:justify-end sm:px-10">
+              <Link href="/employer/new" className={buttonClasses({ variant: 'secondary', size: 'lg' })}>
+                <Plus className="h-4 w-4" /> Post another job
+              </Link>
+              <Link href="/employer/dashboard?tab=Applicants" className={buttonClasses({ variant: 'accent', size: 'lg' })}>
+                View applicants <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
-          ) : (
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 md:p-10 shadow-xl text-center space-y-6 w-full relative">
-              
-              {/* Top gradient border decoration */}
-              <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-emerald-500 via-[#bdf500] to-emerald-500 rounded-t-3xl" />
-
-              {/* Large Animated Success Icon */}
-              <div className="mx-auto w-20 h-20 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 dark:text-[#bdf500] rounded-full flex items-center justify-center border border-emerald-100 dark:border-emerald-900/60 shadow-inner">
-                <CheckCircle2 className="w-12 h-12" />
-              </div>
-
-              <div className="space-y-2">
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-[#bdf500] uppercase tracking-widest font-mono">
-                  Sourcing Succeeded
-                </span>
-                <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                  Your role has been activated
-                </h2>
-                <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-                  Our team will review your requirements and identify the strongest available candidates. Your curated shortlist will be sent to your registered email address.
-                </p>
-              </div>
-
-              {/* Info Block with Role Details */}
-              <div className="bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-150 dark:border-slate-800 p-5 text-left space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 bg-violet-50 dark:bg-violet-950/40 border border-violet-100 dark:border-violet-900/40 rounded-xl flex items-center justify-center text-[#5D3FD3] dark:text-violet-300 shrink-0">
-                    <Building2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">Active Job Posting</h4>
-                    <span className="text-sm font-extrabold text-slate-900 dark:text-white block mt-0.5">{job?.title}</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 block">{job?.company} &bull; {job?.location}</span>
-                  </div>
-                </div>
-
-                <div className="h-px bg-slate-200 dark:bg-slate-800/60 my-2" />
-
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/40 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
-                    <Mail className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">Shortlist Sourcing SLA</h4>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-normal mt-0.5">
-                      Vetted talent matches will be dispatched directly to <strong className="text-slate-900 dark:text-white font-semibold">{user?.email}</strong> within <strong className="text-slate-900 dark:text-white font-semibold">5 working days</strong>.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Return Dashboard CTA */}
-              <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link
-                  href="/employer/dashboard"
-                  className="w-full sm:w-auto bg-[#5D3FD3] hover:bg-[#4d32bb] text-white font-extrabold px-8 py-3.5 rounded-xl text-sm transition shadow-lg shadow-violet-500/15 flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <span>Return to Dashboard</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link
-                  href="/employer/new"
-                  className="w-full sm:w-auto border border-slate-250 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 font-bold px-6 py-3.5 rounded-xl text-xs transition cursor-pointer"
-                >
-                  Post Another Role
-                </Link>
-              </div>
-
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
+          </Card>
+        )}
+      </div>
+    </PortalShell>
   );
 }
 
 export default function EmployerPaymentSuccessPage() {
   return (
-    <Suspense fallback={<PortalLoader portal="EMPLOYER" title="Loading Confirmation Screen" />}>
+    <Suspense fallback={<PortalLoader portal="EMPLOYER" title="Confirming your payment" />}>
       <EmployerPaymentSuccessInner />
     </Suspense>
   );

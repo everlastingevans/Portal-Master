@@ -1,33 +1,69 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useDropzone } from "react-dropzone";
-import { Loader2, UploadCloud, FileText, CheckCircle2 } from "lucide-react";
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useDropzone } from 'react-dropzone';
+import { UploadCloud, FileText, CheckCircle2, Check, Briefcase, Phone, Linkedin, Github, User, X, Sparkles } from 'lucide-react';
+import LaunchPathLogo from '@/components/LaunchPathLogo';
+import PortalLoader from '@/components/PortalLoader';
+import { Alert, Button, Card, Field, Input, Select, cx } from '@/components/portal/ui';
+
+const EXPERIENCE_LEVELS = [
+  { value: 'Junior', label: 'Graduate or junior (0–2 years)' },
+  { value: 'Mid-Level', label: 'Mid-level (3–5 years)' },
+  { value: 'Senior', label: 'Senior (5+ years)' },
+  { value: 'Lead', label: 'Lead or manager' },
+];
+
+const STEPS = ['Your profile', 'Your CV'];
+const MAX_MB = 10;
 
 export default function OnboardingPage() {
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [checking, setChecking] = useState(true);
+  const [step, setStep] = useState(1);
+  const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // Step 1 State
-  const [name, setName] = useState("");
-  const [professionalTitle, setProfessionalTitle] = useState("");
-  const [experienceLevel, setExperienceLevel] = useState("Mid-Level");
-  const [phone, setPhone] = useState("");
-  const [linkedinUrl, setLinkedinUrl] = useState("");
-  const [githubUrl, setGithubUrl] = useState("");
-
-  // Step 2 State
+  const [name, setName] = useState('');
+  const [professionalTitle, setProfessionalTitle] = useState('');
+  const [experienceLevel, setExperienceLevel] = useState('Junior');
+  const [phone, setPhone] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
 
-  const handleBasicInfoSubmit = async (e: React.FormEvent) => {
+  // Must be a signed-in candidate; prefill anything we already know
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/me');
+        const { user } = await res.json();
+        if (!user) return router.replace('/login?next=/onboarding');
+        if (String(user.role).toUpperCase() !== 'CANDIDATE') return router.replace('/');
+        setName(user.name || '');
+        setPhone(user.phone || '');
+        setProfessionalTitle(user.professional_title || '');
+        if (EXPERIENCE_LEVELS.some((l) => l.value === user.experience_level)) setExperienceLevel(user.experience_level);
+        setLinkedinUrl(user.linkedin_url || '');
+        setGithubUrl(user.github_url || '');
+        setChecking(false);
+      } catch {
+        router.replace('/login?next=/onboarding');
+      }
+    })();
+  }, [router]);
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     try {
-      const res = await fetch("/api/candidate/onboard", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/candidate/onboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
           professional_title: professionalTitle,
@@ -37,252 +73,222 @@ export default function OnboardingPage() {
           phone,
         }),
       });
-      if (res.ok) setStep(2);
-    } catch (e) {
-      console.error(e);
+      if (!res.ok) throw new Error('We couldn’t save your profile. Please try again.');
+      setStep(2);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const onDrop = (acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      setResumeFile(acceptedFiles[0]);
-    }
-  };
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { "application/pdf": [".pdf"] },
+  const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
+    onDrop: (files) => {
+      setError('');
+      if (files[0]) setResumeFile(files[0]);
+    },
+    accept: { 'application/pdf': ['.pdf'] },
     maxFiles: 1,
+    maxSize: MAX_MB * 1024 * 1024,
   });
+
+  const rejection = fileRejections[0]?.errors[0];
+  const rejectionMessage = rejection
+    ? rejection.code === 'file-too-large'
+      ? `That file is larger than ${MAX_MB} MB.`
+      : 'Please upload your CV as a PDF.'
+    : '';
 
   const handleResumeSubmit = async () => {
     if (!resumeFile) return;
     setLoading(true);
+    setError('');
     try {
       const formData = new FormData();
-      formData.append("resume", resumeFile);
-
-      const res = await fetch("/api/candidate/resume", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (res.ok) {
-        setStep(3);
-        setTimeout(() => {
-          router.push("/candidate/dashboard");
-        }, 1500);
+      formData.append('resume', resumeFile);
+      const res = await fetch('/api/candidate/resume', { method: 'POST', body: formData });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'We couldn’t upload your CV. Please try again.');
       }
-    } catch (e) {
-      console.error(e);
+      setDone(true);
+      setTimeout(() => router.push('/candidate/dashboard?tab=Jobs'), 1400);
+    } catch (err: any) {
+      setError(err.message);
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
-        {/* Progress Tracker */}
-        <div className="flex items-center justify-center gap-4 mb-8">
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <span
-              className={`w-8 h-8 flex items-center justify-center rounded-full ${step >= 1 ? "bg-[#7145FF] text-white" : "bg-slate-200 text-slate-500"}`}
-            >
-              1
-            </span>
-            <span className={step >= 1 ? "text-[#7145FF]" : "text-slate-500"}>
-              Profile Info
-            </span>
-          </div>
-          <div className="w-12 h-px bg-slate-300"></div>
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <span
-              className={`w-8 h-8 flex items-center justify-center rounded-full ${step >= 2 ? "bg-[#7145FF] text-white" : "bg-slate-200 text-slate-500"}`}
-            >
-              2
-            </span>
-            <span className={step >= 2 ? "text-[#7145FF]" : "text-slate-500"}>
-              Upload Resume
-            </span>
-          </div>
-          <div className="w-12 h-px bg-slate-300"></div>
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <span
-              className={`w-8 h-8 flex items-center justify-center rounded-full ${step >= 3 ? "bg-green-600 text-white" : "bg-slate-200 text-slate-500"}`}
-            >
-              3
-            </span>
-            <span className={step >= 3 ? "text-green-600" : "text-slate-500"}>
-              AI Matching
-            </span>
-          </div>
-        </div>
+  if (checking) return <PortalLoader portal="CANDIDATE" title="Setting up your profile" />;
 
-        {/* Step 1: Basic Info */}
-        {step === 1 && (
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">
-              Welcome to LaunchPath
-            </h2>
-            <p className="text-slate-500 mb-6">
-              Let&apos;s set up your candidate profile to find the best
-              opportunities.
-            </p>
-            <form onSubmit={handleBasicInfoSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Full Name
-                </label>
-                <input
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg"
-                  placeholder="John Doe"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Professional Title
-                </label>
-                <input
-                  required
-                  value={professionalTitle}
-                  onChange={(e) => setProfessionalTitle(e.target.value)}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg"
-                  placeholder="e.g. Senior Frontend Engineer"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Experience Level
-                </label>
-                <select
-                  value={experienceLevel}
-                  onChange={(e) => setExperienceLevel(e.target.value)}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900"
-                >
-                  <option>Junior (0-2 years)</option>
-                  <option>Mid-Level (3-5 years)</option>
-                  <option>Senior (5+ years)</option>
-                  <option>Lead / Manager</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900"
-                  placeholder="e.g. +1 (555) 012-3456"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  LinkedIn Profile URL (Optional)
-                </label>
-                <input
-                  value={linkedinUrl}
-                  onChange={(e) => setLinkedinUrl(e.target.value)}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900"
-                  placeholder="https://linkedin.com/in/username"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  GitHub Profile URL (Optional)
-                </label>
-                <input
-                  value={githubUrl}
-                  onChange={(e) => setGithubUrl(e.target.value)}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900"
-                  placeholder="https://github.com/username"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-[#7145FF] text-white py-2.5 rounded-lg font-medium hover:bg-[#5b32e6] transition"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  "Continue to Resume"
-                )}
-              </button>
-            </form>
-          </div>
+  return (
+    <div className="min-h-screen bg-canvas font-sans antialiased">
+      <header className="bg-brand-navy">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-5">
+          <LaunchPathLogo className="h-8" />
+          {!done && (
+            <Link href="/candidate/dashboard" className="text-sm font-medium text-white/70 transition-colors hover:text-white">
+              Skip for now
+            </Link>
+          )}
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-xl px-5 py-10 sm:py-14">
+        {!done && (
+          <ol className="mb-8 flex items-center gap-3" aria-label="Progress">
+            {STEPS.map((label, i) => {
+              const n = i + 1;
+              const state = step > n ? 'done' : step === n ? 'current' : 'todo';
+              return (
+                <li key={label} className="flex flex-1 items-center gap-3">
+                  <span
+                    className={cx(
+                      'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors',
+                      state === 'done' && 'bg-brand-lime text-brand-navy',
+                      state === 'current' && 'bg-brand-navy text-white',
+                      state === 'todo' && 'bg-white text-slate-400 ring-1 ring-inset ring-slate-200',
+                    )}
+                    aria-current={state === 'current' ? 'step' : undefined}
+                  >
+                    {state === 'done' ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : n}
+                  </span>
+                  <span className={cx('text-sm font-medium', state === 'todo' ? 'text-slate-400' : 'text-brand-navy')}>{label}</span>
+                  {n < STEPS.length && <span className={cx('h-px flex-1', step > n ? 'bg-brand-navy/30' : 'bg-slate-200')} />}
+                </li>
+              );
+            })}
+          </ol>
         )}
 
-        {/* Step 2: Resume */}
-        {step === 2 && (
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">
-              Upload your Resume
-            </h2>
-            <p className="text-slate-500 mb-6">
-              Our AI will instantly parse your skills and match you with active
-              jobs.
-            </p>
+        {step === 1 && !done && (
+          <Card className="p-6 sm:p-8">
+            <h1 className="text-2xl font-semibold tracking-tight text-brand-navy">Tell us about yourself</h1>
+            <p className="mt-1.5 text-sm text-slate-500">This helps us match you with the right roles. You can change it anytime.</p>
 
-            <div
-              {...getRootProps()}
-              className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition ${isDragActive ? "border-[#7145FF] bg-violet-50" : "border-slate-300 hover:border-[#7145FF] bg-slate-50"}`}
-            >
-              <input {...getInputProps()} />
+            <form onSubmit={handleProfileSubmit} className="mt-7 space-y-5">
+              {error && <Alert>{error}</Alert>}
+              <Field label="Full name" htmlFor="ob-name">
+                <Input id="ob-name" icon={User} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required />
+              </Field>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <Field label="What role are you after?" htmlFor="ob-title">
+                  <Input
+                    id="ob-title"
+                    icon={Briefcase}
+                    value={professionalTitle}
+                    onChange={(e) => setProfessionalTitle(e.target.value)}
+                    placeholder="e.g. Junior Data Analyst"
+                    required
+                  />
+                </Field>
+                <Field label="Experience" htmlFor="ob-exp">
+                  <Select id="ob-exp" value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)}>
+                    {EXPERIENCE_LEVELS.map((l) => (
+                      <option key={l.value} value={l.value}>
+                        {l.label}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+              </div>
+              <Field label="Mobile number" htmlFor="ob-phone" optional>
+                <Input id="ob-phone" type="tel" icon={Phone} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+27 82 123 4567" autoComplete="tel" />
+              </Field>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <Field label="LinkedIn" htmlFor="ob-li" optional>
+                  <Input id="ob-li" type="url" icon={Linkedin} value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="linkedin.com/in/you" />
+                </Field>
+                <Field label="GitHub or portfolio" htmlFor="ob-gh" optional>
+                  <Input id="ob-gh" type="url" icon={Github} value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} placeholder="github.com/you" />
+                </Field>
+              </div>
+              <Button type="submit" variant="primary" size="lg" fullWidth loading={loading}>
+                Continue
+              </Button>
+            </form>
+          </Card>
+        )}
+
+        {step === 2 && !done && (
+          <Card className="p-6 sm:p-8">
+            <h1 className="text-2xl font-semibold tracking-tight text-brand-navy">Upload your CV</h1>
+            <p className="mt-1.5 text-sm text-slate-500">We’ll read your skills and experience, then rank open roles by how well they fit you.</p>
+
+            <div className="mt-7 space-y-5">
+              {(error || rejectionMessage) && <Alert>{error || rejectionMessage}</Alert>}
+
               {!resumeFile ? (
-                <div className="flex flex-col items-center">
-                  <UploadCloud className="w-12 h-12 text-[#7145FF] mb-4" />
-                  <p className="text-slate-700 font-medium">
-                    Drag & drop your PDF resume here
-                  </p>
-                  <p className="text-slate-500 text-sm mt-1">
-                    or click to browse files
-                  </p>
+                <div
+                  {...getRootProps()}
+                  className={cx(
+                    'flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-colors',
+                    isDragActive ? 'border-brand-navy bg-brand-navy/[0.03]' : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-50',
+                  )}
+                >
+                  <input {...getInputProps()} />
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-brand-navy shadow-sm ring-1 ring-slate-200">
+                    <UploadCloud className="h-5 w-5" />
+                  </span>
+                  <p className="mt-4 text-sm font-medium text-brand-navy">{isDragActive ? 'Drop your CV here' : 'Drag and drop your CV, or click to browse'}</p>
+                  <p className="mt-1 text-xs text-slate-500">PDF only, up to {MAX_MB} MB</p>
                 </div>
               ) : (
-                <div className="flex flex-col items-center">
-                  <FileText className="w-12 h-12 text-blue-600 mb-4" />
-                  <p className="text-slate-800 font-bold">{resumeFile.name}</p>
-                  <p className="text-slate-500 text-sm mt-1">
-                    {(resumeFile.size / 1024 / 1024).toFixed(2)} MB • Click to
-                    change
-                  </p>
+                <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-navy text-brand-lime">
+                    <FileText className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-brand-navy">{resumeFile.name}</p>
+                    <p className="text-xs text-slate-500">{(resumeFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setResumeFile(null)}
+                    disabled={loading}
+                    aria-label="Remove file"
+                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-brand-navy disabled:opacity-50"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
               )}
+
+              <div className="flex items-start gap-3 rounded-xl bg-slate-50 p-4 text-xs leading-relaxed text-slate-500">
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-brand-navy" />
+                Your CV is only shared with employers when you apply for their roles.
+              </div>
+
+              <div className="flex flex-col-reverse gap-3 sm:flex-row">
+                <Button type="button" variant="ghost" size="lg" onClick={() => setStep(1)} disabled={loading} className="sm:w-auto">
+                  Back
+                </Button>
+                <Button type="button" variant="primary" size="lg" fullWidth onClick={handleResumeSubmit} disabled={!resumeFile} loading={loading}>
+                  {loading ? 'Uploading…' : 'Find my matches'}
+                </Button>
+              </div>
+              <p className="text-center text-sm">
+                <Link href="/candidate/dashboard?tab=Profile" className="text-slate-500 hover:text-brand-navy">
+                  I’ll upload my CV later
+                </Link>
+              </p>
             </div>
-
-            <button
-              onClick={handleResumeSubmit}
-              disabled={!resumeFile || loading}
-              className="mt-6 w-full flex items-center justify-center gap-2 bg-[#7145FF] text-white py-2.5 rounded-lg font-medium hover:bg-[#5b32e6] transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              {loading ? "Loading..." : "Analyze and Match Jobs"}
-            </button>
-          </div>
+          </Card>
         )}
 
-        {/* Step 3: Processing */}
-        {step === 3 && (
-          <div className="bg-white p-12 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
-            <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">
-              Profile Complete!
-            </h2>
-            <p className="text-slate-500">
-              Redirecting to your AI-powered job dashboard...
-            </p>
-          </div>
+        {done && (
+          <Card className="flex flex-col items-center p-10 text-center animate-scale-in">
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-lime text-brand-navy">
+              <CheckCircle2 className="h-7 w-7" />
+            </span>
+            <h1 className="mt-5 text-2xl font-semibold tracking-tight text-brand-navy">You’re all set</h1>
+            <p className="mt-2 text-sm text-slate-500">We’re reading your CV now. Taking you to your matches…</p>
+            <div className="mt-6 h-[3px] w-40 overflow-hidden rounded-full bg-slate-200">
+              <div className="h-full w-2/5 rounded-full bg-brand-navy animate-loader-bar" />
+            </div>
+          </Card>
         )}
-      </div>
+      </main>
     </div>
   );
 }
