@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { scoreMatch } from '@/lib/gemini';
+import { sanitizeTalentFields } from '@/lib/talent';
 
 export async function PUT(req: Request) {
   try {
@@ -10,8 +11,9 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { 
-      name, 
+    const body = await req.json();
+    const {
+      name,
       professional_title, 
       experience_level, 
       resume_text, 
@@ -30,7 +32,7 @@ export async function PUT(req: Request) {
       seeking_roles,
       certificates_url,
       police_clearance_url
-    } = await req.json();
+    } = body;
 
     // Get old user details to see if resume text is changing
     const currentUser = await db.user.findUnique({
@@ -63,6 +65,7 @@ export async function PUT(req: Request) {
         ...(seeking_roles !== undefined && { seeking_roles }),
         ...(certificates_url !== undefined && { certificates_url }),
         ...(police_clearance_url !== undefined && { police_clearance_url }),
+        ...sanitizeTalentFields(body),
       },
     });
 

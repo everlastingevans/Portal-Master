@@ -611,7 +611,7 @@ export default function JobFeedTab({
                   <div className="min-w-0 flex-1">{renderDetailHeader(selectedJob)}</div>
                   <IconButton icon={X} label="Close job details" onClick={() => setSelectedJob(null)} className="-mr-2 -mt-1" />
                 </div>
-                <div key={selectedJob.job_id} className="flex-1 overflow-y-auto p-6 animate-fade-in">
+                <div key={selectedJob.job_id} className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 animate-fade-in">
                   {renderDetailBody(selectedJob)}
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-white px-6 py-4">

@@ -155,24 +155,25 @@ export default function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <ConfirmProvider>
-      <div className="flex h-screen w-full overflow-hidden bg-ink-950 font-sans text-slate-300 antialiased">
+      <div className="h-app flex w-full overflow-hidden bg-ink-950 font-sans text-slate-300 antialiased">
         {/* Desktop sidebar */}
         <aside className="hidden w-64 shrink-0 border-r border-white/[0.06] bg-brand-navy lg:block">{sidebar}</aside>
 
         {/* Mobile drawer */}
         {mobileOpen && (
-          <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="fixed inset-0 z-[65] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
             <div className="absolute inset-0 bg-ink-950/80 backdrop-blur-sm animate-fade-in" onClick={() => setMobileOpen(false)} />
-            <aside className="relative h-full w-72 border-r border-white/[0.06] bg-brand-navy shadow-2xl animate-fade-in">
-              <button
-                onClick={() => setMobileOpen(false)}
-                aria-label="Close menu"
-                className="absolute right-3 top-4 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-white/60 hover:bg-white/[0.06] hover:text-white"
-              >
-                <X className="h-4 w-4" />
-              </button>
+            <aside className="h-app relative w-72 max-w-[calc(100vw-4.5rem)] overflow-hidden border-r border-white/10 bg-brand-navy shadow-2xl animate-fade-in">
               {sidebar}
             </aside>
+            {/* Close sits on the backdrop, clear of the logo and badge */}
+            <button
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close menu"
+              className="absolute left-[min(18rem,calc(100vw-4.5rem))] top-4 ml-3 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white text-brand-navy shadow-lg animate-fade-in"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
         )}
 

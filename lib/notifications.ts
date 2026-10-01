@@ -122,56 +122,55 @@ interface WhatsAppOptions {
   body: string;
 }
 
+export type WhatsAppSendResult =
+  | { ok: true; mock: boolean; messageId?: string }
+  | { ok: false; reason: 'NOT_CONFIGURED' | 'CREDITS_EXHAUSTED' | 'REJECTED' | 'NETWORK'; status?: number; detail?: string };
+
 /**
- * Sends a real Brevo WhatsApp message if configured, else logs structured contents to console.
+ * Sends a WhatsApp message through Brevo and reports exactly what happened.
+ * Pass `templateId` (a Meta-approved Brevo template) for business-initiated messages; `text` only
+ * delivers inside WhatsApp's 24-hour customer-service window.
  */
-export async function sendWhatsApp({ to, body }: WhatsAppOptions): Promise<boolean> {
-  console.log(`[WhatsApp Dispatcher - Brevo] Initiating dispatch to: ${to}`);
+export async function sendWhatsAppMessage({ to, text, templateId }: { to: string; text: string; templateId?: number }): Promise<WhatsAppSendResult> {
   const apiKey = process.env.BREVO_API_KEY;
   const senderNumber = process.env.BREVO_WHATSAPP_SENDER_NUMBER;
-
-  // Format recipient's phone number: strip whatsapp: prefix for Brevo compatibility
-  const cleanTo = to.replace('whatsapp:', '').trim();
+  const cleanTo = to.replace('whatsapp:', '').replace(/^\+/, '').trim();
 
   if (!apiKey || !senderNumber) {
-    console.warn(
-      `[MOCK NOTIFICATION SENDER] Brevo is not fully configured (BREVO_API_KEY/BREVO_WHATSAPP_SENDER_NUMBER missing). WhatsApp log details below:`
-    );
-    console.warn(`--------------------------------------------------`);
-    console.warn(`FROM: ${senderNumber || 'MISSING_SENDER_NUMBER'}`);
-    console.warn(`TO:   ${cleanTo}`);
-    console.warn(`BODY: ${body}`);
-    console.warn(`--------------------------------------------------`);
-    return true;
+    console.warn(`[MOCK NOTIFICATION SENDER] Brevo WhatsApp not configured. TO: ${cleanTo}\n${text}`);
+    return { ok: false, reason: 'NOT_CONFIGURED' };
   }
 
   try {
     const res = await fetch('https://api.brevo.com/v3/whatsapp/sendMessage', {
       method: 'POST',
-      headers: {
-        'accept': 'application/json',
-        'api-key': apiKey,
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        senderNumber,
-        contactNumbers: [cleanTo],
-        text: body,
-      }),
+      headers: { accept: 'application/json', 'api-key': apiKey, 'content-type': 'application/json' },
+      body: JSON.stringify(templateId ? { senderNumber, contactNumbers: [cleanTo], templateId } : { senderNumber, contactNumbers: [cleanTo], text }),
     });
 
     if (!res.ok) {
-      const errText = await res.text();
-      console.error(`[WhatsApp Dispatcher - Brevo] Failed response (${res.status}):`, errText);
-      return false;
+      const detail = (await res.text()).slice(0, 500);
+      console.error(`[WhatsApp Dispatcher - Brevo] Failed response (${res.status}):`, detail);
+      // Brevo signals an empty WhatsApp balance with 402 / "credit" errors
+      const outOfCredits = res.status === 402 || /credit|balance|insufficient/i.test(detail);
+      return { ok: false, reason: outOfCredits ? 'CREDITS_EXHAUSTED' : 'REJECTED', status: res.status, detail };
     }
 
-    console.log(`[WhatsApp Dispatcher - Brevo] Brevo successfully sent WhatsApp to: ${cleanTo}`);
-    return true;
+    const json = await res.json().catch(() => ({}));
+    return { ok: true, mock: false, messageId: json?.messageId };
   } catch (err: any) {
-    console.error(`[WhatsApp Dispatcher - Brevo] Failed to send WhatsApp via Brevo:`, err);
-    return false;
+    console.error(`[WhatsApp Dispatcher - Brevo] Network error:`, err);
+    return { ok: false, reason: 'NETWORK', detail: err?.message };
   }
+}
+
+/**
+ * Legacy boolean wrapper used by existing notification flows. Still treats "not configured" as success
+ * so local development doesn't fail interview scheduling; new code should use sendWhatsAppMessage.
+ */
+export async function sendWhatsApp({ to, body }: WhatsAppOptions): Promise<boolean> {
+  const result = await sendWhatsAppMessage({ to, text: body });
+  return result.ok || result.reason === 'NOT_CONFIGURED';
 }
 
 interface MultiChannelOptions {

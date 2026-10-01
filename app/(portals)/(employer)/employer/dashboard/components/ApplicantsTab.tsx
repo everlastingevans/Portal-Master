@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   Users,
@@ -21,8 +21,13 @@ import {
   Briefcase,
   CreditCard,
   UserRound,
+  NotebookPen,
 } from 'lucide-react';
 import LaunchpathMuxPlayer from '@/components/LaunchpathMuxPlayer';
+import AiDossierCard from './AiDossierCard';
+import WhatsAppOutreach from './WhatsAppOutreach';
+import ActivityTimeline, { ActivityEntry } from './ActivityTimeline';
+import TeamEvaluationPanel from './TeamEvaluationPanel';
 import {
   PageHeader,
   Card,
@@ -186,6 +191,16 @@ export default function ApplicantsTab({
 
   const activeFilterCount =
     (filterScore !== 'All' ? 1 : 0) + (filterExperience !== 'All' ? 1 : 0) + (filterSkill !== 'All' ? 1 : 0);
+
+  // Activity entries logged during this drawer session (prepended to the fetched history)
+  const [freshActivity, setFreshActivity] = useState<ActivityEntry[]>([]);
+  const [drawerTab, setDrawerTab] = useState<'profile' | 'team'>('profile');
+  const [noteCount, setNoteCount] = useState<number | null>(null);
+  useEffect(() => {
+    setFreshActivity([]);
+    setDrawerTab('profile');
+    setNoteCount(null);
+  }, [selectedApplicant?.id]);
 
   const stageCounts = useMemo(() => {
     const counts: Record<Stage, number> = { all: 0, new: 0, interviewing: 0, accepted: 0, rejected: 0 };
@@ -651,9 +666,34 @@ export default function ApplicantsTab({
         }
       >
         {selectedApplicant && (
+          <div className="mb-6">
+            <Segmented
+              value={drawerTab}
+              onChange={setDrawerTab}
+              options={[
+                { value: 'profile', label: 'Profile', icon: UserRound },
+                { value: 'team', label: 'Team evaluation & notes', icon: NotebookPen, count: noteCount ?? undefined },
+              ]}
+            />
+          </div>
+        )}
+        {selectedApplicant && drawerTab === 'team' && (
+          <TeamEvaluationPanel applicationId={selectedApplicant.id} candidateName={selectedApplicant.candidate?.name} onCountChange={setNoteCount} />
+        )}
+        {selectedApplicant && drawerTab === 'profile' && (
           <div className="space-y-6">
             {/* Contact */}
-            <DetailSection title="Contact">
+            <DetailSection
+              title="Contact"
+              action={
+                <WhatsAppOutreach
+                  applicationId={selectedApplicant.id}
+                  candidateName={selectedApplicant.candidate?.name}
+                  phone={selectedApplicant.candidate?.phone}
+                  onLogged={(entry) => setFreshActivity((prev) => [entry, ...prev])}
+                />
+              }
+            >
               <ul className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                 {selectedApplicant.candidate?.email && (
                   <li className="min-w-0">
@@ -703,6 +743,13 @@ export default function ApplicantsTab({
               </ul>
             </DetailSection>
 
+            {/* AI recruiter dossier */}
+            <AiDossierCard
+              candidateId={selectedApplicant.candidate_id ?? selectedApplicant.candidate?.id}
+              jobId={selectedApplicant.job_id}
+              candidateName={selectedApplicant.candidate?.name}
+            />
+
             {/* Match */}
             <DetailSection title="Match" action={match && <MatchScore score={match.match_score} />}>
               {match ? (
@@ -741,6 +788,11 @@ export default function ApplicantsTab({
               ) : (
                 <p className="text-sm text-slate-500">This applicant hasn&apos;t been scored for this role yet.</p>
               )}
+            </DetailSection>
+
+            {/* Application history */}
+            <DetailSection title="Activity">
+              <ActivityTimeline applicationId={selectedApplicant.id} latest={freshActivity} />
             </DetailSection>
 
             {/* Interviews */}

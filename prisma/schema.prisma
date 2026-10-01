@@ -50,6 +50,10 @@ model User {
   seeking_roles           String?
   certificates_url        String?
   police_clearance_url    String?
+  // Talent pool sourcing (all optional; set from the candidate profile)
+  location                String?          // e.g. "Gauteng", "Western Cape", "Remote"
+  availability            String?          // IMMEDIATE | TWO_WEEKS | ONE_MONTH
+  bio                     String?
   reset_token             String?
   reset_token_expiry      DateTime?
   job_matches             JobMatch[]
@@ -62,6 +66,10 @@ model User {
   video_interviews        VideoInterview[]
   notifications           Notification[]
   attachments             Attachment[]
+  invitations_received    JobInvitation[]  @relation("InvitationCandidate")
+  invitations_sent        JobInvitation[]  @relation("InvitationEmployer")
+  activities_authored     ApplicationActivity[] @relation("ActivityActor")
+  notes_authored          ApplicationNote[]     @relation("NoteAuthor")
 
   @@map("users")
 }
@@ -120,12 +128,30 @@ model Job {
   applications JobApplication[]
   saved_by     SavedJob[]
   video_interviews VideoInterview[]
+  invitations  JobInvitation[]
 
   years_experience String?
   mandatory_skills String[]         @default([])
   tech_stack       String[]         @default([])
 
   @@map("jobs")
+}
+
+/// An employer inviting a talent-pool candidate to apply to one of their live jobs
+model JobInvitation {
+  id           Int      @id @default(autoincrement())
+  job_id       Int
+  candidate_id Int
+  employer_id  Int
+  created_at   DateTime @default(now())
+
+  job       Job  @relation(fields: [job_id], references: [id], onDelete: Cascade)
+  candidate User @relation("InvitationCandidate", fields: [candidate_id], references: [id], onDelete: Cascade)
+  employer  User @relation("InvitationEmployer", fields: [employer_id], references: [id], onDelete: Cascade)
+
+  @@unique([job_id, candidate_id])
+  @@index([employer_id])
+  @@map("job_invitations")
 }
 
 model JobApplication {
@@ -138,9 +164,49 @@ model JobApplication {
   candidate  User        @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
   job        Job         @relation(fields: [job_id], references: [id], onDelete: Cascade)
   interviews Interview[]
+  activities ApplicationActivity[]
+  notes      ApplicationNote[]
 
   @@unique([candidate_id, job_id])
   @@map("job_applications")
+}
+
+/// PRIVATE recruiter evaluation of an application. Employer-side only: never include this relation
+/// in any candidate-facing query or response. Ratings are 1-5 and optional (a note can be text only).
+model ApplicationNote {
+  id                   Int      @id @default(autoincrement())
+  application_id       Int
+  author_id            Int?     // nulled (not deleted) if the author's account is removed, so team history survives
+  content              String
+  rating_technical     Int?
+  rating_communication Int?
+  rating_culture       Int?
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+
+  application JobApplication @relation(fields: [application_id], references: [id], onDelete: Cascade)
+  author      User?          @relation("NoteAuthor", fields: [author_id], references: [id], onDelete: SetNull)
+
+  @@index([application_id, created_at])
+  @@map("application_notes")
+}
+
+/// Timeline of recruiter actions on an application (outreach, status changes, notes)
+model ApplicationActivity {
+  id             Int      @id @default(autoincrement())
+  application_id Int
+  actor_id       Int?
+  type           String   // WHATSAPP_SENT | WHATSAPP_DIRECT | WHATSAPP_FAILED | ...
+  channel        String?  // whatsapp | email | sms
+  summary        String
+  metadata       String?  // JSON: template id, message id, error code
+  created_at     DateTime @default(now())
+
+  application JobApplication @relation(fields: [application_id], references: [id], onDelete: Cascade)
+  actor       User?          @relation("ActivityActor", fields: [actor_id], references: [id], onDelete: SetNull)
+
+  @@index([application_id, created_at])
+  @@map("application_activities")
 }
 
 model SavedJob {

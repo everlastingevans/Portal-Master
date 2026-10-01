@@ -1,8 +1,20 @@
 'use client';
 
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, X } from 'lucide-react';
 import { Button, cx } from './ui';
+
+/**
+ * Renders overlays straight into <body>. Without this, any ancestor with a transform, filter,
+ * backdrop-filter or overflow:hidden (page transitions, cards, scroll areas) traps `position: fixed`
+ * and the modal gets clipped inside it instead of covering the viewport.
+ */
+export function OverlayPortal({ children }: { children: ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted ? createPortal(children, document.body) : null;
+}
 
 function useOverlayBehaviour(open: boolean, onClose: () => void) {
   useEffect(() => {
@@ -55,25 +67,32 @@ export function Modal({
   const width = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }[size];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-brand-navy/40 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
-      <div
-        className={cx(
-          'relative flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-[0_24px_64px_-16px_rgba(10,27,61,0.35)] ring-1 ring-slate-200 animate-scale-in sm:rounded-2xl',
-          width,
-        )}
-      >
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
-          <div className="min-w-0">
-            <h2 className="text-base font-semibold text-brand-navy">{title}</h2>
-            {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
+    <OverlayPortal>
+      <div className="fixed inset-0 z-[70] flex items-end justify-center pt-3 sm:items-center sm:p-6" role="dialog" aria-modal="true">
+        <div className="absolute inset-0 bg-brand-navy/40 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
+        <div
+          className={cx(
+            'relative flex max-h-modal w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-[0_24px_64px_-16px_rgba(10,27,61,0.35)] ring-1 ring-slate-200 animate-scale-in sm:rounded-2xl',
+            width,
+          )}
+        >
+          <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6 sm:py-5">
+            <div className="min-w-0">
+              <h2 className="text-base font-semibold text-brand-navy">{title}</h2>
+              {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
+            </div>
+            <CloseButton onClose={onClose} />
           </div>
-          <CloseButton onClose={onClose} />
+          {/* min-h-0 lets this flex child shrink and scroll instead of overflowing the panel */}
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">{children}</div>
+          {footer && (
+            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
+              {footer}
+            </div>
+          )}
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
-        {footer && <div className="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-6 py-4">{footer}</div>}
       </div>
-    </div>
+    </OverlayPortal>
   );
 }
 
@@ -100,19 +119,26 @@ export function Drawer({
   useOverlayBehaviour(open, onClose);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-brand-navy/40 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
-      <div className={cx('absolute inset-y-0 right-0 flex w-full flex-col bg-white shadow-2xl ring-1 ring-slate-200 animate-fade-in', width)}>
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
-          <div className="min-w-0 flex-1">{typeof title === 'string' ? <h2 className="text-base font-semibold text-brand-navy">{title}</h2> : title}
-            {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
+    <OverlayPortal>
+      <div className="fixed inset-0 z-[70]" role="dialog" aria-modal="true">
+        <div className="absolute inset-0 bg-brand-navy/40 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
+        <div className={cx('h-app absolute right-0 top-0 flex w-full flex-col bg-white shadow-2xl ring-1 ring-slate-200 animate-fade-in', width)}>
+          <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6 sm:py-5">
+            <div className="min-w-0 flex-1">
+              {typeof title === 'string' ? <h2 className="text-base font-semibold text-brand-navy">{title}</h2> : title}
+              {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
+            </div>
+            <CloseButton onClose={onClose} />
           </div>
-          <CloseButton onClose={onClose} />
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-6 sm:px-6">{children}</div>
+          {footer && (
+            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-slate-100 bg-white px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
+              {footer}
+            </div>
+          )}
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-6">{children}</div>
-        {footer && <div className="flex items-center justify-end gap-2 border-t border-slate-100 bg-white px-6 py-4">{footer}</div>}
       </div>
-    </div>
+    </OverlayPortal>
   );
 }
 

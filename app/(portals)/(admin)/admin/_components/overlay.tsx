@@ -2,7 +2,10 @@
 
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
+import { OverlayPortal } from '@/components/portal/overlay';
 import { Button, cx } from './ui';
+
+export { OverlayPortal };
 
 /* --------------------------------- Modal --------------------------------- */
 
@@ -40,15 +43,16 @@ export function Modal({
   const width = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }[size];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-6" role="dialog" aria-modal="true">
+    <OverlayPortal>
+    <div className="fixed inset-0 z-[70] flex items-end justify-center pt-3 sm:items-center sm:p-6" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-ink-950/80 backdrop-blur-sm animate-fade-in" onClick={onClose} />
       <div
         className={cx(
-          'relative flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl border border-white/[0.08] bg-ink-900 shadow-2xl shadow-black/50 animate-scale-in sm:rounded-2xl',
+          'relative flex max-h-modal w-full flex-col overflow-hidden rounded-t-2xl border border-white/[0.08] bg-ink-900 shadow-2xl shadow-black/50 animate-scale-in sm:rounded-2xl',
           width,
         )}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] px-6 py-5">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-white/[0.06] px-5 py-4 sm:px-6 sm:py-5">
           <div className="min-w-0">
             <h2 className="text-base font-semibold text-white">{title}</h2>
             {description && <p className="mt-1 text-xs text-slate-400">{description}</p>}
@@ -62,10 +66,16 @@ export function Modal({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
-        {footer && <div className="flex items-center justify-end gap-2 border-t border-white/[0.06] bg-ink-950/30 px-6 py-4">{footer}</div>}
+        {/* min-h-0 lets this flex child shrink and scroll instead of overflowing the panel */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">{children}</div>
+        {footer && (
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-white/[0.06] bg-ink-950/30 px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
+    </OverlayPortal>
   );
 }
 

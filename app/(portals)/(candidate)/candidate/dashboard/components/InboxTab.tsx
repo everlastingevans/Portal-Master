@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Bell, Briefcase, CalendarClock, CheckCheck, Inbox, LucideIcon } from 'lucide-react';
+import { Bell, Briefcase, CalendarClock, CheckCheck, Inbox, LucideIcon, Sparkles } from 'lucide-react';
 import { Button, Card, EmptyState, PageHeader, Segmented, cx } from '@/components/portal/ui';
 
 export interface InboxTabProps {
@@ -15,6 +15,7 @@ type Filter = 'all' | 'unread';
 const TYPE_META: Record<string, { icon: LucideIcon; label: string; tile: string }> = {
   APPLICATION: { icon: Briefcase, label: 'Application update', tile: 'bg-sky-50 text-sky-700 ring-sky-600/15' },
   INTERVIEW: { icon: CalendarClock, label: 'Interview', tile: 'bg-emerald-50 text-emerald-700 ring-emerald-600/15' },
+  INVITE: { icon: Sparkles, label: 'Invitation to apply', tile: 'bg-brand-lime/25 text-brand-navy ring-brand-lime/60' },
   INFO: { icon: Bell, label: 'Notice', tile: 'bg-slate-50 text-slate-600 ring-slate-200' },
 };
 

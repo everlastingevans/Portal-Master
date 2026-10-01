@@ -30,6 +30,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Viewport-height helpers. 100vh on mobile includes the browser's address bar, which pushes
+   content off-screen; dvh tracks the visible area. vh first as a fallback for older browsers. */
+.h-app { height: 100vh; height: 100dvh; }
+.max-h-modal { max-height: calc(100vh - 1.5rem); max-height: calc(100dvh - 1.5rem); }
+@media (min-width: 640px) {
+  .max-h-modal { max-height: calc(100vh - 3rem); max-height: calc(100dvh - 3rem); }
+}
+
 /* Form controls and buttons don't inherit font by default */
 button, input, select, textarea {
   font-family: inherit;

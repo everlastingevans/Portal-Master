@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   Lightbulb,
   ArrowRight,
+  MapPin,
   LucideIcon,
 } from 'lucide-react';
 import { useToast } from '@/components/ToastNotification';
@@ -43,6 +44,7 @@ import {
   cx,
 } from '@/components/portal/ui';
 import { getResumeStrength } from './DashboardHelpers';
+import { AVAILABILITY_OPTIONS, CANDIDATE_LOCATIONS, availabilityLabel } from '@/lib/talent';
 
 export interface ProfileTabProps {
   user: any;
@@ -77,6 +79,12 @@ export interface ProfileTabProps {
   setProfileCertificatesUrl: (val: string) => void;
   profilePoliceClearanceUrl: string;
   setProfilePoliceClearanceUrl: (val: string) => void;
+  profileLocation: string;
+  setProfileLocation: (val: string) => void;
+  profileAvailability: string;
+  setProfileAvailability: (val: string) => void;
+  profileBio: string;
+  setProfileBio: (val: string) => void;
   profileQualifications: string;
   setProfileQualifications: (val: string) => void;
   profileSkills: string;
@@ -252,6 +260,12 @@ export default function ProfileTab({
   setProfileCertificatesUrl,
   profilePoliceClearanceUrl,
   setProfilePoliceClearanceUrl,
+  profileLocation,
+  setProfileLocation,
+  profileAvailability,
+  setProfileAvailability,
+  profileBio,
+  setProfileBio,
   profileQualifications,
   setProfileQualifications,
   profileSkills,
@@ -356,6 +370,9 @@ export default function ProfileTab({
     setProfileSeekingRoles(user?.seeking_roles || '');
     setProfileCertificatesUrl(user?.certificates_url || '');
     setProfilePoliceClearanceUrl(user?.police_clearance_url || '');
+    setProfileLocation(user?.location || '');
+    setProfileAvailability(user?.availability || '');
+    setProfileBio(user?.bio || '');
     setIsEditingProfile(true);
   };
 
@@ -426,6 +443,12 @@ export default function ProfileTab({
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <Badge tone="brand">{user?.experience_level || 'Entry level'}</Badge>
+                    {user?.location && (
+                      <Badge>
+                        <MapPin className="h-3 w-3" /> {user.location}
+                      </Badge>
+                    )}
+                    {availabilityLabel(user?.availability) && <Badge tone="success">{availabilityLabel(user?.availability)}</Badge>}
                     {user?.study_institution && <Badge>{user.study_institution}</Badge>}
                   </div>
                 </div>
@@ -522,10 +545,40 @@ export default function ProfileTab({
                     autoComplete="tel"
                   />
                 </Field>
+                <Field label="Location" htmlFor="pf-location" hint="Employers filter the talent pool by location.">
+                  <Select id="pf-location" value={profileLocation} onChange={(e) => setProfileLocation(e.target.value)}>
+                    <option value="">Not specified</option>
+                    {CANDIDATE_LOCATIONS.map((l) => (
+                      <option key={l} value={l}>
+                        {l === 'Remote' ? 'Remote (anywhere in SA)' : l}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                <Field label="When can you start?" htmlFor="pf-availability">
+                  <Select id="pf-availability" value={profileAvailability} onChange={(e) => setProfileAvailability(e.target.value)}>
+                    <option value="">Not specified</option>
+                    {AVAILABILITY_OPTIONS.map((a) => (
+                      <option key={a.value} value={a.value}>
+                        {a.label}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
               </div>
             </Section>
 
             <Section title="About & career direction" description="Tell us what you're looking for so we can find the right matches.">
+              <Field label="Short bio" htmlFor="pf-bio" hint={`${profileBio.length}/600 · Shown to employers browsing the talent pool.`} optional>
+                <Textarea
+                  id="pf-bio"
+                  rows={3}
+                  maxLength={600}
+                  value={profileBio}
+                  onChange={(e) => setProfileBio(e.target.value)}
+                  placeholder="Two or three sentences about you, what you’re good at and what you want to do next."
+                />
+              </Field>
               <Field label="Roles you're looking for" htmlFor="pf-roles" hint="Separate roles with commas." optional>
                 <Input
                   id="pf-roles"
@@ -826,6 +879,9 @@ export default function ProfileTab({
             <div className="space-y-6 lg:col-span-2">
               <InfoCard icon={Compass} title="About & career direction">
                 <dl className="space-y-4">
+                  <DetailRow label="Bio">
+                    {user?.bio ? <span className="whitespace-pre-line">{user.bio}</span> : <Missing onAdd={startEditing}>Add a short bio employers will see.</Missing>}
+                  </DetailRow>
                   <DetailRow label="Roles you're looking for">
                     {splitList(user?.seeking_roles).length > 0 ? (
                       <Chips items={splitList(user?.seeking_roles)} variant="outline" />

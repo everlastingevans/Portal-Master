@@ -34,13 +34,15 @@ const config: Config = {
         },
       },
       keyframes: {
+        // End on `transform: none`: with fill-mode "both" a lingering translateY(0)/scale(1)
+        // would keep a containing block and trap position:fixed descendants (modals, drawers).
         "fade-in": {
           from: { opacity: "0", transform: "translateY(4px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
+          to: { opacity: "1", transform: "none" },
         },
         "scale-in": {
           from: { opacity: "0", transform: "scale(0.97)" },
-          to: { opacity: "1", transform: "scale(1)" },
+          to: { opacity: "1", transform: "none" },
         },
         shimmer: {
           "100%": { transform: "translateX(100%)" },

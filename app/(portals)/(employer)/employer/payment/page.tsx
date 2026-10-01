@@ -197,7 +197,7 @@ function EmployerPaymentInner() {
             </div>
 
             {/* Order summary and payment */}
-            <div className="lg:sticky lg:top-8 lg:col-span-2">
+            <div className="lg:sticky lg:top-8 lg:col-span-2 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto lg:overscroll-contain">
               <Card padded={false} className="overflow-hidden">
                 <div className="p-6">
                   <h2 className="text-[15px] font-semibold text-brand-navy">Order summary</h2>

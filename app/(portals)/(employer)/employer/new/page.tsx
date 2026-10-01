@@ -427,7 +427,8 @@ ${description}
 
           {/* Summary */}
           <aside className="min-w-0 lg:col-span-1">
-            <div className="space-y-4 lg:sticky lg:top-8">
+            <div className="space-y-4 lg:sticky lg:top-8 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto lg:overscroll-contain">
+
               <Card>
                 <p className="text-xs font-medium text-slate-500">Preview</p>
                 <h3 className={cx('mt-2 break-words text-lg font-semibold tracking-tight', title ? 'text-brand-navy' : 'text-slate-400')}>
