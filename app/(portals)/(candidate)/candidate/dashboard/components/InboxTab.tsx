@@ -1,6 +1,8 @@
 'use client';
 
-import { Mail } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Bell, Briefcase, CalendarClock, CheckCheck, Inbox, LucideIcon } from 'lucide-react';
+import { Button, Card, EmptyState, PageHeader, Segmented, cx } from '@/components/portal/ui';
 
 export interface InboxTabProps {
   notifications: any[];
@@ -8,93 +10,137 @@ export interface InboxTabProps {
   markAsRead: (id: number) => Promise<void>;
 }
 
-export default function InboxTab({
-  notifications = [],
-  markAllAsRead,
-  markAsRead,
-}: InboxTabProps) {
+type Filter = 'all' | 'unread';
+
+const TYPE_META: Record<string, { icon: LucideIcon; label: string; tile: string }> = {
+  APPLICATION: { icon: Briefcase, label: 'Application update', tile: 'bg-sky-50 text-sky-700 ring-sky-600/15' },
+  INTERVIEW: { icon: CalendarClock, label: 'Interview', tile: 'bg-emerald-50 text-emerald-700 ring-emerald-600/15' },
+  INFO: { icon: Bell, label: 'Notice', tile: 'bg-slate-50 text-slate-600 ring-slate-200' },
+};
+
+const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+
+function relativeTime(iso?: string) {
+  if (!iso) return '';
+  const date = new Date(iso);
+  const ms = date.getTime();
+  if (Number.isNaN(ms)) return '';
+  const diff = Date.now() - ms;
+  if (diff < MINUTE) return 'Just now';
+  if (diff < HOUR) return `${Math.floor(diff / MINUTE)} min ago`;
+  if (diff < DAY) return `${Math.floor(diff / HOUR)} h ago`;
+  if (diff < 2 * DAY) return 'Yesterday';
+  if (diff < 7 * DAY) return `${Math.floor(diff / DAY)} days ago`;
+  return date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: date.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
+}
+
+export default function InboxTab({ notifications = [], markAllAsRead, markAsRead }: InboxTabProps) {
+  const [filter, setFilter] = useState<Filter>('all');
+  const [markingAll, setMarkingAll] = useState(false);
+
+  const unread = useMemo(() => notifications.filter((n) => !n.is_read).length, [notifications]);
+  const visible = filter === 'unread' ? notifications.filter((n) => !n.is_read) : notifications;
+
+  const onMarkAll = async () => {
+    setMarkingAll(true);
+    try {
+      await markAllAsRead();
+    } finally {
+      setMarkingAll(false);
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 dark:border-slate-800 pb-4 mb-6">
-          <div>
-            <h2 className="text-xl font-extrabold tracking-tight dark:text-white flex items-center gap-2">
-              <Mail className="w-5 h-5 text-indigo-500" />
-              <span>In-App Mailbox</span>
-            </h2>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">
-              Your direct notifications, acknowledgments, and messages from LaunchPath.
-            </p>
-          </div>
-          {notifications.some(n => !n.is_read) && (
-            <button
-              onClick={markAllAsRead}
-              className="text-xs font-bold text-[#5D3FD3] dark:text-violet-400 hover:underline bg-[#5D3FD3]/5 hover:bg-[#5D3FD3]/10 dark:bg-violet-955/20 dark:hover:bg-violet-955/40 px-3.5 py-2 rounded-lg border border-[#5D3FD3]/10 cursor-pointer self-start sm:self-center transition-all"
-            >
-              Mark All as Read
-            </button>
-          )}
-        </div>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHeader
+        title="Messages"
+        description="Updates on your applications, interview invites and news from the LaunchPath team."
+        actions={
+          unread > 0 ? (
+            <Button variant="secondary" size="sm" icon={CheckCheck} loading={markingAll} onClick={onMarkAll}>
+              Mark all as read
+            </Button>
+          ) : undefined
+        }
+      />
 
-        {notifications.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-slate-50 dark:bg-slate-950 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100 dark:border-slate-850">
-              <Mail className="w-6 h-6 text-slate-400" />
-            </div>
-            <h3 className="font-bold text-slate-805 dark:text-slate-200">Your inbox is clear</h3>
-            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-              When you apply for a job or get invited to interview, your platform notifications will show up here.
-            </p>
-          </div>
+      {notifications.length > 0 && (
+        <Segmented<Filter>
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { value: 'all', label: 'All', count: notifications.length },
+            { value: 'unread', label: 'Unread', count: unread },
+          ]}
+        />
+      )}
+
+      <Card padded={false} className="overflow-hidden">
+        {visible.length === 0 ? (
+          <EmptyState
+            icon={Inbox}
+            title={notifications.length === 0 ? 'No messages yet' : 'You are all caught up'}
+            description={
+              notifications.length === 0
+                ? 'When you apply for a role or an employer invites you to an interview, you will hear about it here.'
+                : 'You have read every message. Nice one.'
+            }
+            action={
+              notifications.length > 0 ? (
+                <Button variant="secondary" onClick={() => setFilter('all')}>
+                  Show all messages
+                </Button>
+              ) : undefined
+            }
+          />
         ) : (
-          <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
-            {notifications.map((n: any) => (
-              <div
-                key={n.id}
-                onClick={() => !n.is_read && markAsRead(n.id)}
-                className={`py-4 first:pt-0 last:pb-0 flex gap-4 transition-all duration-200 cursor-pointer ${
-                  !n.is_read 
-                    ? 'bg-[#5D3FD3]/5 dark:bg-[#5D3FD3]/10 px-3 rounded-lg border-l-4 border-[#5D3FD3] ml-[-4px]' 
-                    : 'opacity-85 hover:opacity-100'
-                }`}
-              >
-                <div className="mt-1 flex-shrink-0">
-                  {n.type === 'APPLICATION' ? (
-                    <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center text-sm font-bold">
-                      📝
-                    </div>
-                  ) : n.type === 'INTERVIEW' ? (
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-sm font-bold">
-                      📅
-                    </div>
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-[#5D3FD3]/10 text-[#5D3FD3] flex items-center justify-center text-sm font-bold">
-                      🔔
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center justify-between gap-4">
-                    <h4 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                      {n.title}
-                      {!n.is_read && (
-                        <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0 inline-block" />
-                      )}
-                    </h4>
-                    <span className="text-[10.5px] text-slate-450 dark:text-slate-500 whitespace-nowrap font-mono">
-                      {new Date(n.created_at).toLocaleString()}
+          <ul className="divide-y divide-slate-100">
+            {visible.map((n: any) => {
+              const meta = TYPE_META[String(n.type || 'INFO').toUpperCase()] || TYPE_META.INFO;
+              const Icon = meta.icon;
+              const isUnread = !n.is_read;
+              return (
+                <li key={n.id}>
+                  <button
+                    type="button"
+                    onClick={() => isUnread && markAsRead(n.id)}
+                    className={cx(
+                      'flex w-full cursor-pointer gap-4 px-5 py-4 text-left transition-colors focus-visible:bg-slate-50 focus-visible:outline-none sm:px-6',
+                      isUnread ? 'bg-slate-50/70 hover:bg-slate-100/70' : 'hover:bg-slate-50/70',
+                    )}
+                  >
+                    <span className={cx('mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset', meta.tile)} title={meta.label}>
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                      <span className="sr-only">{meta.label}</span>
                     </span>
-                  </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed font-medium">
-                    {n.content}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-start justify-between gap-3">
+                        <span className={cx('text-sm text-brand-navy', isUnread ? 'font-semibold' : 'font-medium')}>{n.title}</span>
+                        <span className="flex shrink-0 items-center gap-2 pt-0.5">
+                          <time
+                            dateTime={n.created_at}
+                            title={n.created_at ? new Date(n.created_at).toLocaleString('en-ZA') : undefined}
+                            className="whitespace-nowrap text-xs text-slate-500"
+                          >
+                            {relativeTime(n.created_at)}
+                          </time>
+                          {isUnread && (
+                            <span className="h-2 w-2 rounded-full bg-brand-navy" aria-hidden="true" />
+                          )}
+                          {isUnread && <span className="sr-only">Unread</span>}
+                        </span>
+                      </span>
+                      {n.content && <span className="mt-1 block text-sm leading-relaxed text-slate-600">{n.content}</span>}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

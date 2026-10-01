@@ -1,29 +1,13 @@
 'use client';
 
-import { useAdmin } from '../AdminContext';
-import SuperadminDashboard from '../dashboard/SuperadminDashboard';
+import { PageHeader } from '../_components/ui';
+import SuperadminReportsView from '../dashboard/SuperadminReportsView';
 
-export default function SuperadminReportsPage() {
-  const { data, loading, fetchDashboardData, handleLogout } = useAdmin();
-
-  if (loading || !data) {
-    return (
-      <div className="h-screen bg-slate-900 flex items-center justify-center text-slate-300 font-mono text-sm">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-6 h-6 border-2 border-[#7145FF] border-t-transparent rounded-full animate-spin" />
-          <span>Synchronizing Operations...</span>
-        </div>
-      </div>
-    );
-  }
-
+export default function AdminReportsPage() {
   return (
-    <SuperadminDashboard 
-      data={data} 
-      user={data.user} 
-      onRefresh={fetchDashboardData} 
-      onLogout={handleLogout} 
-      initialTab="Reports" 
-    />
+    <div className="space-y-6">
+      <PageHeader title="Reports" description="Exportable reports on candidates, employers and AI-generated market insights." />
+      <SuperadminReportsView />
+    </div>
   );
 }

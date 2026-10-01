@@ -1,43 +1,45 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/landing-page/Header";
 import { HeroSection } from "@/components/landing-page/HeroSection";
-import { OfferSection } from "@/components/landing-page/OfferSection";
-import { TeamSection } from "@/components/landing-page/TeamSection";
+import { PartnersSection } from "@/components/landing-page/PartnersSection";
+import { ProblemSection } from "@/components/landing-page/ProblemSection";
+import { HowItWorksSection } from "@/components/landing-page/HowItWorksSection";
+import { EmployersSection } from "@/components/landing-page/EmployersSection";
+import { TalentSection } from "@/components/landing-page/TalentSection";
 import { StrategySection } from "@/components/landing-page/StrategySection";
-import { PeopleSection } from "@/components/landing-page/PeopleSection";
-import { TestimonialSection } from "@/components/landing-page/TestimonialSection";
-import { ContactFooter } from "@/components/landing-page/ContactFooter";
-import { PlatformVision } from "@/components/landing-page/PlatformVision";
 import { EmployerPricingSection } from "@/components/landing-page/EmployerPricingSection";
+import { TestimonialSection } from "@/components/landing-page/TestimonialSection";
+import { FaqSection } from "@/components/landing-page/FaqSection";
+import { ContactFooter } from "@/components/landing-page/ContactFooter";
+
+export const metadata: Metadata = {
+  title: "LaunchPath | Hire vetted graduate talent in South Africa",
+  description:
+    "LaunchPath connects South African graduates with growing businesses. Employers get vetted, matched shortlists for R1,999 per role. Free for job seekers.",
+  openGraph: {
+    title: "LaunchPath | The bridge between overlooked talent and growing businesses",
+    description: "Vetted, matched shortlists of early-career talent for SMEs and recruiters. Free for job seekers.",
+    type: "website",
+    locale: "en_ZA",
+  },
+};
 
 export default function Home() {
   return (
-    <div id="top">
-      {/* Top Navigation */}
+    <div className="bg-white font-sans text-slate-600 antialiased">
       <Header />
-
-      {/* Hero Header Section */}
-      <HeroSection />
-
-      {/* Detailed Brand Mission & Explainer Section (About us anchor) */}
-      <TeamSection />
-
-      {/* Dynamic Platform Vision & Features Section (What We Do anchor) */}
-      <PlatformVision />
-
-      {/* Vetting, Matching, and Affordable Solutions Section (Offer Section using local offer images) */}
-      <OfferSection />
-
-      {/* Detailed SME Strategy & Growth Support */}
-      <StrategySection />
-
-      {/* Interactive Comparison Section */}
-      {/* <PeopleSection /> */}
-      <EmployerPricingSection/>
-
-      {/* Elegant Testimonial Showcase */}
-      <TestimonialSection />
-
-      {/* Contact Form & Footer links (Contact anchor) */}
+      <main>
+        <HeroSection />
+        <PartnersSection />
+        <ProblemSection />
+        <HowItWorksSection />
+        <EmployersSection />
+        <TalentSection />
+        <StrategySection />
+        <EmployerPricingSection />
+        <TestimonialSection />
+        <FaqSection />
+      </main>
       <ContactFooter />
     </div>
   );

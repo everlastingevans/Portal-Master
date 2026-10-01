@@ -119,6 +119,12 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: 'Forbidden. You do not own this job post.' }, { status: 403 });
     }
 
+    // Employers may close a listing, but only a confirmed payment (PayFast webhook) can make it live
+    const requestedStatus = status ? String(status).toUpperCase() : undefined;
+    if (requestedStatus && requestedStatus !== job.status && requestedStatus !== 'CLOSED') {
+      return NextResponse.json({ error: 'Listings go live once payment is confirmed. You can only close a listing here.' }, { status: 403 });
+    }
+
     // Sanitize description if provided
     let sanitizedDescription = job.description;
     if (description) {
@@ -163,7 +169,7 @@ export async function PUT(req: Request) {
         tech_stack: techStackArr,
         salary_min: salaryMinVal,
         salary_max: salaryMaxVal,
-        status: status || job.status
+        status: requestedStatus || job.status
       }
     });
 

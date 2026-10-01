@@ -1,130 +1,258 @@
 "use client";
+
 import { useState } from "react";
-import Image from "next/image"; // Optimized Image utility
-import Link from "next/link";  // Clean Next Router mapping
-import { Phone, Mail } from "lucide-react";
-import contactImg from "@/assets/contact-aerial.jpg";
+import Link from "next/link";
+import { ArrowRight, CheckCircle2, Mail, MapPin, Phone } from "lucide-react";
+import LaunchPathLogo from "@/components/LaunchPathLogo";
+import { Spinner } from "@/components/PortalLoader";
+import { Container, cx } from "./primitives";
 
-const ContactField = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) => (
-  <div className="flex flex-col gap-2">
-    <label className="text-[13px] font-medium text-white">{label}</label>
-    {children}
-  </div>
-);
+const PHONE_DISPLAY = "+27 83 433 9350";
+const PHONE_TEL = "+27834339350";
+const EMAIL = "hello@launchpath.co.za";
 
-const inputClass =
-  "w-full rounded-2xl bg-white/10 border border-white/20 px-5 py-4 text-[15px] text-white placeholder:text-white/60 outline-none focus:border-white focus:bg-white/15 focus:scale-[1.01] transition-all duration-300";
+const ROLES = ["Employer", "Recruiter or agency", "Job seeker", "Training partner"] as const;
 
-export const ContactFooter = () => {
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    location: "",
-    employees: "",
-    message: "",
-  });
+const fieldClass =
+  "w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 text-[15px] text-white placeholder:text-white/35 outline-none transition-colors focus:border-brand-lime/60 focus:bg-white/[0.06] focus:ring-4 focus:ring-brand-lime/10";
 
-  const handle = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm({ ...form, [k]: e.target.value });
+function Field({ label, htmlFor, optional, children }: { label: string; htmlFor: string; optional?: boolean; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <label htmlFor={htmlFor} className="block text-[13px] font-medium text-white/80">
+        {label}
+        {optional && <span className="ml-1 font-normal text-white/40">(optional)</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function ContactForm() {
+  const [role, setRole] = useState<(typeof ROLES)[number]>("Employer");
+  const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", message: "" });
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [error, setError] = useState("");
+
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm({ ...form, [k]: e.target.value });
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("sending");
+    setError("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, role }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "We couldn’t send your message.");
+      setStatus("sent");
+    } catch (err: any) {
+      setError(err.message || "We couldn’t send your message.");
+      setStatus("error");
+    }
+  };
+
+  if (status === "sent") {
+    return (
+      <div className="flex h-full flex-col items-center justify-center rounded-3xl bg-white/[0.04] p-10 text-center ring-1 ring-inset ring-white/10 animate-scale-in">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-lime text-brand-navy">
+          <CheckCircle2 className="h-7 w-7" />
+        </span>
+        <p className="mt-6 text-2xl font-semibold text-white">Thanks, {form.name.split(" ")[0] || "we got it"}.</p>
+        <p className="mt-2 max-w-sm text-[15px] text-white/60">Our team will be in touch at {form.email} soon.</p>
+      </div>
+    );
+  }
 
   return (
-    <section id="contact" className="bg-page px-4 py-10 md:px-8 md:py-16">
-      <div className="mx-auto max-w-[1400px] overflow-hidden rounded-[28px] bg-[#0A1B3D] text-dark-foreground">
-        <div className="grid gap-10 p-6 md:grid-cols-2 md:gap-12 md:p-10">
-          <div className="relative overflow-hidden rounded-2xl">
-            {/* Optimized Next.js Image Replacement */}
-            <Image
-              src={contactImg}
-              alt="Aerial view of office"
-              fill
-              sizes="(max-w-768px) 100vw, 50vw"
-              referrerPolicy="no-referrer"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black/35" aria-hidden />
-            <div className="relative flex h-full min-h-[520px] flex-col justify-between p-8 md:p-10">
-              <h2 className="max-w-[440px] text-[32px] font-bold leading-[1.15] text-white md:text-[40px]">
-                Tell us about your team and we will line up your next great hire.
-              </h2>
-              <div className="space-y-4">
-                <p className="text-[15px] font-medium text-white">Or reach us directly:</p>
-                <a href="tel:+27115550199" className="flex items-center gap-3 text-[20px] font-medium text-white transition-transform duration-300 hover:translate-x-1 md:text-[22px]">
-                  <Phone className="h-5 w-5" />
-                  +27 83 433 9350
+    <form onSubmit={submit} className="space-y-5 rounded-3xl bg-white/[0.04] p-6 ring-1 ring-inset ring-white/10 sm:p-8">
+      <fieldset>
+        <legend className="mb-3 text-[13px] font-medium text-white/80">I’m a…</legend>
+        <div className="flex flex-wrap gap-2">
+          {ROLES.map((r) => (
+            <button
+              key={r}
+              type="button"
+              aria-pressed={role === r}
+              onClick={() => setRole(r)}
+              className={cx(
+                "h-9 cursor-pointer rounded-full px-4 text-[13px] font-medium transition-colors",
+                role === r ? "bg-brand-lime text-brand-navy" : "text-white/70 ring-1 ring-inset ring-white/15 hover:bg-white/[0.06] hover:text-white",
+              )}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Field label="Name" htmlFor="c-name">
+          <input id="c-name" required autoComplete="name" className={cx(fieldClass, "h-12")} value={form.name} onChange={set("name")} placeholder="Your name" />
+        </Field>
+        <Field label="Email" htmlFor="c-email">
+          <input id="c-email" type="email" required autoComplete="email" className={cx(fieldClass, "h-12")} value={form.email} onChange={set("email")} placeholder="you@company.co.za" />
+        </Field>
+        <Field label="Phone" htmlFor="c-phone" optional>
+          <input id="c-phone" type="tel" autoComplete="tel" className={cx(fieldClass, "h-12")} value={form.phone} onChange={set("phone")} placeholder="+27 82 123 4567" />
+        </Field>
+        <Field label={role === "Job seeker" ? "Where you studied" : "Company"} htmlFor="c-company" optional>
+          <input id="c-company" className={cx(fieldClass, "h-12")} value={form.company} onChange={set("company")} placeholder={role === "Job seeker" ? "e.g. University of Johannesburg" : "Company name"} />
+        </Field>
+      </div>
+
+      <Field label="How can we help?" htmlFor="c-message">
+        <textarea
+          id="c-message"
+          required
+          rows={4}
+          className={cx(fieldClass, "resize-none py-3 leading-relaxed")}
+          value={form.message}
+          onChange={set("message")}
+          placeholder={role === "Job seeker" ? "Tell us what kind of role you’re looking for" : "Tell us about the roles you’re hiring for"}
+        />
+      </Field>
+
+      {status === "error" && (
+        <p role="alert" className="rounded-xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200 ring-1 ring-inset ring-rose-400/20">
+          {error} You can also email us at{" "}
+          <a href={`mailto:${EMAIL}`} className="font-medium underline underline-offset-2">
+            {EMAIL}
+          </a>
+          .
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={status === "sending"}
+        className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-brand-lime text-[15px] font-semibold text-brand-navy transition-colors hover:bg-brand-lime-soft disabled:cursor-wait disabled:opacity-70"
+      >
+        {status === "sending" ? (
+          <>
+            <Spinner /> Sending…
+          </>
+        ) : (
+          <>
+            Send message <ArrowRight className="h-4 w-4" />
+          </>
+        )}
+      </button>
+      <p className="text-center text-xs text-white/40">We only use your details to reply to you, in line with POPIA.</p>
+    </form>
+  );
+}
+
+const FOOTER_LINKS = [
+  {
+    title: "Platform",
+    links: [
+      { label: "For employers", href: "/#employers" },
+      { label: "For talent", href: "/#talent" },
+      { label: "How it works", href: "/#how-it-works" },
+      { label: "Pricing", href: "/#pricing" },
+    ],
+  },
+  {
+    title: "Get started",
+    links: [
+      { label: "Create an account", href: "/portal" },
+      { label: "Post a role", href: "/register?type=client" },
+      { label: "Find a job", href: "/register?type=talent" },
+      { label: "Log in", href: "/login" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About us", href: "/#about-us" },
+      { label: "FAQ", href: "/#faq" },
+      { label: "Contact", href: "/#contact" },
+    ],
+  },
+];
+
+export const ContactFooter = () => (
+  <footer className="bg-brand-navy">
+    <section id="contact" className="scroll-mt-20 py-24 md:py-32">
+      <Container>
+        <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="lg:col-span-5">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-3 py-1 text-[13px] font-medium text-brand-lime ring-1 ring-inset ring-white/10">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-lime" /> Contact
+            </span>
+            <h2 className="mt-5 text-[34px] font-semibold leading-[1.1] tracking-tight text-white sm:text-[44px]">Let’s line up your next great hire.</h2>
+            <p className="mt-5 max-w-md text-[17px] leading-relaxed text-white/65">
+              Tell us about your team and the roles you need to fill. Recruiters, partners and job seekers are welcome too.
+            </p>
+
+            <ul className="mt-10 space-y-4">
+              <li>
+                <a href={`tel:${PHONE_TEL}`} className="group flex items-center gap-4 text-white">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/[0.06] text-brand-lime ring-1 ring-inset ring-white/10">
+                    <Phone className="h-[18px] w-[18px]" />
+                  </span>
+                  <span className="text-lg font-medium transition-colors group-hover:text-brand-lime">{PHONE_DISPLAY}</span>
                 </a>
-                <a href="mailto:hello@launchpath.co.za" className="flex items-center gap-3 text-[20px] font-medium text-white transition-transform duration-300 hover:translate-x-1 md:text-[22px]">
-                  <Mail className="h-5 w-5" />
-                  hello@launchpath.co.za
+              </li>
+              <li>
+                <a href={`mailto:${EMAIL}`} className="group flex items-center gap-4 text-white">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/[0.06] text-brand-lime ring-1 ring-inset ring-white/10">
+                    <Mail className="h-[18px] w-[18px]" />
+                  </span>
+                  <span className="text-lg font-medium transition-colors group-hover:text-brand-lime">{EMAIL}</span>
                 </a>
-              </div>
-              
-            </div>
+              </li>
+              <li className="flex items-center gap-4 text-white/70">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/[0.06] text-brand-lime ring-1 ring-inset ring-white/10">
+                  <MapPin className="h-[18px] w-[18px]" />
+                </span>
+                <span className="text-lg">South Africa</span>
+              </li>
+            </ul>
           </div>
 
-          <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-5 p-2 md:p-6">
-            <div className="grid grid-cols-2 gap-5">
-              <ContactField label="Name">
-                <input className={inputClass} placeholder="Jane Smith" value={form.name} onChange={handle("name")} />
-              </ContactField>
-              <ContactField label="Phone">
-                <input className={inputClass} placeholder="Phone" value={form.phone} onChange={handle("phone")} />
-              </ContactField>
-            </div>
-
-            <ContactField label="Email">
-              <input type="email" className={inputClass} placeholder="Email" value={form.email} onChange={handle("email")} />
-            </ContactField>
-
-            <div className="grid grid-cols-2 gap-5">
-              <ContactField label="Location">
-                <select className={`${inputClass} appearance-none`} value={form.location} onChange={handle("location")}>
-                  <option value="">Select</option>
-                  <option>Johannesburg</option>
-                  <option>Cape Town</option>
-                  <option>Durban</option>
-                  <option>Pretoria</option>
-                  <option>Remote</option>
-                </select>
-              </ContactField>
-              <ContactField label="Number of employees">
-                <input type="number" min={1} className={inputClass} placeholder="1" value={form.employees} onChange={handle("employees")} />
-              </ContactField>
-            </div>
-
-            <ContactField label="Message">
-              <textarea rows={4} className={`${inputClass} rounded-2xl resize-none`} placeholder="Message" value={form.message} onChange={handle("message")} />
-            </ContactField>
-
-            <button type="submit" className="shine group mt-3 w-full rounded-full bg-white py-4 text-[15px] font-semibold text-foreground transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_15px_40px_-10px_rgba(255,255,255,0.4)]">
-              <span className="relative z-10 inline-flex items-center justify-center gap-2">
-                Find my next hire
-                <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
-              </span>
-            </button>
-          </form>
+          <div className="lg:col-span-7">
+            <ContactForm />
+          </div>
         </div>
-
-        {/* Updated all footer redirect arrays to native Next.js Link parameters */}
-        <div className="flex flex-col gap-4 border-t border-white/20 px-6 py-6 md:flex-row md:items-center md:justify-between md:px-10">
-          <ul className="flex flex-wrap gap-x-8 gap-y-2 text-[15px] text-white">
-            <li><Link href="/#top" className="hover:text-white/70">Home</Link></li>
-            <li><Link href="/#about-us" className="hover:text-white/70">About us</Link></li>
-            <li><Link href="/#what-we-do" className="hover:text-white/70">What We Do</Link></li>
-            <li><Link href="/#contact" className="hover:text-white/70">Contact</Link></li>
-          </ul>
-          <ul className="flex gap-8 text-[15px] text-white">
-            <li><Link href="/privacy" className="hover:text-white/70">Privacy Made</Link></li>
-            <li><Link href="/terms" className="hover:text-white/70">Terms</Link></li>
-          </ul>
-        </div>
-      </div>
+      </Container>
     </section>
-  );
-};
+
+    <div className="border-t border-white/[0.08]">
+      <Container className="py-14">
+        <div className="grid gap-12 md:grid-cols-12">
+          <div className="md:col-span-5">
+            <LaunchPathLogo className="h-10" />
+            <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/55">
+              Hiring infrastructure connecting South African graduates with the growing businesses that need them.
+            </p>
+          </div>
+          <nav className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7" aria-label="Footer">
+            {FOOTER_LINKS.map((group) => (
+              <div key={group.title}>
+                <p className="text-sm font-semibold text-white">{group.title}</p>
+                <ul className="mt-4 space-y-3">
+                  {group.links.map((l) => (
+                    <li key={l.label}>
+                      <Link href={l.href} className="text-sm text-white/55 transition-colors hover:text-white">
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        </div>
+        <div className="mt-14 flex flex-col gap-3 border-t border-white/[0.08] pt-8 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} LaunchPath. All rights reserved.</p>
+          <p>We process personal information in line with POPIA.</p>
+        </div>
+      </Container>
+    </div>
+  </footer>
+);

@@ -1,113 +1,164 @@
-"use client";
-
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
-import { Reveal } from "@/components/landing-page/Reveal";
+import Link from "next/link";
+import { ArrowRight, Building2, Check, GraduationCap, Mail, Sparkles, Users } from "lucide-react";
 import HeroImage from "@/assets/models/models1.jpg";
-import { useEffect, useState } from "react";
+import { Container, Cta, Eyebrow, MockAvatar } from "./primitives";
+
+const AUDIENCES = [
+  {
+    icon: Building2,
+    title: "Employers & SMEs",
+    body: "Post a role and get a vetted shortlist instead of four hundred CVs.",
+    href: "/register?type=client",
+    cta: "Start hiring",
+  },
+  {
+    icon: Users,
+    title: "Recruiters & partners",
+    body: "Source pre-screened early-career talent for the roles you’re filling.",
+    href: "/#contact",
+    cta: "Talk to our team",
+  },
+  {
+    icon: GraduationCap,
+    title: "Graduates & job seekers",
+    body: "Build one profile and get matched to roles that fit your skills.",
+    href: "/register?type=talent",
+    cta: "Find a job",
+  },
+];
 
 export const HeroSection = () => {
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // Trigger animations immediately when the components mount on screen
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
-
   return (
-    /* Full width background wrapper layout */
-    <div className="w-full bg-[#0A1B3D]">
-      <div className=" mx-auto px-6 sm:px-8 lg:px-12 pt-24 sm:pt-48 pb-16">
-        <div className="grid lg:grid-cols-12 gap-12 items-center">
-          
-          {/* Left side: Vision, Core Mission, CTA */}
-          <div className="lg:col-span-7 space-y-8 text-left">
-            <Reveal>
-              <div 
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 mb-2 transition-all duration-700 ease-out transform ${
-                  isLoaded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
-                }`}
-              >
-                <span className="text-[15px] font-extrabold text-[#C8FF7A] uppercase tracking-widest font-mono">
-                  LaunchPath Platform Vision
-                </span>
-              </div>
-            </Reveal>
+    <section id="top" className="relative overflow-hidden bg-brand-navy">
+      {/* Atmosphere */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute -right-40 -top-32 h-[640px] w-[640px] rounded-full bg-[radial-gradient(circle,rgba(166,242,60,0.14),transparent_62%)]" />
+        <div className="absolute -left-48 bottom-0 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(57,135,229,0.14),transparent_65%)]" />
+        <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,0.7)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.7)_1px,transparent_1px)] [background-size:64px_64px] [mask-image:radial-gradient(ellipse_at_top,black_15%,transparent_65%)]" />
+      </div>
 
-            <div className="space-y-4">
-              <Reveal delay={80}>
-                <h1 
-                  className={`text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white transition-all duration-1000 delay-100 ease-out transform ${
-                    isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-                  }`}
-                >
-                  The bridge between <span className="text-[#A6F23C]">overlooked talent</span> and growing businesses
-                </h1>
-              </Reveal>
-              
-              <Reveal delay={120}>
-                <p 
-                  className={`text-base sm:text-[15px] text-white leading-relaxed max-w-2xl transition-all duration-1000 delay-300 ease-out transform ${
-                    isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-                  }`}
-                >
-                  LaunchPath is not just a job board. It is a hiring infrastructure platform built to solve two massive market failures: helping South African graduates access meaningful work opportunities, and enabling SMEs to hire quality entry-level talent efficiently and affordably.
-                </p>
-              </Reveal>
+      <Container className="relative pb-20 pt-32 sm:pt-40 lg:pb-28">
+        <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-10">
+          {/* Copy */}
+          <div className="lg:col-span-6 xl:col-span-7">
+            <div className="animate-fade-in">
+              <Eyebrow tone="dark">Hiring infrastructure for South Africa’s early careers</Eyebrow>
             </div>
 
-            {/* CTAs */}
-            <Reveal delay={200}>
-              <div 
-                className={`flex flex-wrap gap-4 transition-all duration-1000 delay-500 ease-out transform ${
-                  isLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
-                }`}
-              >
-                <a
-                  href="#portal-gateways"
-                  className="bg-[#A6F23C] hover:bg-[#C8FF7A] text-[#0A1B3D] py-3.5 px-7 text-[15px] rounded-full font-semibold transition-all hover:scale-[1.02] text-sm shadow-lg shadow-[#A6F23C]/10 flex items-center gap-2 cursor-pointer"
-                >
-                  Access Gateways <ArrowRight className="w-4 h-4 animate-pulse" />
-                </a>
-              </div>
-            </Reveal>
+            <h1 className="mt-6 text-[40px] font-semibold leading-[1.05] tracking-tight text-white animate-fade-in [animation-delay:80ms] sm:text-[56px] xl:text-[68px]">
+              The bridge between <span className="text-brand-lime">overlooked talent</span> and growing businesses.
+            </h1>
+
+            <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-white/70 animate-fade-in [animation-delay:160ms] sm:text-lg">
+              LaunchPath helps South African graduates reach meaningful work, and helps SMEs hire quality entry-level talent quickly and affordably, with vetting and matching done properly.
+            </p>
+
+            <div className="mt-9 flex flex-col gap-3 animate-fade-in [animation-delay:240ms] sm:flex-row">
+              <Cta href="/register?type=client" variant="lime" arrow>
+                Hire talent
+              </Cta>
+              <Cta href="/register?type=talent" variant="outline-light">
+                Find a job
+              </Cta>
+            </div>
+
+            <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/60 animate-fade-in [animation-delay:320ms]">
+              {["Every candidate screened by a person", "Shortlists by email", "No placement fees"].map((t) => (
+                <li key={t} className="flex items-center gap-2">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand-lime/15 text-brand-lime">
+                    <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                  </span>
+                  {t}
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Right side: Styled custom hero image with a clean visual overlay */}
-          <div className="lg:col-span-5 relative">
-            <Reveal delay={250} className="w-full flex justify-center">
-              <div 
-                className={`relative w-full max-w-md aspect-[4/5] sm:aspect-square lg:aspect-[4/5] rounded-[36px] overflow-hidden border-4 border-slate-900 shadow-2xl transition-all duration-1200 delay-200 ease-out transform ${
-                  isLoaded ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-12 scale-95"
-                }`}
-              >
-                <Image
-                  src={HeroImage}
-                  alt="LaunchPath Core Vision"
-                  fill
-                  priority
-                  sizes="(max-w-768px) 100vw, 40vw"
-                  className="object-cover hover:scale-105 transition-transform duration-700"
-                  referrerPolicy="no-referrer"
-                />
-                
-                {/* Glassmorphic overlay displaying the Core Mission */}
-                <div 
-                  className={`absolute bottom-5 left-5 right-5 bg-black/75 backdrop-blur-md rounded-2xl p-4 border border-white/10 space-y-1 transition-all duration-700 delay-700 ease-out transform ${
-                    isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-                  }`}
-                >
-                  <span className="text-[10px] font-extrabold text-[#A6F23C] uppercase tracking-widest font-mono">Core Mission Statement</span>
-                  <p className="text-[15px] text-white leading-relaxed">
-                    &ldquo;To become Africa&apos;s leading early-career hiring platform that uses technology, data, and automation to connect talent to opportunity faster than traditional methods.&rdquo;
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-          </div>
+          {/* Visual */}
+          <div className="relative mx-auto w-full max-w-md lg:col-span-6 lg:max-w-none xl:col-span-5">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[32px] ring-1 ring-white/10 animate-scale-in [animation-delay:120ms]">
+              <Image
+                src={HeroImage}
+                alt="A young graduate at a graduation ceremony"
+                fill
+                priority
+                placeholder="blur"
+                sizes="(max-width: 1024px) 90vw, 40vw"
+                className="object-cover object-[60%_30%]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/70 via-transparent to-transparent" />
+            </div>
 
+            {/* Product preview: shortlist card */}
+            <div className="absolute -left-4 bottom-10 w-[260px] rounded-2xl bg-white p-4 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)] animate-fade-in [animation-delay:420ms] sm:-left-10 sm:w-[290px]">
+              <div className="flex items-center justify-between">
+                <p className="text-[13px] font-semibold text-brand-navy">Shortlist ready</p>
+                <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                  <Mail className="h-3 w-3" /> Sent
+                </span>
+              </div>
+              <p className="mt-0.5 text-[11px] text-slate-500">Junior Data Analyst · Johannesburg</p>
+              <ul className="mt-3 space-y-2">
+                {[
+                  { name: "Lerato M", score: 94 },
+                  { name: "Sipho D", score: 89 },
+                  { name: "Ayanda K", score: 86 },
+                ].map((c, i) => (
+                  <li key={c.name} className="flex items-center gap-2.5">
+                    <MockAvatar name={c.name} tone={i} />
+                    <span className="flex-1 text-[13px] font-medium text-brand-navy">{c.name}.</span>
+                    <span className="rounded-full bg-brand-lime/25 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-brand-navy ring-1 ring-inset ring-brand-lime/60">
+                      {c.score}%
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Product preview: match card */}
+            <div className="absolute -right-3 top-8 w-[210px] rounded-2xl bg-white/95 p-4 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)] backdrop-blur animate-fade-in [animation-delay:560ms] sm:-right-8">
+              <div className="flex items-center gap-2">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-navy text-brand-lime">
+                  <Sparkles className="h-3.5 w-3.5" />
+                </span>
+                <p className="text-[13px] font-semibold text-brand-navy">Why you matched</p>
+              </div>
+              <ul className="mt-3 space-y-1.5 text-[12px] text-slate-600">
+                {["SQL & Excel", "BCom Informatics", "Based in Gauteng"].map((s) => (
+                  <li key={s} className="flex items-center gap-1.5">
+                    <Check className="h-3 w-3 text-emerald-600" strokeWidth={3} />
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <p className="sr-only">Illustrative preview of the LaunchPath product.</p>
+          </div>
         </div>
+      </Container>
+
+      {/* Audience strip */}
+      <div className="relative border-t border-white/[0.08] bg-white/[0.02]">
+        <Container>
+          <ul className="grid divide-y divide-white/[0.08] md:grid-cols-3 md:divide-x md:divide-y-0">
+            {AUDIENCES.map(({ icon: Icon, title, body, href, cta }) => (
+              <li key={title}>
+                <Link href={href} className="group flex h-full flex-col gap-3 py-8 transition-colors md:px-8 md:first:pl-0 md:last:pr-0">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.06] text-brand-lime ring-1 ring-inset ring-white/10 transition-colors group-hover:bg-brand-lime group-hover:text-brand-navy">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <p className="text-[17px] font-semibold text-white">{title}</p>
+                  <p className="text-sm leading-relaxed text-white/60">{body}</p>
+                  <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-sm font-semibold text-brand-lime">
+                    {cta} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Container>
       </div>
-    </div>
+    </section>
   );
 };

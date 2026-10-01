@@ -1,26 +1,24 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Trash2, ShieldX, Sun, Moon, ShieldAlert } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import CandidateNavbar from '@/components/CandidateNavbar';
+import { Briefcase, Building2, CalendarDays, MapPin, ShieldCheck, Trash2, Download } from 'lucide-react';
+import PortalShell from '@/components/portal/PortalShell';
+import PortalLoader from '@/components/PortalLoader';
+import { useToast } from '@/components/ToastNotification';
+import { useConfirm } from '@/components/portal/overlay';
+import { Button, Card, CardHeader, EmptyState, PageHeader, StatusBadge, buttonClasses } from '@/components/portal/ui';
 
 export default function CandidateDeletePage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<any[]>([]);
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const sessionRes = await fetch('/api/auth/me');
       if (sessionRes.ok) {
         const sessionData = await sessionRes.json();
@@ -51,28 +49,6 @@ export default function CandidateDeletePage() {
     loadData();
   }, [loadData]);
 
-  const handleWithdrawApplication = async (jobId: number, title: string) => {
-    if (!confirm(`Are you sure you want to withdraw your application for ${title}?`)) {
-      return;
-    }
-
-    try {
-      const res = await fetch('/api/candidate/apply', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobId })
-      });
-      if (res.ok) {
-        alert('Application withdrawn successfully.');
-        loadData(); // reload
-      } else {
-        alert('Failed to withdraw application.');
-      }
-    } catch (e) {
-      alert('Error withdrawing application.');
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
@@ -81,91 +57,157 @@ export default function CandidateDeletePage() {
   };
 
   if (loading || !user) {
-    return (
-      <div className="h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-800 dark:text-slate-200">
-        Loading delete handler...
-      </div>
-    );
+    return <PortalLoader portal="CANDIDATE" title="Loading your applications" />;
   }
 
   return (
-    <div className="w-full h-screen bg-slate-50 dark:bg-slate-950 flex flex-col overflow-hidden font-sans text-slate-900 dark:text-slate-100 transition-colors">
-      
-      {/* Top Navbar */}
-      <CandidateNavbar
-        user={user}
-        onLogout={handleLogout}
+    <PortalShell portal="candidate" user={user} onLogout={handleLogout} title="Withdraw applications">
+      <WithdrawContent applications={applications} reload={() => loadData(true)} />
+    </PortalShell>
+  );
+}
+
+/** Rendered inside PortalShell so it can use the shell's ConfirmProvider. */
+function WithdrawContent({ applications, reload }: { applications: any[]; reload: () => void }) {
+  const confirm = useConfirm();
+  const { success, error, info } = useToast();
+  const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
+
+  const handleWithdrawApplication = async (jobId: number, title: string) => {
+    const ok = await confirm({
+      title: 'Withdraw this application?',
+      description: `Your application for ${title} will be withdrawn and the employer will no longer consider it.`,
+      confirmLabel: 'Withdraw',
+      tone: 'danger',
+    });
+    if (!ok) return;
+
+    setWithdrawingId(jobId);
+    try {
+      const res = await fetch('/api/candidate/apply', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId }),
+      });
+      if (res.ok) {
+        success('Application withdrawn.');
+        reload(); // reload
+      } else {
+        error('We couldn’t withdraw that application. Please try again.');
+      }
+    } catch (e) {
+      error('Something went wrong while withdrawing your application.');
+    } finally {
+      setWithdrawingId(null);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const ok = await confirm({
+      title: 'Delete your account?',
+      description:
+        'This permanently deletes your LaunchPath account, CV and application history. It can’t be undone. Our support team will confirm by email before anything is erased.',
+      confirmLabel: 'Request deletion',
+      tone: 'danger',
+    });
+    if (ok) info('Deletion request sent. Our support team will confirm by email.');
+  };
+
+  return (
+    <div className="mx-auto max-w-4xl space-y-6">
+      <PageHeader
+        title="Withdraw applications"
+        description="Changed your mind about a role? You can withdraw your application here at any time."
       />
 
-      <main className="flex-grow flex flex-col min-w-0 overflow-hidden">
-        {/* Content Section */}
-        <div className="flex-1 overflow-y-auto p-8 max-w-4xl mx-auto w-full">
-          <div className="space-y-8">
-            {/* Active applications list */}
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <ShieldX className="w-5 h-5 text-red-500" />
-                Active Submitted Applications
-              </h2>
-              <p className="text-sm text-slate-500 mb-6">Withdraw or delete active, pending job submissions from your history.</p>
-
-              <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                {applications.length > 0 ? (
-                  applications.map((app) => (
-                    <div key={app.id} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div>
-                        <h4 className="font-bold text-sm text-slate-900 dark:text-white">{app.job.title}</h4>
-                        <p className="text-xs text-slate-500">{app.job.company} • {app.job.location}</p>
-                        <p className="text-[10px] text-slate-400 mt-1">Applied: {new Date(app.applied_at).toLocaleDateString()}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 px-2.5 py-1 rounded border border-slate-200 dark:border-slate-700 font-semibold">
-                          {app.status}
+      <Card padded={false}>
+        <div className="px-6 pt-6">
+          <CardHeader
+            title="Your applications"
+            description={applications.length > 0 ? `${applications.length} application${applications.length === 1 ? '' : 's'}` : undefined}
+          />
+        </div>
+        {applications.length > 0 ? (
+          <ul className="divide-y divide-slate-100 border-t border-slate-100">
+            {applications.map((app) => (
+              <li key={app.id} className="flex flex-col gap-4 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-500 ring-1 ring-inset ring-slate-200/80">
+                    <Building2 className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-brand-navy">{app.job?.title}</p>
+                    <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                      <span>{app.job?.company}</span>
+                      {app.job?.location && (
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin className="h-3 w-3" /> {app.job.location}
                         </span>
-                        <button 
-                          onClick={() => handleWithdrawApplication(app.job_id, app.job.title)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 rounded-lg text-xs font-bold transition"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Withdraw
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-sm text-slate-500 py-6">You have no active applications matches to withdraw.</p>
-                )}
-              </div>
-            </div>
+                      )}
+                      {app.applied_at && (
+                        <span className="inline-flex items-center gap-1">
+                          <CalendarDays className="h-3 w-3" /> Applied{' '}
+                          {new Date(app.applied_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-3 sm:justify-end">
+                  <StatusBadge status={app.status} />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    icon={Trash2}
+                    loading={withdrawingId === app.job_id}
+                    className="text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                    onClick={() => handleWithdrawApplication(app.job_id, app.job?.title)}
+                  >
+                    Withdraw
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="border-t border-slate-100">
+            <EmptyState
+              icon={Briefcase}
+              title="No active applications"
+              description="When you apply for a role, it will show up here."
+              action={
+                <Link href="/candidate/dashboard?tab=Jobs" className={buttonClasses({ variant: 'primary' })}>
+                  Find jobs for you
+                </Link>
+              }
+            />
+          </div>
+        )}
+      </Card>
 
-            {/* POPIA Erasure */}
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors border-red-200 dark:border-red-950/30">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <ShieldAlert className="w-5 h-5 text-red-600" />
-                Data Privacy & POPIA Erasure Rights
-              </h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 font-medium leading-relaxed">
-                Under the Protection of Personal Information Act (POPIA), you are entitled to have all your personal information, CV metrics, parsing cache, and active matching logs erased from our systems entirely.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button 
-                  className="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition" 
-                  onClick={() => alert('Your data export request has been submitted. Prepare for a follow-up email details shortly.')}
-                >
-                  Request Data Export
-                </button>
-                <button 
-                  className="px-4 py-2 border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-950/10 text-red-600 dark:text-red-400 rounded-xl text-sm font-bold hover:bg-red-100 dark:hover:bg-red-950/20 transition"
-                  onClick={() => { if(confirm('Are you absolutely sure you want to permanently delete your candidate account and erase all information? This cannot be undone.')) alert('Account erasure request sent. Our support team will confirm via email.'); }}
-                >
-                  Delete Account & Erase All Metrics
-                </button>
-              </div>
-            </div>
+      {/* POPIA */}
+      <Card>
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-500 ring-1 ring-inset ring-slate-200/80">
+            <ShieldCheck className="h-5 w-5" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-[15px] font-semibold text-brand-navy">Your data and privacy</h2>
+            <p className="mt-1 text-sm leading-relaxed text-slate-600">
+              Under the Protection of Personal Information Act (POPIA), you can ask for a copy of your data or ask us to delete your account and
+              everything linked to it.
+            </p>
           </div>
         </div>
-      </main>
+        <div className="mt-5 flex flex-col gap-2 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+          <Button variant="secondary" icon={Download} onClick={() => success('Export requested. We’ll email you a copy of your data shortly.')}>
+            Request my data
+          </Button>
+          <Button variant="ghost" icon={Trash2} className="text-rose-600 hover:bg-rose-50 hover:text-rose-700" onClick={handleDeleteAccount}>
+            Delete my account
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 }

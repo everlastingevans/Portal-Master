@@ -11,18 +11,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    let user = await db.user.findUnique({ where: { email } });
-    if (!user && email === 'admin@matchengine.com') {
-      const { hashPassword } = await import('@/lib/auth');
-      user = await db.user.create({
-        data: {
-          email: 'admin@matchengine.com',
-          name: 'Super Admin',
-          password: hashPassword(password),
-          role: 'SUPERADMIN',
-        },
-      });
-    }
+    // Superadmin accounts are provisioned by scripts/seed.ts, never on first login
+    const user = await db.user.findUnique({ where: { email } });
 
     if (!user) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });

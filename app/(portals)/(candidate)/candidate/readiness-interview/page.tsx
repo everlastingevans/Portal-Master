@@ -2,22 +2,26 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  ArrowLeft, 
-  Video, 
-  Mic, 
-  Square, 
-  Play, 
-  RefreshCw, 
-  CheckCircle, 
-  Upload, 
-  Sparkles, 
-  Loader2, 
-  ShieldAlert, 
-  Tv, 
-  AlertCircle,
-  HelpCircle
+import {
+  Video,
+  Mic,
+  Square,
+  Play,
+  RefreshCw,
+  CheckCircle2,
+  Upload,
+  Sparkles,
+  ShieldAlert,
+  FileText,
+  Lightbulb,
+  ChevronLeft,
+  ChevronRight,
+  Timer,
+  Camera,
 } from 'lucide-react';
+import PortalShell from '@/components/portal/PortalShell';
+import PortalLoader from '@/components/PortalLoader';
+import { Alert, Badge, Button, Card, PageHeader, cx } from '@/components/portal/ui';
 
 const INTERVIEW_QUESTIONS = [
   "Introduce yourself and explain why you're a great fit for your dream tech position.",
@@ -25,14 +29,33 @@ const INTERVIEW_QUESTIONS = [
   "How do you prioritize deliverables under aggressive timelines or high-pressure situations?"
 ];
 
+const SUBMIT_START_MESSAGE = 'Starting a secure upload...';
+
+// Dynamic timeline stages for deep multi-modal evaluation
+const SUBMIT_STAGES = [
+  { progress: 20, message: 'Uploading your recording securely...' },
+  { progress: 40, message: 'Preparing your video for review...' },
+  { progress: 60, message: 'Listening to your answer...' },
+  { progress: 80, message: 'Scoring your content and delivery...' },
+  { progress: 95, message: 'Writing your personal feedback...' }
+];
+
+const STUDIO_STEPS = ['Allow camera', 'Record answer', 'Review and submit'];
+
+const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+
 export default function ReadinessInterviewPage() {
   const router = useRouter();
+
+  // Session (for the portal shell)
+  const [user, setUser] = useState<any>(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
 
   // Navigation and State Machine
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [permissionError, setPermissionError] = useState<string | null>(null);
-  
+
   // MediaRecorder States
   const [recordingState, setRecordingState] = useState<'idle' | 'recording' | 'recorded'>('idle');
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -58,15 +81,50 @@ export default function ReadinessInterviewPage() {
   const animationFrameRef = useRef<number | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Load the signed-in candidate for the shell
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          const role = String(data.user?.role || '').toUpperCase();
+          if (!data.user || role !== 'CANDIDATE') {
+            router.push('/login');
+            return;
+          }
+          if (!cancelled) setUser(data.user);
+        } else {
+          router.push('/login');
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelled) setSessionLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {}
+    router.push('/');
+  };
+
   // Initialize Camera/Mic stream
   async function requestPermissions() {
     try {
       setPermissionError(null);
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: 1280, height: 720, facingMode: 'user' }, 
-        audio: true 
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 1280, height: 720, facingMode: 'user' },
+        audio: true
       });
-      
+
       setStream(mediaStream);
       setPermissionGranted(true);
 
@@ -81,9 +139,9 @@ export default function ReadinessInterviewPage() {
     } catch (err: any) {
       console.error('Permission request failed:', err);
       setPermissionError(
-        err.name === 'NotAllowedError' 
-          ? 'Camera or microphone access was denied. Please update your browser permissions.' 
-          : 'Could not detect camera or microphone. Please ensure your peripherals are connected.'
+        err.name === 'NotAllowedError'
+          ? 'Camera or microphone access was blocked. Allow access in your browser settings, then try again.'
+          : 'We couldn’t find a camera or microphone. Check that they’re connected, then try again.'
       );
     }
   }
@@ -93,14 +151,14 @@ export default function ReadinessInterviewPage() {
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtx) return;
-      
+
       const audioContext = new AudioCtx();
       const source = audioContext.createMediaStreamSource(mediaStream);
       const analyser = audioContext.createAnalyser();
-      
+
       analyser.fftSize = 256;
       source.connect(analyser);
-      
+
       audioContextRef.current = audioContext;
       analyserRef.current = analyser;
 
@@ -169,7 +227,7 @@ export default function ReadinessInterviewPage() {
 
     const options = { mimeType: 'video/webm;codecs=vp9,opus' };
     let recorder: MediaRecorder;
-    
+
     try {
       recorder = new MediaRecorder(stream, options);
     } catch (e) {
@@ -233,7 +291,7 @@ export default function ReadinessInterviewPage() {
     if (recordedChunks.length === 0) return;
 
     setIsSubmitting(true);
-    setSubmitProgress('Connecting to LaunchPath secure repository...');
+    setSubmitProgress(SUBMIT_START_MESSAGE);
 
     try {
       const finalBlob = new Blob(recordedChunks, { type: 'video/webm' });
@@ -244,16 +302,7 @@ export default function ReadinessInterviewPage() {
       formData.append('questions', JSON.stringify(INTERVIEW_QUESTIONS));
       formData.append('job_id', '1'); // Default fallback job association for Readiness evaluation
 
-      // Dynamic timeline stages for deep multi-modal evaluation
-      const stages = [
-        { progress: 20, message: 'Transferring secure encrypted stream to AWS S3...' },
-        { progress: 40, message: 'Registering streaming layers on Mux Engine...' },
-        { progress: 60, message: 'Extracting audio and initializing Gemini Flash Multi-modal analysis...' },
-        { progress: 80, message: 'Grading verbal presentation patterns and compiling talent scores...' },
-        { progress: 95, message: 'Generating personalized written career suggestions...' }
-      ];
-
-      stages.forEach((stage, index) => {
+      SUBMIT_STAGES.forEach((stage, index) => {
         setTimeout(() => {
           setSubmitProgress(stage.message);
         }, index * 2500);
@@ -269,7 +318,7 @@ export default function ReadinessInterviewPage() {
       }
 
       const data = await response.json();
-      
+
       setSubmissionResult({
         score: data.score,
         feedback: data.feedback,
@@ -298,346 +347,411 @@ export default function ReadinessInterviewPage() {
     requestPermissions();
   }
 
+  if (sessionLoading || !user) {
+    return <PortalLoader portal="CANDIDATE" title="Opening interview practice" />;
+  }
+
+  /* ------------------------------ Derived UI ------------------------------ */
+
+  const stageIndex = SUBMIT_STAGES.findIndex((s) => s.message === submitProgress);
+  const submitPercent = stageIndex >= 0 ? SUBMIT_STAGES[stageIndex].progress : 6;
+  const studioStep = !permissionGranted ? 0 : recordingState === 'recorded' ? 2 : 1;
+  const timeUsedPercent = ((60 - timer) / 60) * 100;
+  const showStudio = !isSubmitting && !submissionResult;
+
   return (
-    <div id="readiness-interview-root" className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-[#22c55e] selection:text-black font-sans">
-      
-      {/* Dynamic Header */}
-      <header id="interview-header" className="border-b border-neutral-900 bg-slate-950/80 backdrop-blur px-6 py-4 flex items-center justify-between z-10">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => router.push('/candidate/dashboard')}
-            className="p-2 hover:bg-neutral-900 rounded-xl text-neutral-400 hover:text-white transition cursor-pointer"
-            id="back-to-dashboard-btn"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <h1 className="text-sm font-black tracking-tight text-white uppercase font-heading">AI Job Readiness Evaluation</h1>
-            <p className="text-[10px] font-mono text-[#22c55e] uppercase tracking-wider">Timed Interview Simulator</p>
-          </div>
-        </div>
+    <PortalShell portal="candidate" user={user} onLogout={handleLogout} title="Interview practice">
+      <div id="readiness-interview-root" className="space-y-6">
+        <PageHeader
+          title="Interview practice"
+          description="Record a short video answer and get instant feedback from our AI coach. Practise as often as you like."
+          actions={<Badge tone="neutral">Up to 60 seconds per answer</Badge>}
+        />
 
-        <div className="flex items-center gap-2 px-3 py-1 bg-neutral-900 rounded-full border border-neutral-800">
-          <span className="h-2 w-2 rounded-full bg-[#22c55e] animate-pulse"></span>
-          <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-neutral-400">Live Pilot</span>
-        </div>
-      </header>
-
-      {/* Main Workspace */}
-      <main id="interview-workspace" className="flex-1 max-w-5xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start justify-center">
-        
-        {/* Left Side: System Information & Prompt Cards */}
-        <div id="workspace-info-panel" className="lg:col-span-5 space-y-6">
-          
-          <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-6 space-y-4">
-            <div className="flex items-center gap-2 text-amber-500">
-              <Sparkles className="w-5 h-5 animate-spin-slow" />
-              <h2 className="text-sm font-black uppercase tracking-wider">Evaluation Prompt</h2>
-            </div>
-            
-            <div className="p-4 bg-neutral-950 rounded-xl border border-neutral-850 relative">
-              <span className="absolute top-2 right-3 text-[10px] font-mono text-neutral-500 uppercase">
-                Q {currentQuestionIndex + 1} of 3
-              </span>
-              <p className="text-xs font-mono text-neutral-400 uppercase tracking-wider mb-1">Current Question</p>
-              <h3 className="text-md font-bold text-white leading-relaxed">
-                {INTERVIEW_QUESTIONS[currentQuestionIndex]}
-              </h3>
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <button 
-                onClick={() => {
-                  setCurrentQuestionIndex((prev) => (prev > 0 ? prev - 1 : INTERVIEW_QUESTIONS.length - 1));
-                  handleReset();
-                }}
-                className="text-xs font-mono text-neutral-400 hover:text-white transition cursor-pointer flex items-center gap-1"
-                id="prev-question-btn"
-              >
-                ← Prev Question
-              </button>
-              <button 
-                onClick={() => {
-                  setCurrentQuestionIndex((prev) => (prev < INTERVIEW_QUESTIONS.length - 1 ? prev + 1 : 0));
-                  handleReset();
-                }}
-                className="text-xs font-mono text-[#22c55e] hover:underline transition cursor-pointer flex items-center gap-1"
-                id="next-question-btn"
-              >
-                Next Question →
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-neutral-900/40 border border-neutral-800/80 rounded-2xl p-6 space-y-4 text-xs">
-            <h4 className="font-bold text-white uppercase tracking-wider font-heading flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-neutral-400" />
-              How the Evaluation Works:
-            </h4>
-            <ul className="space-y-2.5 text-neutral-400 leading-relaxed list-disc list-inside">
-              <li>Record a webcam response answering the active scenario.</li>
-              <li>Saves raw video directly to AWS S3 & converts with Mux.</li>
-              <li>Our server utilizes Gemini Flash for deep semantic transcription.</li>
-              <li>Receive instant professional scores and actionable career feedback.</li>
-            </ul>
-          </div>
-
-        </div>
-
-        {/* Right Side: Interactive Live Camera / Review & Results Panel */}
-        <div id="workspace-camera-panel" className="lg:col-span-7">
-          
-          {/* Permission Screen */}
-          {!permissionGranted && !submissionResult && (
-            <div className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-10 text-center space-y-6">
-              <div className="h-16 w-16 bg-[#22c55e]/10 rounded-2xl flex items-center justify-center mx-auto border border-[#22c55e]/20">
-                <Video className="w-8 h-8 text-[#22c55e]" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-extrabold text-white uppercase tracking-tight">Camera & Microphone Access</h3>
-                <p className="text-xs text-neutral-400 max-w-sm mx-auto leading-relaxed">
-                  We need standard browser permissions to access your camera and microphone to conduct the evaluation.
+        <div id="interview-workspace" className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+          {/* Left: question & guidance */}
+          <div id="workspace-info-panel" className="space-y-6 lg:col-span-5">
+            <Card>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-medium text-slate-500">
+                  Question {currentQuestionIndex + 1} of {INTERVIEW_QUESTIONS.length}
                 </p>
-              </div>
-
-              {permissionError && (
-                <div className="p-4 bg-red-950/40 border border-red-900 rounded-xl flex items-start gap-3 text-left">
-                  <ShieldAlert className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-red-400 leading-relaxed">{permissionError}</p>
+                <div className="flex items-center gap-1.5" aria-hidden="true">
+                  {INTERVIEW_QUESTIONS.map((_, idx) => (
+                    <span
+                      key={idx}
+                      className={cx(
+                        'h-1.5 rounded-full transition-all',
+                        idx === currentQuestionIndex ? 'w-6 bg-brand-navy' : 'w-1.5 bg-slate-200',
+                      )}
+                    />
+                  ))}
                 </div>
-              )}
-
-              <button
-                onClick={requestPermissions}
-                className="w-full py-4 bg-[#22c55e] hover:bg-emerald-500 text-black font-black uppercase tracking-wider text-xs rounded-xl transition cursor-pointer shadow-lg shadow-[#22c55e]/10"
-                id="request-permissions-btn"
-              >
-                Authorize Camera & Mic
-              </button>
-            </div>
-          )}
-
-          {/* Submission / Processing screen */}
-          {isSubmitting && (
-            <div className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-12 text-center space-y-6 flex flex-col items-center justify-center">
-              <Loader2 className="w-12 h-12 text-[#22c55e] animate-spin" />
-              <div className="space-y-2 max-w-sm">
-                <h3 className="text-md font-extrabold uppercase tracking-widest text-white">Uploading & Analyzing</h3>
-                <p className="text-xs text-neutral-400 animate-pulse font-mono leading-relaxed">
-                  {submitProgress}
-                </p>
               </div>
-              <div className="w-full bg-neutral-950 rounded-full h-1.5 border border-neutral-850 overflow-hidden max-w-xs">
-                <div className="bg-[#22c55e] h-full animate-loader-progress rounded-full"></div>
+
+              <h2 className="mt-4 text-lg font-semibold leading-snug tracking-tight text-brand-navy">
+                {INTERVIEW_QUESTIONS[currentQuestionIndex]}
+              </h2>
+
+              <div className="mt-6 flex items-center justify-between gap-2 border-t border-slate-100 pt-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={ChevronLeft}
+                  disabled={isSubmitting || recordingState === 'recording'}
+                  onClick={() => {
+                    setCurrentQuestionIndex((prev) => (prev > 0 ? prev - 1 : INTERVIEW_QUESTIONS.length - 1));
+                    handleReset();
+                  }}
+                  id="prev-question-btn"
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={isSubmitting || recordingState === 'recording'}
+                  onClick={() => {
+                    setCurrentQuestionIndex((prev) => (prev < INTERVIEW_QUESTIONS.length - 1 ? prev + 1 : 0));
+                    handleReset();
+                  }}
+                  id="next-question-btn"
+                >
+                  Next question <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
               </div>
-            </div>
-          )}
+            </Card>
 
-          {/* Core Recording & Playback view */}
-          {permissionGranted && !isSubmitting && !submissionResult && (
-            <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl overflow-hidden relative shadow-2xl">
-              
-              {/* Media Player display */}
-              <div className="aspect-video w-full bg-black relative flex items-center justify-center">
-                
-                {/* Live Stream View */}
-                {recordingState !== 'recorded' && (
-                  <video 
-                    ref={videoRef}
-                    autoPlay 
-                    playsInline 
-                    muted 
-                    className="w-full h-full object-cover scale-x-[-1]"
-                  />
-                )}
+            <Card>
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-brand-navy">
+                <Lightbulb className="h-4 w-4 text-slate-400" /> Tips for a strong answer
+              </h3>
+              <ul className="mt-3 space-y-2.5 text-sm leading-relaxed text-slate-600">
+                <li className="flex gap-2.5">
+                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-slate-400" />
+                  Sit somewhere quiet with light in front of you, not behind.
+                </li>
+                <li className="flex gap-2.5">
+                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-slate-400" />
+                  Use the STAR method: situation, task, action, result.
+                </li>
+                <li className="flex gap-2.5">
+                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-slate-400" />
+                  Look at the camera and speak at a calm, steady pace.
+                </li>
+              </ul>
 
-                {/* Recorded Review Playback */}
-                {recordingState === 'recorded' && videoUrl && (
-                  <video 
-                    src={videoUrl}
-                    controls
-                    playsInline
-                    className="w-full h-full object-contain"
-                  />
-                )}
+              <div className="mt-5 border-t border-slate-100 pt-4">
+                <p className="text-xs font-medium text-slate-500">How it works</p>
+                <ol className="mt-3 space-y-3">
+                  {[
+                    'Record a video answer to the question.',
+                    'We upload it securely and transcribe what you said.',
+                    'Our AI coach reviews your content and delivery.',
+                    'You get a score and practical tips to improve.',
+                  ].map((text, idx) => (
+                    <li key={text} className="flex items-start gap-3 text-sm text-slate-600">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold tabular-nums text-slate-600">
+                        {idx + 1}
+                      </span>
+                      {text}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </Card>
+          </div>
 
-                {/* Status Indicator overlays */}
-                {recordingState === 'recording' && (
-                  <div className="absolute top-4 left-4 px-3 py-1 bg-red-600/95 text-white text-[10px] font-mono font-black uppercase tracking-widest rounded-full animate-pulse flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 bg-white rounded-full"></span>
-                    <span>Recording | {timer}s left</span>
-                  </div>
-                )}
-
-                {recordingState === 'recorded' && (
-                  <div className="absolute top-4 left-4 px-3 py-1 bg-[#22c55e] text-black text-[10px] font-mono font-black uppercase tracking-widest rounded-full flex items-center gap-1.5">
-                    <Play className="w-3 h-3 fill-current" />
-                    <span>Review Playback</span>
-                  </div>
-                )}
-
-                {/* Voice level ripple meter (visible during active recording) */}
-                {recordingState === 'recording' && (
-                  <div className="absolute bottom-4 right-4 flex items-center gap-1.5 bg-black/70 px-3 py-1.5 rounded-full border border-neutral-800">
-                    <Mic className="w-3.5 h-3.5 text-[#22c55e]" />
-                    <div className="w-16 bg-neutral-900 h-1.5 rounded-full overflow-hidden">
-                      <div 
-                        className="bg-[#22c55e] h-full transition-all duration-75"
-                        style={{ width: `${audioLevel}%` }}
-                      ></div>
+          {/* Right: studio / progress / results */}
+          <div id="workspace-camera-panel" className="lg:col-span-7">
+            {/* Submission / processing */}
+            {isSubmitting && (
+              <Card className="sm:p-8">
+                <div role="status" aria-live="polite">
+                  <div className="flex items-center gap-4">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-navy text-brand-lime">
+                      <Sparkles className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="text-base font-semibold text-brand-navy">Analysing your answer</h3>
+                      <p className="mt-0.5 text-sm text-slate-500">This takes about 15 seconds. Please keep this page open.</p>
                     </div>
                   </div>
-                )}
 
-              </div>
-
-              {/* Controls bar */}
-              <div className="p-6 bg-neutral-900/80 border-t border-neutral-850 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                
-                <div className="text-center sm:text-left">
-                  <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-                    {recordingState === 'idle' && 'Step 1: Check Camera & Prepare'}
-                    {recordingState === 'recording' && 'Step 2: Responding Live'}
-                    {recordingState === 'recorded' && 'Step 3: Review Response'}
-                  </h4>
-                  <p className="text-[11px] text-neutral-400 mt-0.5">
-                    {recordingState === 'idle' && 'Click start once you are comfortable answering.'}
-                    {recordingState === 'recording' && 'Speak clearly. Answer within the 60 seconds limit.'}
-                    {recordingState === 'recorded' && 'Submit your response, or record again if needed.'}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                  {recordingState === 'idle' && (
-                    <button
-                      onClick={startRecording}
-                      className="w-full sm:w-auto px-6 py-3 bg-[#22c55e] hover:bg-emerald-500 text-black font-black uppercase tracking-wider text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg cursor-pointer"
-                      id="start-recording-btn"
+                  <div className="mt-6">
+                    <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+                      <span className="truncate text-slate-600">{submitProgress}</span>
+                      <span className="font-medium tabular-nums text-brand-navy">{submitPercent}%</span>
+                    </div>
+                    <div
+                      className="h-2 w-full overflow-hidden rounded-full bg-slate-100"
+                      role="progressbar"
+                      aria-label="Upload and analysis progress"
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={submitPercent}
                     >
-                      <Video className="w-4 h-4" />
-                      <span>Start Recording</span>
-                    </button>
+                      <div className="h-full rounded-full bg-brand-lime transition-all duration-700 ease-out" style={{ width: `${submitPercent}%` }} />
+                    </div>
+                  </div>
+
+                  <ol className="mt-6 space-y-2.5">
+                    {SUBMIT_STAGES.map((stage, idx) => {
+                      const done = idx < stageIndex;
+                      const current = idx === stageIndex;
+                      return (
+                        <li key={stage.message} className="flex items-center gap-2.5 text-sm">
+                          {done ? (
+                            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                          ) : (
+                            <span
+                              className={cx(
+                                'flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2',
+                                current ? 'border-brand-navy' : 'border-slate-200',
+                              )}
+                            >
+                              {current && <span className="h-1.5 w-1.5 rounded-full bg-brand-navy" />}
+                            </span>
+                          )}
+                          <span className={cx(done ? 'text-slate-500' : current ? 'font-medium text-brand-navy' : 'text-slate-400')}>
+                            {stage.message.replace(/\.\.\.$/, '')}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
+              </Card>
+            )}
+
+            {/* Recording studio */}
+            {showStudio && (
+              <Card padded={false} className="overflow-hidden">
+                {/* Step progress */}
+                <ol className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 sm:px-6" aria-label="Recording steps">
+                  {STUDIO_STEPS.map((label, idx) => {
+                    const done = idx < studioStep;
+                    const current = idx === studioStep;
+                    return (
+                      <li key={label} className="flex min-w-0 flex-1 items-center gap-2" aria-current={current ? 'step' : undefined}>
+                        <span
+                          className={cx(
+                            'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums transition-colors',
+                            done ? 'bg-brand-lime text-brand-navy' : current ? 'bg-brand-navy text-white' : 'bg-slate-100 text-slate-500',
+                          )}
+                        >
+                          {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : idx + 1}
+                        </span>
+                        <span className={cx('hidden truncate text-xs sm:block', current ? 'font-medium text-brand-navy' : 'text-slate-500')}>{label}</span>
+                        {idx < STUDIO_STEPS.length - 1 && <span className="h-px flex-1 bg-slate-200" aria-hidden="true" />}
+                      </li>
+                    );
+                  })}
+                </ol>
+
+                {/* Camera area */}
+                <div className="relative flex aspect-video w-full items-center justify-center bg-slate-900">
+                  {/* Live stream view (kept mounted so the preview can attach as soon as access is granted) */}
+                  {recordingState !== 'recorded' && (
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className={cx('h-full w-full scale-x-[-1] object-cover', !permissionGranted && 'invisible')}
+                    />
                   )}
 
+                  {/* Recorded review playback */}
+                  {recordingState === 'recorded' && videoUrl && (
+                    <video src={videoUrl} controls playsInline className="h-full w-full object-contain" />
+                  )}
+
+                  {/* Permission prompt */}
+                  {!permissionGranted && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 overflow-y-auto bg-brand-navy p-6 text-center">
+                      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.08] text-brand-lime ring-1 ring-inset ring-white/10">
+                        <Camera className="h-6 w-6" />
+                      </span>
+                      <div className="max-w-sm">
+                        <h3 className="text-base font-semibold text-white">Allow camera and microphone</h3>
+                        <p className="mt-1 text-sm leading-relaxed text-white/60">
+                          We need access to your camera and microphone to record your answer.
+                        </p>
+                      </div>
+                      <Button variant="accent" icon={Video} onClick={requestPermissions} id="request-permissions-btn">
+                        Turn on camera
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Status overlays */}
                   {recordingState === 'recording' && (
-                    <button
-                      onClick={() => stopRecording()}
-                      className="w-full sm:w-auto px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-wider text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg cursor-pointer animate-pulse"
-                      id="stop-recording-btn"
-                    >
-                      <Square className="w-4 h-4 fill-white" />
-                      <span>Stop Recording</span>
-                    </button>
+                    <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-white/10 backdrop-blur sm:left-4 sm:top-4">
+                      <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" aria-hidden="true" />
+                      <span>Recording</span>
+                      <span className="tabular-nums text-white/70">{formatTime(timer)}</span>
+                    </div>
                   )}
 
                   {recordingState === 'recorded' && (
-                    <>
-                      <button
-                        onClick={handleReset}
-                        className="p-3 bg-neutral-800 hover:bg-neutral-750 text-white rounded-xl border border-neutral-700 transition cursor-pointer"
-                        title="Record Again"
-                        id="retry-recording-btn"
-                      >
-                        <RefreshCw className="w-4 h-4" />
-                      </button>
-                      
-                      <button
-                        onClick={submitResponse}
-                        className="flex-1 sm:flex-initial px-6 py-3 bg-[#22c55e] hover:bg-emerald-500 text-black font-black uppercase tracking-wider text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg cursor-pointer"
-                        id="submit-interview-btn"
-                      >
-                        <Upload className="w-4 h-4" />
-                        <span>Submit Response</span>
-                      </button>
-                    </>
+                    <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-white/10 backdrop-blur sm:left-4 sm:top-4">
+                      <Play className="h-3 w-3 fill-current" />
+                      <span>Review your answer</span>
+                    </div>
+                  )}
+
+                  {/* Voice level meter (visible during active recording) */}
+                  {recordingState === 'recording' && (
+                    <div className="absolute bottom-3 right-3 flex items-center gap-2 rounded-full bg-slate-900/80 px-3 py-1.5 ring-1 ring-white/10 backdrop-blur sm:bottom-4 sm:right-4">
+                      <Mic className="h-3.5 w-3.5 text-brand-lime" aria-hidden="true" />
+                      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-white/15" aria-label="Microphone level">
+                        <div className="h-full bg-brand-lime transition-all duration-75" style={{ width: `${audioLevel}%` }} />
+                      </div>
+                    </div>
                   )}
                 </div>
 
-              </div>
-
-            </div>
-          )}
-
-          {/* Submission Results / AI Insights Display */}
-          {submissionResult && (
-            <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-8 space-y-6 shadow-2xl backdrop-blur relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#22c55e]/5 rounded-full blur-3xl pointer-events-none"></div>
-
-              {/* Status and Score layout */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pb-6 border-b border-neutral-800">
-                <div className="text-center sm:text-left space-y-1">
-                  <div className="flex items-center gap-1.5 text-[#22c55e] justify-center sm:justify-start">
-                    <CheckCircle className="w-5 h-5" />
-                    <h3 className="text-md font-black uppercase tracking-wider">Evaluation Completed</h3>
+                {/* Timer bar */}
+                {permissionGranted && (
+                  <div className="h-1 w-full bg-slate-100" aria-hidden="true">
+                    <div
+                      className={cx('h-full transition-all duration-1000 ease-linear', timer <= 10 ? 'bg-rose-500' : 'bg-brand-navy')}
+                      style={{ width: `${recordingState === 'idle' ? 0 : timeUsedPercent}%` }}
+                    />
                   </div>
-                  <p className="text-xs text-neutral-400">Response analyzed successfully by LaunchPath AI.</p>
-                </div>
+                )}
 
-                <div className="flex items-center gap-3 px-5 py-3 bg-neutral-950 rounded-2xl border border-neutral-800">
-                  <div className="text-right">
-                    <p className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest">Candidate Readiness</p>
-                    <p className="text-xs font-bold text-white uppercase">AI Matching Score</p>
+                {/* Controls */}
+                <div className="space-y-4 p-4 sm:p-6">
+                  {permissionError && (
+                    <Alert tone="danger" icon={ShieldAlert}>
+                      {permissionError}
+                    </Alert>
+                  )}
+
+                  {permissionGranted && (
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500 ring-1 ring-inset ring-slate-200/80">
+                          <Timer className="h-4 w-4" />
+                        </span>
+                        <div>
+                          <h4 className="text-sm font-semibold text-brand-navy">
+                            {recordingState === 'idle' && 'Ready when you are'}
+                            {recordingState === 'recording' && `${formatTime(timer)} remaining`}
+                            {recordingState === 'recorded' && 'How did that feel?'}
+                          </h4>
+                          <p className="mt-0.5 text-sm text-slate-500">
+                            {recordingState === 'idle' && 'Take a breath, then start recording. You have 60 seconds.'}
+                            {recordingState === 'recording' && 'Speak clearly and wrap up before the timer ends.'}
+                            {recordingState === 'recorded' && 'Submit your answer for feedback, or record it again.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex w-full items-center gap-2 sm:w-auto">
+                        {recordingState === 'idle' && (
+                          <Button variant="accent" size="lg" icon={Video} onClick={startRecording} className="w-full sm:w-auto" id="start-recording-btn">
+                            Start recording
+                          </Button>
+                        )}
+
+                        {recordingState === 'recording' && (
+                          <Button
+                            variant="danger"
+                            size="lg"
+                            onClick={() => stopRecording()}
+                            className="w-full sm:w-auto"
+                            id="stop-recording-btn"
+                          >
+                            <Square className="h-4 w-4 fill-current" /> Stop recording
+                          </Button>
+                        )}
+
+                        {recordingState === 'recorded' && (
+                          <>
+                            <Button variant="secondary" size="lg" icon={RefreshCw} onClick={handleReset} title="Record again" id="retry-recording-btn">
+                              <span className="sr-only sm:not-sr-only">Record again</span>
+                            </Button>
+                            <Button
+                              variant="accent"
+                              size="lg"
+                              icon={Upload}
+                              onClick={submitResponse}
+                              className="flex-1 sm:flex-none"
+                              id="submit-interview-btn"
+                            >
+                              Submit answer
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {!permissionGranted && !permissionError && (
+                    <p className="text-center text-xs text-slate-500">Your browser will ask for permission. You can turn the camera off at any time.</p>
+                  )}
+                </div>
+              </Card>
+            )}
+
+            {/* Results */}
+            {submissionResult && (
+              <Card padded={false} className="overflow-hidden animate-scale-in">
+                <div className="flex flex-col gap-5 border-b border-slate-100 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+                  <div>
+                    <p className="flex items-center gap-1.5 text-sm font-medium text-emerald-700">
+                      <CheckCircle2 className="h-4 w-4" /> Feedback ready
+                    </p>
+                    <h3 className="mt-1 text-lg font-semibold tracking-tight text-brand-navy">Here&apos;s how you did</h3>
+                    <p className="mt-0.5 text-sm text-slate-500">Use the tips below and try again to beat your score.</p>
                   </div>
-                  <div className="h-12 w-12 bg-[#22c55e]/10 border border-[#22c55e]/30 rounded-xl flex items-center justify-center">
-                    <span className="text-lg font-black text-[#22c55e]">{submissionResult.score}</span>
+                  <div className="flex items-center gap-4 rounded-2xl bg-brand-navy px-5 py-4">
+                    <div>
+                      <p className="text-xs text-white/60">Readiness score</p>
+                      <p className="text-3xl font-semibold tabular-nums tracking-tight text-brand-lime">
+                        {submissionResult.score}
+                        <span className="text-base font-medium text-white/50">/100</span>
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Actionable Feedback */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-mono text-neutral-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-[#22c55e]" />
-                  AI Coaching Feedback
-                </h4>
-                <div className="p-4 bg-neutral-950 border border-neutral-850 rounded-xl text-neutral-300 text-xs leading-relaxed italic">
-                  &ldquo;{submissionResult.feedback}&rdquo;
+                <div className="space-y-6 p-6 sm:p-8">
+                  <div>
+                    <h4 className="flex items-center gap-2 text-sm font-semibold text-brand-navy">
+                      <Sparkles className="h-4 w-4 text-slate-400" /> Coaching feedback
+                    </h4>
+                    <p className="mt-2 whitespace-pre-line rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 ring-1 ring-inset ring-slate-200/80">
+                      {submissionResult.feedback}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="flex items-center gap-2 text-sm font-semibold text-brand-navy">
+                      <FileText className="h-4 w-4 text-slate-400" /> Transcript
+                    </h4>
+                    <div className="mt-2 max-h-48 overflow-y-auto rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-600 ring-1 ring-inset ring-slate-200/80">
+                      {submissionResult.transcript}
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Verbatim Transcript */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-mono text-neutral-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <Tv className="w-4 h-4 text-neutral-400" />
-                  Speech-to-Text Transcript
-                </h4>
-                <div className="p-4 bg-neutral-950 border border-neutral-850 rounded-xl max-h-48 overflow-y-auto text-xs text-neutral-400 leading-relaxed font-mono">
-                  {submissionResult.transcript}
+                <div className="flex flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50/60 px-6 py-4 sm:flex-row sm:justify-end sm:px-8">
+                  <Button variant="secondary" onClick={() => router.push('/candidate/dashboard')} id="dashboard-return-btn">
+                    Back to dashboard
+                  </Button>
+                  <Button variant="primary" icon={RefreshCw} onClick={handleReset} id="evaluation-retry-btn">
+                    Practise again
+                  </Button>
                 </div>
-              </div>
-
-              {/* Footer actions */}
-              <div className="pt-4 border-t border-neutral-850 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <button
-                  onClick={handleReset}
-                  className="w-full sm:w-auto px-6 py-3 bg-neutral-850 hover:bg-neutral-800 text-white font-extrabold rounded-xl text-xs uppercase tracking-wider transition cursor-pointer"
-                  id="evaluation-retry-btn"
-                >
-                  Evaluate Again
-                </button>
-                <button
-                  onClick={() => router.push('/candidate/dashboard')}
-                  className="w-full sm:w-auto px-6 py-3 bg-[#22c55e] hover:bg-emerald-500 text-black font-black rounded-xl text-xs uppercase tracking-wider transition cursor-pointer"
-                  id="dashboard-return-btn"
-                >
-                  Return to Dashboard
-                </button>
-              </div>
-
-            </div>
-          )}
-
+              </Card>
+            )}
+          </div>
         </div>
-
-      </main>
-
-      {/* Footer copyright */}
-      <footer id="interview-footer" className="border-t border-neutral-900 bg-slate-950/40 p-4 text-center z-10">
-        <p className="text-[10px] font-mono text-neutral-500 tracking-widest uppercase">
-          © 2026 LaunchPath TALENT PORTAL • AI MULTI-MODAL PIPELINE
-        </p>
-      </footer>
-
-    </div>
+      </div>
+    </PortalShell>
   );
 }

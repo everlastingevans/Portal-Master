@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Briefcase, X } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import RichTextEditor from '@/components/RichTextEditor';
+import { Modal } from '../_components/overlay';
+import { Button, Field, Input, Select } from '../_components/ui';
+import { useToast } from '@/components/ToastNotification';
 
 interface SuperadminJobModalProps {
   isOpen: boolean;
@@ -12,6 +15,12 @@ interface SuperadminJobModalProps {
   onSubmit: (action: string, payload: any) => Promise<any>;
 }
 
+const FORM_ID = 'superadmin-job-form';
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <h3 className="text-sm font-semibold text-white">{children}</h3>;
+}
+
 export default function SuperadminJobModal({
   isOpen,
   onClose,
@@ -19,6 +28,7 @@ export default function SuperadminJobModal({
   employers,
   onSubmit
 }: SuperadminJobModalProps) {
+  const toast = useToast();
   const [jobTitle, setJobTitle] = useState('');
   const [jobCompany, setJobCompany] = useState('');
   const [jobLocation, setJobLocation] = useState('');
@@ -30,9 +40,8 @@ export default function SuperadminJobModal({
   const [jobMandatorySkills, setJobMandatorySkills] = useState('');
   const [jobTechStack, setJobTechStack] = useState('');
   const [jobStatus, setJobStatus] = useState('ACTIVE');
-  
+
   const [submitError, setSubmitError] = useState('');
-  const [submitSuccess, setSubmitSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -62,7 +71,6 @@ export default function SuperadminJobModal({
       setJobStatus('ACTIVE');
     }
     setSubmitError('');
-    setSubmitSuccess('');
   }, [editingJob, isOpen, employers]);
 
   // Auto pre-fill company name if employer is selected
@@ -75,12 +83,10 @@ export default function SuperadminJobModal({
     }
   }, [jobEmployerId, employers]);
 
-  if (!isOpen) return null;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!jobTitle || !jobLocation || !jobDescription) {
-      setSubmitError('Required attributes: Title, Location, and Description');
+      setSubmitError('Title, location and description are required.');
       return;
     }
 
@@ -102,199 +108,161 @@ export default function SuperadminJobModal({
     const action = editingJob ? 'UPDATE_JOB' : 'CREATE_JOB';
     setIsSubmitting(true);
     setSubmitError('');
-    setSubmitSuccess('');
-    
+
     try {
       const result = await onSubmit(action, payload);
       if (result.success) {
-        setSubmitSuccess(result.data?.message || 'Operation completed successfully!');
-        setTimeout(() => onClose(), 1200);
+        toast.success(result.data?.message || (editingJob ? 'Job updated' : 'Job created'));
+        onClose();
       } else {
-        setSubmitError(result.error || 'Verification error, please check fields.');
+        setSubmitError(result.error || 'Please check the fields and try again.');
       }
     } catch (err: any) {
-      setSubmitError(err.message || 'An error occurred.');
+      setSubmitError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-955/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-90 w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl bg-slate-900 border border-slate-800 rounded-2xl animate-scale-in">
-        <div className="p-5 border-b border-slate-850 flex justify-between items-center bg-slate-950">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2 uppercase font-mono tracking-wider">
-            <Briefcase className="w-4 h-4 text-[#7145FF]" />
-            {editingJob ? `Modify Job Posting #${editingJob.id}` : 'Deploy New Job Posting'}
-          </h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition cursor-pointer">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      size="xl"
+      title={editingJob ? 'Edit job' : 'New job'}
+      description={editingJob ? `${editingJob.title || 'Untitled'} · #${editingJob.id}` : 'Create a job posting for an employer.'}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="submit" form={FORM_ID} variant="primary" loading={isSubmitting}>
+            {editingJob ? 'Save changes' : 'Create job'}
+          </Button>
+        </>
+      }
+    >
+      <form id={FORM_ID} onSubmit={handleSubmit} className="space-y-6">
+        {submitError && (
+          <div role="alert" className="flex items-start gap-2.5 rounded-xl border border-rose-400/20 bg-rose-500/[0.06] px-3.5 py-3 text-xs leading-relaxed text-rose-200">
+            <AlertCircle className="mt-px h-4 w-4 shrink-0 text-rose-300" />
+            <span>{submitError}</span>
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
-          {submitError && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl">
-              {submitError}
-            </div>
-          )}
-          {submitSuccess && (
-            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-xl">
-              {submitSuccess}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-sans">
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold tracking-widest text-slate-404 font-mono block">Job Title *</label>
-              <input 
-                type="text" 
-                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+        <section className="space-y-4">
+          <SectionLabel>Basics</SectionLabel>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Field label="Job title" htmlFor="job-title">
+              <Input
+                id="job-title"
+                type="text"
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
                 placeholder="e.g. Senior Software Engineer"
               />
-            </div>
-            
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold tracking-widest text-slate-404 font-mono block">Assign Employer Tenant *</label>
-              <select
-                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
-                value={jobEmployerId}
-                onChange={(e) => setJobEmployerId(e.target.value)}
-              >
-                <option value="">No Active Employer Selection</option>
+            </Field>
+            <Field label="Employer" htmlFor="job-employer">
+              <Select id="job-employer" value={jobEmployerId} onChange={(e) => setJobEmployerId(e.target.value)}>
+                <option value="">No employer</option>
                 {employers.map((e: any) => (
-                  <option key={e.id} value={e.id}>{e.name} ({e.email})</option>
+                  <option key={e.id} value={e.id}>
+                    {e.name} ({e.email})
+                  </option>
                 ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-sans">
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold tracking-widest text-slate-404 font-mono block">Corporate Business Name</label>
-              <input 
-                type="text" 
-                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+              </Select>
+            </Field>
+            <Field label="Company name" htmlFor="job-company" hint="Filled in from the selected employer.">
+              <Input
+                id="job-company"
+                type="text"
                 value={jobCompany}
                 onChange={(e) => setJobCompany(e.target.value)}
-                placeholder="Leave blank to auto-prefill from selected employer"
+                placeholder="Company shown on the posting"
               />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold tracking-widest text-slate-404 font-mono block">Physical Location *</label>
-              <input 
-                type="text" 
-                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+            </Field>
+            <Field label="Location" htmlFor="job-location">
+              <Input
+                id="job-location"
+                type="text"
                 value={jobLocation}
                 onChange={(e) => setJobLocation(e.target.value)}
                 placeholder="e.g. Johannesburg / Hybrid"
               />
-            </div>
+            </Field>
+            <Field label="Status" htmlFor="job-status">
+              <Select id="job-status" value={jobStatus} onChange={(e) => setJobStatus(e.target.value)}>
+                <option value="ACTIVE">Active (open to applications)</option>
+                <option value="PENDING">Pending (draft)</option>
+                <option value="CLOSED">Closed</option>
+              </Select>
+            </Field>
           </div>
+        </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-sans">
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold tracking-widest text-slate-404 font-mono block">Salary Minimum (ZAR)</label>
-              <input 
-                type="number" 
-                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+        <section className="space-y-4 border-t border-white/[0.06] pt-6">
+          <SectionLabel>Compensation and requirements</SectionLabel>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <Field label="Minimum salary (ZAR)" htmlFor="job-salary-min">
+              <Input
+                id="job-salary-min"
+                type="number"
                 value={jobSalaryMin}
                 onChange={(e) => setJobSalaryMin(e.target.value)}
                 placeholder="e.g. 60000"
               />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold tracking-widest text-slate-404 font-mono block">Salary Maximum (ZAR)</label>
-              <input 
-                type="number" 
-                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+            </Field>
+            <Field label="Maximum salary (ZAR)" htmlFor="job-salary-max">
+              <Input
+                id="job-salary-max"
+                type="number"
                 value={jobSalaryMax}
                 onChange={(e) => setJobSalaryMax(e.target.value)}
                 placeholder="e.g. 110000"
               />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold tracking-widest text-slate-404 font-mono block">Experience Requirements</label>
-              <input 
-                type="text" 
-                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+            </Field>
+            <Field label="Experience" htmlFor="job-experience">
+              <Input
+                id="job-experience"
+                type="text"
                 value={jobYearsExperience}
                 onChange={(e) => setJobYearsExperience(e.target.value)}
-                placeholder="e.g. 5+ Years"
+                placeholder="e.g. 5+ years"
               />
-            </div>
+            </Field>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-sans">
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold tracking-widest text-slate-404 font-mono block">Mandatory Skills (Comma separated)</label>
-              <input 
-                type="text" 
-                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 text-xs text-white font-mono"
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Field label="Required skills" htmlFor="job-skills" hint="Separate with commas.">
+              <Input
+                id="job-skills"
+                type="text"
                 value={jobMandatorySkills}
                 onChange={(e) => setJobMandatorySkills(e.target.value)}
                 placeholder="React, Node.js, SQL"
               />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold tracking-widest text-slate-404 font-mono block">Other Tech Stack (Comma separated)</label>
-              <input 
-                type="text" 
-                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 text-xs text-white font-mono"
+            </Field>
+            <Field label="Other tech stack" htmlFor="job-stack" hint="Separate with commas.">
+              <Input
+                id="job-stack"
+                type="text"
                 value={jobTechStack}
                 onChange={(e) => setJobTechStack(e.target.value)}
                 placeholder="Tailwind, Docker, AWS"
               />
-            </div>
+            </Field>
           </div>
+        </section>
 
-          <div className="space-y-1 font-sans">
-            <label className="text-[10px] uppercase font-bold tracking-widest text-slate-404 font-mono block">Publish Scope Status</label>
-            <select
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
-              value={jobStatus}
-              onChange={(e) => setJobStatus(e.target.value)}
-            >
-              <option value="ACTIVE">ACTIVE (Open to applications)</option>
-              <option value="PENDING">PENDING (Draft review)</option>
-              <option value="CLOSED">CLOSED (De-listed)</option>
-            </select>
-          </div>
-
-          <div className="space-y-1.5 font-sans">
-            <label className="text-[10px] uppercase font-bold tracking-widest text-slate-404 font-mono block font-sans">Full Job Description (HTML / text) *</label>
-            <RichTextEditor 
-              content={jobDescription}
-              onChange={(val) => setJobDescription(val)}
-              showAIAssistant={true}
-            />
-          </div>
-
-          <div className="pt-2 flex justify-end gap-3 bg-slate-950/20 font-sans">
-            <button 
-              type="button" 
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="px-4 py-2 border border-slate-800 hover:bg-slate-850 rounded-xl text-xs text-slate-400 transition cursor-pointer font-bold disabled:opacity-50"
-            >
-              Discard Changes
-            </button>
-            <button 
-              type="submit"
-              disabled={isSubmitting}
-              className="px-5 py-2 bg-[#7145FF] hover:bg-[#5b32e6] text-white rounded-xl text-xs font-bold transition cursor-pointer disabled:opacity-50 flex items-center justify-center min-w-[120px]"
-            >
-              {isSubmitting ? 'Processing...' : (editingJob ? 'Update Posting' : 'Publish to Exchange')}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <section className="space-y-1.5 border-t border-white/[0.06] pt-6">
+          <p className="text-xs font-medium text-slate-300">Description</p>
+          <RichTextEditor
+            content={jobDescription}
+            onChange={(val) => setJobDescription(val)}
+            showAIAssistant={true}
+            variant="dark"
+          />
+        </section>
+      </form>
+    </Modal>
   );
 }

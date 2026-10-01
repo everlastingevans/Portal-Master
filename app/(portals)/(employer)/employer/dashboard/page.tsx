@@ -45,7 +45,7 @@ export default function EmployerDashboardPage() {
   };
 
   if (loading || !data) {
-    return <PortalLoader portal="EMPLOYER" title="Loading Employer Workspace" />;
+    return <PortalLoader portal="EMPLOYER" title="Loading your workspace" />;
   }
 
 

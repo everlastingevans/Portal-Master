@@ -13,8 +13,10 @@ export async function GET() {
       where: { id: session.userId },
       select: { 
         id: true,
-        name: true, 
-        role: true, 
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
         tenant_id: true,
         tenant: true 
       }

@@ -1,232 +1,194 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowRight, Mail, Lock, User, Building2, Loader2, Phone } from 'lucide-react';
-// import LaunchPathLogo from '@/components/LaunchPathLogo';
-import Image from "next/image";
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Mail, User, Phone, GraduationCap, Building2 } from 'lucide-react';
+import AuthLayout, { AuthHeading, AuthTopLink, PasswordInput, PasswordStrength, safeNext } from '@/components/auth/AuthLayout';
+import { Alert, Button, ChoiceCard, Field, Input } from '@/components/portal/ui';
 
-import LaunchpathLogo from "../../../assets/logo/launchpath-main.png";
+type AccountType = 'talent' | 'client';
 
+function parseType(value: string | null): AccountType {
+  return value === 'client' || value === 'employer' ? 'client' : 'talent';
+}
 
-export default function RegisterPage() {
+function RegisterForm() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const next = safeNext(params.get('next'));
+
+  const [accountType, setAccountType] = useState<AccountType>(parseType(params.get('type')));
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [accountType, setAccountType] = useState<'talent' | 'client'>('talent');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const router = useRouter();
+  const [error, setError] = useState<{ message: string; exists?: boolean } | null>(null);
+
+  const isEmployer = accountType === 'client';
+
+  const selectType = (type: AccountType) => {
+    setAccountType(type);
+    setError(null);
+    // Keep the URL shareable and in sync with the choice
+    const url = new URL(window.location.href);
+    url.searchParams.set('type', type);
+    window.history.replaceState(null, '', url.pathname + url.search);
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password.length < 8) {
+      setError({ message: 'Your password needs at least 8 characters.' });
+      return;
+    }
     setLoading(true);
-    setError('');
-    
+    setError(null);
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          email, 
-          password, 
-          name, 
-          phone, 
-          role: accountType === 'talent' ? 'CANDIDATE' : 'CLIENT' 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+          name: name.trim(),
+          phone: phone.trim(),
+          role: isEmployer ? 'CLIENT' : 'CANDIDATE',
         }),
       });
-      
       const data = await res.json();
-      
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to register');
+        const exists = /already exists/i.test(data.error || '');
+        throw Object.assign(new Error(data.error || 'We couldn’t create your account.'), { exists });
       }
-      
-      if (accountType === 'talent') {
-        router.push('/onboarding');
-      } else {
-        router.push('/employer/dashboard');
-      }
+      router.push(next || (isEmployer ? '/employer/dashboard' : '/onboarding'));
     } catch (err: any) {
-      setError(err.message);
-    } finally {
+      setError({ message: err.message, exists: err.exists });
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      <header className="bg-[#0A1B3D] border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-          <div className="relative z-50 flex items-center">
-            <Link href="/" className="group flex items-center" aria-label="LaunchPath home">
-              <div className="relative h-[45px] sm:h-[50px] w-auto transition-all duration-300 group-hover:scale-[1.02]">
-                <Image 
-                  src={LaunchpathLogo} 
-                  alt="LaunchPath Logo" 
-                  height={44} 
-                  priority 
-                  className="h-full w-auto object-contain transition-all duration-300 dark:brightness-110 dark:contrast-110" 
-                />
-              </div>
-            </Link>
-          </div>
-          <div className="text-sm font-medium text-white">
-            Already have an account?{' '}
-            <Link href="/login" className="text-[#A6F23C] transition-colors">
-              Log in
-            </Link>
-          </div>
+    <AuthLayout
+      audience={isEmployer ? 'employer' : 'talent'}
+      topRight={
+        <>
+          <span className="hidden sm:inline">Already have an account? </span>
+          <AuthTopLink href="/login">Log in</AuthTopLink>
+        </>
+      }
+    >
+      <AuthHeading
+        title="Create your account"
+        description={isEmployer ? 'Start hiring in minutes. No credit card needed to sign up.' : 'Free for job seekers, always. Takes less than a minute.'}
+      />
+
+      <form onSubmit={handleRegister} className="space-y-5">
+        <div role="radiogroup" aria-label="Account type" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <ChoiceCard
+            selected={!isEmployer}
+            onSelect={() => selectType('talent')}
+            icon={GraduationCap}
+            title="I’m looking for work"
+            description="Find roles matched to you"
+          />
+          <ChoiceCard
+            selected={isEmployer}
+            onSelect={() => selectType('client')}
+            icon={Building2}
+            title="I’m hiring"
+            description="Post jobs and find talent"
+          />
         </div>
-      </header>
 
-      <main className="flex-grow flex items-center justify-center p-4 py-12">
-        <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-8">
-            <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">Create an account</h1>
-              <p className="text-slate-500">Join LaunchPath to find opportunities or talent</p>
-            </div>
-
-            {error && (
-              <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100">
-                {error}
-              </div>
+        {error && (
+          <Alert>
+            {error.message}
+            {error.exists && (
+              <>
+                {' '}
+                <Link href={`/login?email=${encodeURIComponent(email.trim())}`} className="font-semibold underline underline-offset-2">
+                  Log in instead
+                </Link>
+              </>
             )}
+          </Alert>
+        )}
 
-            <form onSubmit={handleRegister} className="space-y-5">
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <button
-                  type="button"
-                  onClick={() => setAccountType('talent')}
-                  className={`flex items-center justify-center gap-2 p-3 rounded-full border-2 font-semibold transition-colors ${
-                    accountType === 'talent'
-                      ? 'border-[#A6F23C] bg-[#7145FF]/5 text-[#0A1B3D]'
-                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                  }`}
-                >
-                  <User className="w-5 h-5" />
-                  I&apos;m a Talent
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAccountType('client')}
-                  className={`flex items-center justify-center gap-2 p-3 rounded-full border-2 font-semibold transition-colors ${
-                    accountType === 'client'
-                      ? 'border-[#A6F23C] bg-[#7145FF]/5 text-[#0A1B3D]'
-                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                  }`}
-                >
-                  <Building2 className="w-5 h-5" />
-                  I&apos;m a Client
-                </button>
-              </div>
+        <Field label={isEmployer ? 'Your name' : 'Full name'} htmlFor="name">
+          <Input
+            id="name"
+            icon={User}
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={isEmployer ? 'e.g. Thandi Mokoena' : 'e.g. Sipho Dlamini'}
+            required
+          />
+        </Field>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-slate-400" />
-                  </div>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#7145FF]/20 focus:border-[#7145FF] transition-colors outline-none text-slate-900"
-                    placeholder="Jane Doe"
-                    required
-                  />
-                </div>
-              </div>
+        <Field label={isEmployer ? 'Work email' : 'Email'} htmlFor="email">
+          <Input
+            id="email"
+            type="email"
+            icon={Mail}
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={isEmployer ? 'you@company.co.za' : 'you@example.com'}
+            required
+          />
+        </Field>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Email address
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-slate-400" />
-                  </div>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#7145FF]/20 focus:border-[#7145FF] transition-colors outline-none text-slate-900"
-                    placeholder="you@example.com"
-                    required
-                  />
-                </div>
-              </div>
+        <Field
+          label="Mobile number"
+          htmlFor="phone"
+          optional
+          hint={isEmployer ? 'For interview and applicant alerts.' : 'We’ll send interview updates by SMS or WhatsApp.'}
+        >
+          <Input id="phone" type="tel" icon={Phone} autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+27 82 123 4567" />
+        </Field>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Phone className="h-5 w-5 text-slate-400" />
-                  </div>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#7145FF]/20 focus:border-[#7145FF] transition-colors outline-none text-slate-900"
-                    placeholder="e.g. +1 (555) 012-3456"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-slate-400" />
-                  </div>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#7145FF]/20 focus:border-[#7145FF] transition-colors outline-none text-slate-900"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-[#0A1B3D] text-white py-3 px-4 rounded-full font-semibold hover:bg-[#A6F23C] hover:text-[#0A1B3D] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7145FF] disabled:opacity-70 mt-4"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  <>Create Account <ArrowRight className="w-5 h-5" /></>
-                )}
-              </button>
-            </form>
+        <Field label="Password" htmlFor="password">
+          <PasswordInput
+            id="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Create a password"
+            minLength={8}
+            required
+          />
+          <div className="pt-1">
+            <PasswordStrength password={password} />
           </div>
-          <div className="px-8 py-6 bg-slate-50 border-t border-slate-100 mt-2 text-center">
-            <p className="text-sm text-slate-600">
-              By creating an account, you agree to the LaunchPath{' '}
-              <a href="#" className="underline hover:text-slate-900">Terms of Service</a>
-              {' '}and{' '}
-              <a href="#" className="underline hover:text-slate-900">Privacy Policy</a>.
-            </p>
-          </div>
-        </div>
-      </main>
-    </div>
+        </Field>
+
+        <Button type="submit" variant="primary" size="lg" fullWidth loading={loading}>
+          {loading ? 'Creating your account…' : isEmployer ? 'Create employer account' : 'Create account'}
+        </Button>
+
+        <p className="text-center text-xs leading-relaxed text-slate-400">
+          By creating an account you agree to LaunchPath’s{' '}
+          <a href="#" className="underline underline-offset-2 hover:text-slate-600">
+            Terms
+          </a>{' '}
+          and{' '}
+          <a href="#" className="underline underline-offset-2 hover:text-slate-600">
+            Privacy Policy
+          </a>
+          , and to how we handle your data under POPIA.
+        </p>
+      </form>
+    </AuthLayout>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
   );
 }

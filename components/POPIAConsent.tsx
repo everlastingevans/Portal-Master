@@ -1,17 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ShieldAlert, X } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
 export function POPIAConsent() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     // Check if user has already consented
-    const hasConsented = localStorage.getItem('popia_consent');
-    if (!hasConsented) {
-      setIsVisible(true);
-    }
+    if (!localStorage.getItem('popia_consent')) setIsVisible(true);
   }, []);
 
   const handleAccept = () => {
@@ -22,26 +19,29 @@ export function POPIAConsent() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 animate-in slide-in-from-bottom-5 duration-500 fade-in">
-      <div className="max-w-5xl mx-auto bg-slate-900 dark:bg-slate-800 text-white p-6 rounded-2xl shadow-2xl flex flex-col md:flex-row items-center gap-6 border border-slate-700">
-        <div className="flex-shrink-0 bg-blue-600/20 p-3 rounded-full hidden md:block">
-          <ShieldAlert className="w-8 h-8 text-blue-400" />
+    <div
+      role="region"
+      aria-label="Privacy notice"
+      className="fixed inset-x-3 bottom-3 z-50 animate-fade-in sm:inset-x-auto sm:bottom-5 sm:left-5 sm:max-w-sm"
+    >
+      <div className="rounded-2xl bg-brand-navy p-5 text-white shadow-[0_16px_40px_-12px_rgba(10,27,61,0.55)] ring-1 ring-white/10">
+        <div className="flex items-start gap-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-lime/15 text-brand-lime">
+            <ShieldCheck className="h-4 w-4" />
+          </span>
+          <div>
+            <p className="text-sm font-semibold">Your privacy matters</p>
+            <p className="mt-1 text-xs leading-relaxed text-white/65">
+              We use cookies and personal data to match you with jobs and candidates, in line with POPIA. You can manage your data in your account settings.
+            </p>
+          </div>
         </div>
-        <div className="flex-1 text-sm md:text-base leading-relaxed">
-          <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-blue-400 md:hidden" />
-            Data Privacy & POPIA Compliance
-          </h3>
-          <p className="text-slate-300">
-            We use cookies and collect personal data to provide our AI-driven job matching services. By continuing to use our platform, you consent to our data processing practices in accordance with the Protection of Personal Information Act (POPIA). You can manage your data preferences in your account settings.
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-shrink-0">
-          <button 
+        <div className="mt-4 flex justify-end">
+          <button
             onClick={handleAccept}
-            className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-6 rounded-lg transition-colors shadow-lg"
+            className="h-9 cursor-pointer rounded-xl bg-brand-lime px-4 text-sm font-semibold text-brand-navy transition-colors hover:bg-brand-lime-soft"
           >
-            I Accept
+            Accept
           </button>
         </div>
       </div>

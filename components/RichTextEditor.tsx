@@ -1,9 +1,9 @@
 'use client';
 
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Bold,
   Italic,
@@ -21,38 +21,110 @@ import {
   Wand2,
   FileText,
   Code,
-  Loader2,
-  AlertCircle
+  AlertCircle,
+  CheckCircle2,
+  LucideIcon,
 } from 'lucide-react';
+import { Spinner } from '@/components/PortalLoader';
 
 interface RichTextEditorProps {
   content: string;
   onChange: (content: string) => void;
   showAIAssistant?: boolean;
+  /** `light` for the candidate/employer portals, `dark` for the admin console. */
+  variant?: 'light' | 'dark';
 }
 
-export default function RichTextEditor({ content, onChange, showAIAssistant = false }: RichTextEditorProps) {
+type Tool = { icon: LucideIcon; label: string; run: (e: Editor) => void; active?: (e: Editor) => boolean; disabled?: (e: Editor) => boolean; danger?: boolean };
+
+const TOOL_GROUPS: Tool[][] = [
+  [
+    { icon: Bold, label: 'Bold', run: (e) => e.chain().focus().toggleBold().run(), active: (e) => e.isActive('bold') },
+    { icon: Italic, label: 'Italic', run: (e) => e.chain().focus().toggleItalic().run(), active: (e) => e.isActive('italic') },
+    { icon: Strikethrough, label: 'Strikethrough', run: (e) => e.chain().focus().toggleStrike().run(), active: (e) => e.isActive('strike') },
+  ],
+  [
+    { icon: Heading2, label: 'Heading', run: (e) => e.chain().focus().toggleHeading({ level: 2 }).run(), active: (e) => e.isActive('heading', { level: 2 }) },
+    { icon: Heading3, label: 'Subheading', run: (e) => e.chain().focus().toggleHeading({ level: 3 }).run(), active: (e) => e.isActive('heading', { level: 3 }) },
+  ],
+  [
+    { icon: List, label: 'Bullet list', run: (e) => e.chain().focus().toggleBulletList().run(), active: (e) => e.isActive('bulletList') },
+    { icon: ListOrdered, label: 'Numbered list', run: (e) => e.chain().focus().toggleOrderedList().run(), active: (e) => e.isActive('orderedList') },
+  ],
+  [
+    { icon: Quote, label: 'Quote', run: (e) => e.chain().focus().toggleBlockquote().run(), active: (e) => e.isActive('blockquote') },
+    { icon: Code, label: 'Code block', run: (e) => e.chain().focus().toggleCodeBlock().run(), active: (e) => e.isActive('codeBlock') },
+    { icon: Minus, label: 'Divider', run: (e) => e.chain().focus().setHorizontalRule().run() },
+  ],
+  [
+    { icon: Eraser, label: 'Clear formatting', run: (e) => e.chain().focus().clearNodes().unsetAllMarks().run(), danger: true },
+    { icon: Undo2, label: 'Undo', run: (e) => e.chain().focus().undo().run(), disabled: (e) => !e.can().undo() },
+    { icon: Redo2, label: 'Redo', run: (e) => e.chain().focus().redo().run(), disabled: (e) => !e.can().redo() },
+  ],
+];
+
+const AI_ACTIONS = [
+  { mode: 'proofread' as const, label: 'Fix grammar', icon: Wand2, done: 'Spelling and grammar fixed.' },
+  { mode: 'expand' as const, label: 'Expand', icon: Sparkles, done: 'Description expanded.' },
+  { mode: 'summarize' as const, label: 'Make a checklist', icon: FileText, done: 'Converted into bullet points.' },
+];
+
+const THEMES = {
+  light: {
+    shell: 'border-slate-200 bg-white focus-within:border-brand-navy/40 focus-within:ring-4 focus-within:ring-brand-navy/[0.06]',
+    toolbar: 'border-slate-100 bg-slate-50/70',
+    divider: 'bg-slate-200',
+    tool: 'text-slate-500 hover:bg-white hover:text-brand-navy hover:shadow-sm',
+    toolActive: 'bg-brand-navy text-white shadow-sm',
+    toolDanger: 'text-slate-500 hover:bg-rose-50 hover:text-rose-600',
+    aiBar: 'border-slate-100 bg-white',
+    aiLabel: 'text-slate-600',
+    aiIcon: 'text-brand-navy',
+    aiButton: 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-brand-navy',
+    error: 'border-rose-100 bg-rose-50 text-rose-700',
+    success: 'border-emerald-100 bg-emerald-50 text-emerald-700',
+    overlay: 'bg-white/80 text-slate-500',
+    prose: 'prose prose-slate prose-sm sm:prose-base text-slate-700 prose-headings:text-brand-navy prose-a:text-brand-navy',
+    loading: 'border-slate-200 bg-white text-slate-400',
+  },
+  dark: {
+    shell: 'border-white/[0.08] bg-ink-950/60 focus-within:border-brand-lime/50 focus-within:ring-4 focus-within:ring-brand-lime/10',
+    toolbar: 'border-white/[0.06] bg-white/[0.02]',
+    divider: 'bg-white/10',
+    tool: 'text-slate-400 hover:bg-white/[0.06] hover:text-white',
+    toolActive: 'bg-brand-lime text-brand-navy',
+    toolDanger: 'text-slate-400 hover:bg-rose-500/10 hover:text-rose-300',
+    aiBar: 'border-white/[0.06] bg-white/[0.02]',
+    aiLabel: 'text-slate-300',
+    aiIcon: 'text-brand-lime',
+    aiButton: 'border-white/10 text-slate-300 hover:bg-white/[0.06] hover:text-white',
+    error: 'border-rose-500/20 bg-rose-500/10 text-rose-200',
+    success: 'border-emerald-400/20 bg-emerald-400/10 text-emerald-200',
+    overlay: 'bg-ink-950/80 text-slate-400',
+    prose: 'prose prose-invert prose-sm sm:prose-base text-slate-200',
+    loading: 'border-white/[0.08] bg-ink-950/60 text-slate-500',
+  },
+};
+
+export default function RichTextEditor({ content, onChange, showAIAssistant = false, variant = 'light' }: RichTextEditorProps) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiSuccess, setAiSuccess] = useState<string | null>(null);
+  const t = THEMES[variant];
 
   const editor = useEditor({
     extensions: [
       StarterKit,
       Image.configure({
-        HTMLAttributes: {
-          class: 'rounded-xl max-w-full min-w-[200px] h-auto my-4 border border-slate-800 shadow-md mx-auto',
-        },
+        HTMLAttributes: { class: 'rounded-xl max-w-full min-w-[200px] h-auto my-4 mx-auto' },
         allowBase64: true,
       }),
     ],
-    content: content,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
-    },
+    content,
+    onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: {
-        class: 'prose prose-invert prose-sm sm:prose-base max-w-none focus:outline-none p-5 min-h-[300px] bg-slate-900 text-slate-100 prose-img:rounded-xl leading-relaxed',
+        class: `${t.prose} max-w-none focus:outline-none px-5 py-4 min-h-[300px] leading-relaxed prose-img:rounded-xl`,
       },
     },
   });
@@ -66,303 +138,115 @@ export default function RichTextEditor({ content, onChange, showAIAssistant = fa
 
   if (!editor) {
     return (
-      <div className="h-64 flex items-center justify-center bg-slate-950 border border-slate-800 rounded-xl">
-        <Loader2 className="w-6 h-6 text-[#7145FF] animate-spin" />
+      <div className={`flex h-64 items-center justify-center rounded-xl border ${t.loading}`}>
+        <Spinner className="h-5 w-5" />
       </div>
     );
   }
 
-  const handleAIRewrite = async (mode: 'proofread' | 'expand' | 'summarize') => {
+  const handleAIRewrite = async (mode: (typeof AI_ACTIONS)[number]['mode']) => {
     const currentHtml = editor.getHTML();
     if (!currentHtml || currentHtml === '<p></p>') {
-      setAiError('Please write some content first so the AI model has text to analyze.');
+      setAiError('Write a few lines first so the assistant has something to work with.');
       return;
     }
-
     setAiLoading(true);
     setAiError(null);
     setAiSuccess(null);
-
     try {
       const response = await fetch('/api/superadmin/ai-rewrite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ htmlContent: currentHtml, mode }),
       });
-
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to polish text.');
-      }
-
-      if (data.rewritten) {
-        editor.commands.setContent(data.rewritten);
-        onChange(data.rewritten);
-        setAiSuccess(
-          mode === 'proofread'
-            ? '✨ Spelling and grammar corrected perfectly!'
-            : mode === 'expand'
-            ? '🚀 Job description expanded professionally!'
-            : '📝 Summarized into structured bullet points!'
-        );
-        setTimeout(() => setAiSuccess(null), 4000);
-      } else {
-        throw new Error('No rewritten content returned from Gemini.');
-      }
+      if (!response.ok) throw new Error(data.error || 'The assistant couldn’t rewrite this text.');
+      if (!data.rewritten) throw new Error('The assistant returned no text. Please try again.');
+      editor.commands.setContent(data.rewritten);
+      onChange(data.rewritten);
+      setAiSuccess(AI_ACTIONS.find((a) => a.mode === mode)!.done);
+      setTimeout(() => setAiSuccess(null), 4000);
     } catch (err: any) {
       console.error('[RichTextEditor AI] error:', err);
-      setAiError(err.message || 'Connecting to Gemini failed. Try again.');
+      setAiError(err.message || 'The assistant is unavailable right now. Please try again.');
     } finally {
       setAiLoading(false);
     }
   };
 
   return (
-    <div className="border border-slate-800 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#7145FF]/40 focus-within:border-[#7145FF]/80 shadow-2xl transition-all bg-slate-950">
-      
-      {/* WordPress-Inspired Formatting Toolbar */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-800 p-2.5 bg-slate-900/60 rounded-t-xl select-none">
-        
-        {/* Basic Texts */}
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`p-2 rounded-lg transition-colors cursor-pointer ${
-            editor.isActive('bold')
-              ? 'bg-[#7145FF] text-white font-extrabold'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-          title="Bold"
-        >
-          <Bold className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`p-2 rounded-lg transition-colors cursor-pointer ${
-            editor.isActive('italic')
-              ? 'bg-[#7145FF] text-white font-extrabold'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-          title="Italic"
-        >
-          <Italic className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={`p-2 rounded-lg transition-colors cursor-pointer ${
-            editor.isActive('strike')
-              ? 'bg-[#7145FF] text-white font-extrabold'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-          title="Strikethrough"
-        >
-          <Strikethrough className="w-3.5 h-3.5" />
-        </button>
-
-        <div className="w-px h-5 bg-slate-800 mx-1" />
-
-        {/* Headings */}
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`p-2 rounded-lg transition-colors cursor-pointer ${
-            editor.isActive('heading', { level: 2 })
-              ? 'bg-[#7145FF] text-white font-extrabold'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-          title="Heading 2"
-        >
-          <Heading2 className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={`p-2 rounded-lg transition-colors cursor-pointer ${
-            editor.isActive('heading', { level: 3 })
-              ? 'bg-[#7145FF] text-white font-extrabold'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-          title="Heading 3"
-        >
-          <Heading3 className="w-3.5 h-3.5" />
-        </button>
-
-        <div className="w-px h-5 bg-slate-800 mx-1" />
-
-        {/* Lists */}
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-2 rounded-lg transition-colors cursor-pointer ${
-            editor.isActive('bulletList')
-              ? 'bg-[#7145FF] text-white font-extrabold'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-          title="Bullet List"
-        >
-          <List className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-2 rounded-lg transition-colors cursor-pointer ${
-            editor.isActive('orderedList')
-              ? 'bg-[#7145FF] text-white font-extrabold'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-          title="Ordered list"
-        >
-          <ListOrdered className="w-3.5 h-3.5" />
-        </button>
-
-        <div className="w-px h-5 bg-slate-800 mx-1" />
-
-        {/* Quotes, Codes, Hr */}
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={`p-2 rounded-lg transition-colors cursor-pointer ${
-            editor.isActive('blockquote')
-              ? 'bg-[#7145FF] text-white font-extrabold'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-          title="Blockquote"
-        >
-          <Quote className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={`p-2 rounded-lg transition-colors cursor-pointer ${
-            editor.isActive('codeBlock')
-              ? 'bg-[#7145FF] text-white font-extrabold'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-          title="Code Block"
-        >
-          <Code className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-          title="Horizontal Rule"
-        >
-          <Minus className="w-3.5 h-3.5" />
-        </button>
-
-        <div className="w-px h-5 bg-slate-800 mx-1" />
-
-        {/* Clear formatting, Undo, Redo */}
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
-          className="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors cursor-pointer"
-          title="Clear formatting"
-        >
-          <Eraser className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().undo()}
-          className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          title="Undo"
-        >
-          <Undo2 className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().redo()}
-          className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          title="Redo"
-        >
-          <Redo2 className="w-3.5 h-3.5" />
-        </button>
+    <div className={`overflow-hidden rounded-xl border transition-all ${t.shell}`}>
+      <div className={`flex flex-wrap items-center gap-1 border-b p-1.5 select-none ${t.toolbar}`} role="toolbar" aria-label="Formatting">
+        {TOOL_GROUPS.map((group, gi) => (
+          <div key={gi} className="flex items-center gap-0.5">
+            {gi > 0 && <span className={`mx-1 h-5 w-px ${t.divider}`} />}
+            {group.map(({ icon: Icon, label, run, active, disabled, danger }) => {
+              const isActive = active?.(editor);
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => run(editor)}
+                  disabled={disabled?.(editor)}
+                  title={label}
+                  aria-label={label}
+                  aria-pressed={active ? isActive : undefined}
+                  className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-all disabled:cursor-not-allowed disabled:opacity-30 ${
+                    isActive ? t.toolActive : danger ? t.toolDanger : t.tool
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </div>
 
-      {/* AI Assistant Ribbon - ONLY if enabled */}
       {showAIAssistant && (
-        <div className="bg-slate-900 border-b border-slate-800 p-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-1.5 text-slate-300 font-medium">
-            <Sparkles className="w-4 h-4 text-[#7145FF] animate-pulse" />
-            <span>Gemini HR Co-Writer</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              disabled={aiLoading}
-              onClick={() => handleAIRewrite('proofread')}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-850 hover:border-slate-700 disabled:opacity-40 transition flex items-center gap-1.5 cursor-pointer font-semibold shadow-sm"
-            >
-              <Wand2 className="w-3.5 h-3.5 text-[#7145FF]" />
-              <span>Fix Grammar & Autocorrect</span>
-            </button>
-
-            <button
-              type="button"
-              disabled={aiLoading}
-              onClick={() => handleAIRewrite('expand')}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-850 hover:border-slate-700 disabled:opacity-40 transition flex items-center gap-1.5 cursor-pointer font-semibold shadow-sm"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Expand & Elevate</span>
-            </button>
-
-            <button
-              type="button"
-              disabled={aiLoading}
-              onClick={() => handleAIRewrite('summarize')}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-850 hover:border-slate-700 disabled:opacity-40 transition flex items-center gap-1.5 cursor-pointer font-semibold shadow-sm"
-            >
-              <FileText className="w-3.5 h-3.5 text-teal-400" />
-              <span>Format Checklist</span>
-            </button>
+        <div className={`flex flex-wrap items-center justify-between gap-2 border-b px-3 py-2 text-xs ${t.aiBar}`}>
+          <span className={`flex items-center gap-1.5 font-medium ${t.aiLabel}`}>
+            <Sparkles className={`h-3.5 w-3.5 ${t.aiIcon}`} /> Writing assistant
+          </span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {AI_ACTIONS.map(({ mode, label, icon: Icon }) => (
+              <button
+                key={mode}
+                type="button"
+                disabled={aiLoading}
+                onClick={() => handleAIRewrite(mode)}
+                className={`flex h-7 cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 font-medium transition-colors disabled:opacity-40 ${t.aiButton}`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Error & Success indicators */}
       {aiError && (
-        <div className="px-4 py-2 border-b border-rose-950 bg-rose-950/20 text-rose-300 text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <p>{aiError}</p>
+        <div role="alert" className={`flex items-center gap-2 border-b px-4 py-2 text-xs ${t.error}`}>
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          {aiError}
         </div>
       )}
-
       {aiSuccess && (
-        <div className="px-4 py-2 border-b border-[#7145FF]/20 bg-[#7145FF]/10 text-slate-100 text-xs flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
-            ✓
-          </div>
-          <p>{aiSuccess}</p>
+        <div role="status" className={`flex items-center gap-2 border-b px-4 py-2 text-xs ${t.success}`}>
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          {aiSuccess}
         </div>
       )}
 
-      {/* Editor Content Area */}
       <div className="relative min-h-[300px]">
         {aiLoading && (
-          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs flex flex-col items-center justify-center gap-2.5 z-10 transition">
-            <Loader2 className="w-7 h-7 text-[#7145FF] animate-spin" />
-            <p className="text-xs text-slate-400 font-mono">Gemini is rewriting, polishing & correcting grammar...</p>
+          <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center gap-2.5 backdrop-blur-[1px] ${t.overlay}`}>
+            <Spinner className="h-5 w-5" />
+            <p className="text-xs">Rewriting…</p>
           </div>
         )}
         <EditorContent editor={editor} />
       </div>
-
     </div>
   );
 }

@@ -19,17 +19,25 @@ export async function POST(req: NextRequest) {
     let logMessage = '';
 
     if (channel === 'email') {
-      const emailSubject = subject || 'LaunchPath - Brevo Test Email';
+      const emailSubject = subject || 'LaunchPath test email';
+      const safeBody = String(body)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br />');
       const emailHtml = html || `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #334155;">
-          <h2 style="color: #7145FF; margin-top: 0;">Brevo Email Integration Active</h2>
-          <p>Hello,</p>
-          <p>This is a successful transactional test email dispatched from the LaunchPath Superadmin Dashboard.</p>
-          <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #7145FF; font-family: monospace;">
-            <strong>Test Payload:</strong><br />
-            ${body}
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: #ffffff; color: #334155;">
+          <div style="background-color: #0A1B3D; padding: 20px 24px;">
+            <span style="color: #ffffff; font-size: 16px; font-weight: bold; letter-spacing: 2px;">LAUNCHPATH</span>
           </div>
-          <p style="font-size: 11px; color: #94a3b8; margin-bottom: 0;">Launched with confidence by Brevo Dispatcher</p>
+          <div style="padding: 24px;">
+            <h2 style="color: #0A1B3D; margin-top: 0; font-size: 18px;">Test email</h2>
+            <p>This test message was sent from the LaunchPath admin console.</p>
+            <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #A6F23C;">
+              ${safeBody}
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; margin-bottom: 0;">Sent via Brevo</p>
+          </div>
         </div>
       `;
 

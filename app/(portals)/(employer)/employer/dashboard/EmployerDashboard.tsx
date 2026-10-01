@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import PortalSidebar from '@/components/PortalSidebar';
-import ThemeToggle from '@/components/ThemeToggle';
+import PortalShell from '@/components/portal/PortalShell';
+import { useToast } from '@/components/ToastNotification';
 
 // Modularized Components
 import OverviewTab from './components/OverviewTab';
@@ -24,6 +24,7 @@ export default function EmployerDashboard({
   onLogout: () => void;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const { jobs = [], applications = [] } = data || {};
 
   const isJobUnlocked = (jobId: number | string | null) => {
@@ -112,13 +113,13 @@ export default function EmployerDashboard({
         }),
       });
       if (res.ok) {
-        alert('Profile updated successfully!');
+        toast.success('Company profile saved.');
         onRefresh();
       } else {
-        alert('Failed to update profile.');
+        toast.error("We couldn't save your profile. Please try again.");
       }
     } catch (err: any) {
-      alert('Error saving profile: ' + err.message);
+      toast.error("We couldn't save your profile: " + err.message);
     } finally {
       setProfileSaving(false);
     }
@@ -135,18 +136,18 @@ export default function EmployerDashboard({
         body: JSON.stringify({ applicationId, status }),
       });
       if (res.ok) {
-        alert(`Candidate successfully ${status.toLowerCase()}!`);
+        toast.success(status === 'Accepted' ? 'Applicant accepted.' : 'Applicant rejected.');
         if (selectedApplicant && selectedApplicant.id === applicationId) {
           setSelectedApplicant((prev: any) => ({ ...prev, status }));
         }
         onRefresh();
       } else {
         const d = await res.json();
-        alert(d.error || `Failed to update status to ${status}.`);
+        toast.error(d.error || `We couldn't mark this applicant as ${status.toLowerCase()}.`);
       }
     } catch (err) {
       console.error(err);
-      alert('Error updating candidate application status.');
+      toast.error("We couldn't update this application. Please try again.");
     }
   };
 
@@ -241,15 +242,15 @@ ${editDescription}
       });
 
       if (res.ok) {
-        alert('Job posting updated successfully!');
+        toast.success('Job updated.');
         setEditingJob(null);
         onRefresh();
       } else {
         const err = await res.json();
-        alert('Failed to update job: ' + (err.error || 'Unknown error'));
+        toast.error("We couldn't update the job: " + (err.error || 'unknown error'));
       }
     } catch (err: any) {
-      alert('Error updating job: ' + err.message);
+      toast.error("We couldn't update the job: " + err.message);
     } finally {
       setUpdatingJob(false);
     }
@@ -325,7 +326,7 @@ ${editDescription}
 
   const scheduleInterview = async (app: any) => {
     if (!interviewDate || !interviewTime) {
-      alert('Please select date and time');
+      toast.warning('Choose a date and time for the interview.');
       return;
     }
     const combined = new Date(`${interviewDate}T${interviewTime}`);
@@ -341,17 +342,17 @@ ${editDescription}
         }),
       });
       if (res.ok) {
-        alert('Interview proposed successfully');
+        toast.success('Interview invite sent.');
         setInterviewDate('');
         setInterviewTime('');
         setInterviewNotes('');
         setSelectedApplicant(null);
         onRefresh();
       } else {
-        alert('Failed to schedule interview');
+        toast.error("We couldn't send the interview invite.");
       }
     } catch (err) {
-      alert('Error scheduling interview');
+      toast.error("We couldn't send the interview invite. Please try again.");
     }
   };
 
@@ -366,7 +367,7 @@ ${editDescription}
   const handleUnlock = async (action: 'checkout' | 'bypass', jobIdToUnlock?: any) => {
     const targetJobId = jobIdToUnlock || selectedJobFilter;
     if (!targetJobId) {
-      alert('Please select a specific job posting to unlock.');
+      toast.warning('Choose a job to unlock first.');
       return;
     }
 
@@ -383,14 +384,14 @@ ${editDescription}
         body: JSON.stringify({ jobId: targetJobId }),
       });
       if (res.ok) {
-        alert('Demo Bypass success! Job Posting has been activated and candidate pipeline is unlocked.');
+        toast.success('Demo payment complete. The role is live and its applicants are unlocked.');
         onRefresh();
       } else {
         const errorData = await res.json();
-        alert('Failed to process unlock: ' + errorData.error);
+        toast.error("We couldn't unlock this role: " + errorData.error);
       }
     } catch (err: any) {
-      alert('Error unlocking pipeline: ' + err.message);
+      toast.error("We couldn't unlock this role: " + err.message);
     } finally {
       setUnlocking(false);
     }
@@ -412,110 +413,97 @@ ${editDescription}
     );
   });
 
+  // Applications nobody has acted on yet (no decision, no interview) drive the sidebar badge.
+  const awaitingReviewCount = (applications || []).filter(
+    (a: any) => (!a.status || a.status === 'Pending') && (!a.interviews || a.interviews.length === 0)
+  ).length;
+
   return (
-    <div className="w-full h-screen bg-slate-50 dark:bg-slate-950 flex overflow-hidden font-sans text-slate-900 dark:text-slate-100 transition-colors">
-      {/* Sidebar */}
-      <PortalSidebar
-        role="EMPLOYER"
-        user={user}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        jobsCount={jobs?.length || 0}
-        applicationsCount={applications?.length || 0}
-        onLogout={onLogout}
-        onTabChange={() => setSelectedApplicant(null)}
-      />
+    <PortalShell
+      portal="employer"
+      user={user}
+      onLogout={onLogout}
+      activeTab={activeTab}
+      onTabChange={(tab) => {
+        setSelectedApplicant(null);
+        setActiveTab(tab);
+      }}
+      badges={{ Applicants: awaitingReviewCount }}
+    >
+      {activeTab === 'Overview' && (
+        <OverviewTab
+          jobs={jobs}
+          applications={applications}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          filteredJobs={filteredJobs}
+          handleStartEdit={handleStartEdit}
+          setSelectedJobFilter={setSelectedJobFilter}
+          setActiveTab={setActiveTab}
+          setSelectedApplicant={setSelectedApplicant}
+          isJobUnlocked={isJobUnlocked}
+        />
+      )}
 
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Header */}
-        <header className="bg-white dark:bg-slate-900 h-16 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between pl-14 pr-4 md:px-8 flex-shrink-0 transition-colors">
-          <h1 className="text-xl font-bold dark:text-white">
-            {activeTab === 'Overview' ? 'Job Posts Overview' : 'Review Applicants'}
-          </h1>
-          <div className="flex items-center gap-6">
-            <div className="hidden sm:flex items-center gap-2 bg-[#5D3FD3]/10 dark:bg-[#5D3FD3]/20 text-[#5D3FD3] dark:text-violet-300 px-3 py-1 rounded-full text-sm font-semibold border border-[#5D3FD3]/20 dark:border-[#5D3FD3]/30">
-              <span className="w-2 h-2 bg-[#5D3FD3] rounded-full animate-pulse"></span>
-              {user?.role || 'EMPLOYER'}
-            </div>
-            <ThemeToggle />
-          </div>
-        </header>
+      {activeTab === 'Applicants' && (
+        <ApplicantsTab
+          jobs={jobs}
+          applications={applications}
+          selectedJobFilter={selectedJobFilter}
+          setSelectedJobFilter={setSelectedJobFilter}
+          isJobUnlocked={isJobUnlocked}
+          unlocking={unlocking}
+          handleUnlock={handleUnlock}
+          filterScore={filterScore}
+          setFilterScore={setFilterScore}
+          filterExperience={filterExperience}
+          setFilterExperience={setFilterExperience}
+          filterSkill={filterSkill}
+          setFilterSkill={setFilterSkill}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          filteredApplicants={filteredApplicants}
+          selectedApplicant={selectedApplicant}
+          setSelectedApplicant={setSelectedApplicant}
+          interviewDate={interviewDate}
+          setInterviewDate={setInterviewDate}
+          interviewTime={interviewTime}
+          setInterviewTime={setInterviewTime}
+          interviewNotes={interviewNotes}
+          setInterviewNotes={setInterviewNotes}
+          scheduleInterview={scheduleInterview}
+          handleUpdateApplicationStatus={handleUpdateApplicationStatus}
+        />
+      )}
 
-        <div className="flex-1 overflow-y-auto p-8">
-          {activeTab === 'Overview' && (
-            <OverviewTab
-              jobs={jobs}
-              applications={applications}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              filteredJobs={filteredJobs}
-              handleStartEdit={handleStartEdit}
-              setSelectedJobFilter={setSelectedJobFilter}
-              setActiveTab={setActiveTab}
-            />
-          )}
+      {activeTab === 'Profile' && (
+        <ProfileTab
+          user={user}
+          profileLoading={profileLoading}
+          profileName={profileName}
+          setProfileName={setProfileName}
+          profileTitle={profileTitle}
+          setProfileTitle={setProfileTitle}
+          profilePhone={profilePhone}
+          setProfilePhone={setProfilePhone}
+          profileCompanyName={profileCompanyName}
+          setProfileCompanyName={setProfileCompanyName}
+          profileWebsite={profileWebsite}
+          setProfileWebsite={setProfileWebsite}
+          profileDescription={profileDescription}
+          setProfileDescription={setProfileDescription}
+          profileLocation={profileLocation}
+          setProfileLocation={setProfileLocation}
+          profileLogo={profileLogo}
+          setProfileLogo={setProfileLogo}
+          profileSaving={profileSaving}
+          handleProfileSubmit={handleProfileSubmit}
+        />
+      )}
 
-          {activeTab === 'Applicants' && (
-            <ApplicantsTab
-              jobs={jobs}
-              applications={applications}
-              selectedJobFilter={selectedJobFilter}
-              setSelectedJobFilter={setSelectedJobFilter}
-              isJobUnlocked={isJobUnlocked}
-              unlocking={unlocking}
-              handleUnlock={handleUnlock}
-              filterScore={filterScore}
-              setFilterScore={setFilterScore}
-              filterExperience={filterExperience}
-              setFilterExperience={setFilterExperience}
-              filterSkill={filterSkill}
-              setFilterSkill={setFilterSkill}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              filteredApplicants={filteredApplicants}
-              selectedApplicant={selectedApplicant}
-              setSelectedApplicant={setSelectedApplicant}
-              interviewDate={interviewDate}
-              setInterviewDate={setInterviewDate}
-              interviewTime={interviewTime}
-              setInterviewTime={setInterviewTime}
-              interviewNotes={interviewNotes}
-              setInterviewNotes={setInterviewNotes}
-              scheduleInterview={scheduleInterview}
-              handleUpdateApplicationStatus={handleUpdateApplicationStatus}
-            />
-          )}
+      {activeTab === 'Settings' && <SettingsTab user={user} />}
 
-          {activeTab === 'Profile' && (
-            <ProfileTab
-              user={user}
-              profileLoading={profileLoading}
-              profileName={profileName}
-              setProfileName={setProfileName}
-              profileTitle={profileTitle}
-              setProfileTitle={setProfileTitle}
-              profilePhone={profilePhone}
-              setProfilePhone={setProfilePhone}
-              profileCompanyName={profileCompanyName}
-              setProfileCompanyName={setProfileCompanyName}
-              profileWebsite={profileWebsite}
-              setProfileWebsite={setProfileWebsite}
-              profileDescription={profileDescription}
-              setProfileDescription={setProfileDescription}
-              profileLocation={profileLocation}
-              setProfileLocation={setProfileLocation}
-              profileLogo={profileLogo}
-              setProfileLogo={setProfileLogo}
-              profileSaving={profileSaving}
-              handleProfileSubmit={handleProfileSubmit}
-            />
-          )}
-
-          {activeTab === 'Settings' && <SettingsTab user={user} />}
-        </div>
-      </main>
-
-      {/* EDIT JOB POSTING MODAL */}
+      {/* Edit job modal */}
       <EditJobModal
         editingJob={editingJob}
         setEditingJob={setEditingJob}
@@ -542,6 +530,6 @@ ${editDescription}
         updatingJob={updatingJob}
         handleUpdateJobSubmit={handleUpdateJobSubmit}
       />
-    </div>
+    </PortalShell>
   );
 }
