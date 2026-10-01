@@ -178,7 +178,7 @@ export default function AdminMatcherPage() {
 
         {/* Live preview */}
         <div className="lg:col-span-2">
-          <div className="lg:sticky lg:top-0">
+          <div className="lg:sticky lg:top-0 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:overscroll-contain">
             <Card>
               <CardHeader title="Preview" description="How this match will look" />
               <div className={cx('space-y-4 transition-opacity', !candidate && !job && 'opacity-50')}>

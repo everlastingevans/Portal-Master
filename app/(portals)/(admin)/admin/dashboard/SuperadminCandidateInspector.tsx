@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Badge, BadgeTone, Button, EmptyState, Identity, Segmented, StatusBadge, Table, TBody, Td, Th, THead, Tr, Textarea, cx, statusTone } from '../_components/ui';
 import { useToast } from '@/components/ToastNotification';
+import { OverlayPortal } from '@/components/portal/overlay';
 
 // Brand video poster (navy surface, lime play mark)
 const LAUNCHPATH_POSTER_SVG =
@@ -260,10 +261,11 @@ export default function SuperadminCandidateInspector({
   ];
 
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={`Candidate ${inspectCandidate.name || ''}`}>
+    <OverlayPortal>
+    <div className="fixed inset-0 z-[70]" role="dialog" aria-modal="true" aria-label={`Candidate ${inspectCandidate.name || ''}`}>
       <div className="absolute inset-0 bg-ink-950/80 backdrop-blur-sm animate-fade-in" onClick={close} />
 
-      <aside className="absolute inset-y-0 right-0 flex h-full w-full max-w-3xl flex-col border-l border-white/[0.06] bg-ink-900 shadow-2xl shadow-black/50 animate-fade-in">
+      <aside className="h-app absolute right-0 top-0 flex w-full max-w-3xl flex-col border-l border-white/[0.06] bg-ink-900 shadow-2xl shadow-black/50 animate-fade-in">
         {/* Header */}
         <header className="space-y-4 border-b border-white/[0.06] px-6 pb-4 pt-5">
           <div className="flex items-start justify-between gap-4">
@@ -640,5 +642,6 @@ export default function SuperadminCandidateInspector({
         </div>
       </aside>
     </div>
+    </OverlayPortal>
   );
 }

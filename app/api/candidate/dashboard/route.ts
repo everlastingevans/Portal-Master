@@ -33,6 +33,9 @@ export async function GET() {
         seeking_roles: true,
         certificates_url: true,
         police_clearance_url: true,
+        location: true,
+        availability: true,
+        bio: true,
       }
     });
     

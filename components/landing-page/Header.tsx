@@ -42,19 +42,31 @@ export const Header = () => {
     return () => observers.forEach((o) => o?.disconnect());
   }, []);
 
-  // Lock background scroll while the mobile menu is open
+  // Lock background scroll while the mobile menu is open; close on Escape or when resizing to desktop
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setIsOpen(false);
+    const onResize = () => window.innerWidth >= 1024 && setIsOpen(false);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("resize", onResize);
     return () => {
       document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", onResize);
     };
   }, [isOpen]);
 
   return (
+    <>
     <header
       className={cx(
-        "fixed inset-x-0 top-0 z-50 transition-all duration-300",
-        scrolled || isOpen ? "bg-brand-navy/90 shadow-[0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl" : "bg-transparent",
+        "fixed inset-x-0 top-0 z-50 transition-colors duration-300",
+        isOpen
+          ? "bg-brand-navy shadow-[0_1px_0_rgba(255,255,255,0.08)]"
+          : scrolled
+            ? "bg-brand-navy/90 shadow-[0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl"
+            : "bg-transparent",
       )}
     >
       <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-6 px-5 sm:px-8">
@@ -100,9 +112,10 @@ export const Header = () => {
 
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-full ring-1 ring-inset ring-white/15 lg:hidden"
+            className="flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-full bg-white/[0.06] ring-1 ring-inset ring-white/20 lg:hidden"
             aria-label={isOpen ? "Close menu" : "Open menu"}
             aria-expanded={isOpen}
+            aria-controls="mobile-menu"
           >
             <span className={cx("h-0.5 w-5 rounded-full bg-white transition-all duration-300", isOpen && "translate-y-2 rotate-45")} />
             <span className={cx("h-0.5 w-5 rounded-full bg-white transition-all duration-300", isOpen && "opacity-0")} />
@@ -110,35 +123,58 @@ export const Header = () => {
           </button>
         </div>
       </div>
+    </header>
 
-      {/* Mobile menu */}
-      <div
-        className={cx(
-          "fixed inset-0 top-[72px] z-40 bg-brand-navy px-5 pb-10 pt-6 transition-all duration-300 lg:hidden",
-          isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
-        )}
-      >
-        <nav className="flex flex-col" aria-label="Mobile">
-          {navItems.map((item) => (
+    {/* Mobile menu. Lives OUTSIDE <header>: the header's backdrop-blur would otherwise become the
+        containing block for this fixed panel, collapsing it to the header's height so the links
+        spill over the page with no background behind them. */}
+    <div
+      id="mobile-menu"
+      aria-hidden={!isOpen}
+      className={cx(
+        "fixed inset-x-0 bottom-0 top-[72px] z-40 overflow-y-auto overscroll-contain bg-brand-navy px-5 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-4 transition-opacity duration-200 lg:hidden",
+        isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none invisible opacity-0",
+      )}
+    >
+      <nav className="flex flex-col" aria-label="Mobile">
+        {navItems.map((item) => {
+          const active = activeSection === item.id;
+          return (
             <Link
               key={item.id}
               href={`/#${item.id}`}
               onClick={() => setIsOpen(false)}
-              className="border-b border-white/[0.08] py-4 text-xl font-medium text-white"
+              tabIndex={isOpen ? 0 : -1}
+              className={cx(
+                "flex items-center justify-between border-b border-white/10 py-4 text-lg font-medium transition-colors",
+                active ? "text-brand-lime" : "text-white hover:text-brand-lime",
+              )}
             >
               {item.label}
+              <span aria-hidden className="text-white/30">→</span>
             </Link>
-          ))}
-        </nav>
-        <div className="mt-8 grid gap-3">
-          <Link href="/portal" onClick={() => setIsOpen(false)} className="flex h-12 items-center justify-center rounded-full bg-brand-lime text-base font-semibold text-brand-navy">
-            Get started
-          </Link>
-          <Link href="/login" onClick={() => setIsOpen(false)} className="flex h-12 items-center justify-center rounded-full text-base font-medium text-white ring-1 ring-inset ring-white/20">
-            Log in
-          </Link>
-        </div>
+          );
+        })}
+      </nav>
+      <div className="mt-8 grid gap-3">
+        <Link
+          href="/portal"
+          onClick={() => setIsOpen(false)}
+          tabIndex={isOpen ? 0 : -1}
+          className="flex h-12 items-center justify-center rounded-full bg-brand-lime text-base font-semibold text-brand-navy"
+        >
+          Get started
+        </Link>
+        <Link
+          href="/login"
+          onClick={() => setIsOpen(false)}
+          tabIndex={isOpen ? 0 : -1}
+          className="flex h-12 items-center justify-center rounded-full text-base font-medium text-white ring-1 ring-inset ring-white/25"
+        >
+          Log in
+        </Link>
       </div>
-    </header>
+    </div>
+    </>
   );
 };

@@ -22,6 +22,8 @@ export async function GET() {
         phone: true,
         linkedin_url: true,
         github_url: true,
+        location: true,
+        availability: true,
       },
     });
 

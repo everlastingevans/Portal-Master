@@ -8,6 +8,7 @@ import { UploadCloud, FileText, CheckCircle2, Check, Briefcase, Phone, Linkedin,
 import LaunchPathLogo from '@/components/LaunchPathLogo';
 import PortalLoader from '@/components/PortalLoader';
 import { Alert, Button, Card, Field, Input, Select, cx } from '@/components/portal/ui';
+import { AVAILABILITY_OPTIONS, CANDIDATE_LOCATIONS } from '@/lib/talent';
 
 const EXPERIENCE_LEVELS = [
   { value: 'Junior', label: 'Graduate or junior (0–2 years)' },
@@ -33,6 +34,8 @@ export default function OnboardingPage() {
   const [phone, setPhone] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [githubUrl, setGithubUrl] = useState('');
+  const [location, setLocation] = useState('');
+  const [availability, setAvailability] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
 
   // Must be a signed-in candidate; prefill anything we already know
@@ -49,6 +52,8 @@ export default function OnboardingPage() {
         if (EXPERIENCE_LEVELS.some((l) => l.value === user.experience_level)) setExperienceLevel(user.experience_level);
         setLinkedinUrl(user.linkedin_url || '');
         setGithubUrl(user.github_url || '');
+        setLocation(user.location || '');
+        setAvailability(user.availability || '');
         setChecking(false);
       } catch {
         router.replace('/login?next=/onboarding');
@@ -71,6 +76,8 @@ export default function OnboardingPage() {
           linkedin_url: linkedinUrl,
           github_url: githubUrl,
           phone,
+          location,
+          availability,
         }),
       });
       if (!res.ok) throw new Error('We couldn’t save your profile. Please try again.');
@@ -192,6 +199,28 @@ export default function OnboardingPage() {
                   </Select>
                 </Field>
               </div>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <Field label="Where are you based?" htmlFor="ob-location">
+                  <Select id="ob-location" value={location} onChange={(e) => setLocation(e.target.value)}>
+                    <option value="">Select a province</option>
+                    {CANDIDATE_LOCATIONS.map((l) => (
+                      <option key={l} value={l}>
+                        {l === 'Remote' ? 'Remote (anywhere in SA)' : l}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                <Field label="When can you start?" htmlFor="ob-availability">
+                  <Select id="ob-availability" value={availability} onChange={(e) => setAvailability(e.target.value)}>
+                    <option value="">Select</option>
+                    {AVAILABILITY_OPTIONS.map((a) => (
+                      <option key={a.value} value={a.value}>
+                        {a.label}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+              </div>
               <Field label="Mobile number" htmlFor="ob-phone" optional>
                 <Input id="ob-phone" type="tel" icon={Phone} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+27 82 123 4567" autoComplete="tel" />
               </Field>
@@ -256,7 +285,7 @@ export default function OnboardingPage() {
 
               <div className="flex items-start gap-3 rounded-xl bg-slate-50 p-4 text-xs leading-relaxed text-slate-500">
                 <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-brand-navy" />
-                Your CV is only shared with employers when you apply for their roles.
+                Employers can discover your profile in the LaunchPath talent pool. Your contact details and CV file are only shared when you apply.
               </div>
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row">

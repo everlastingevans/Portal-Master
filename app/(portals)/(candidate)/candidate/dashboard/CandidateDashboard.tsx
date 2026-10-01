@@ -145,6 +145,9 @@ export default function CandidateDashboard({
   const [profileSeekingRoles, setProfileSeekingRoles] = useState(user?.seeking_roles || '');
   const [profileCertificatesUrl, setProfileCertificatesUrl] = useState(user?.certificates_url || '');
   const [profilePoliceClearanceUrl, setProfilePoliceClearanceUrl] = useState(user?.police_clearance_url || '');
+  const [profileLocation, setProfileLocation] = useState(user?.location || '');
+  const [profileAvailability, setProfileAvailability] = useState(user?.availability || '');
+  const [profileBio, setProfileBio] = useState(user?.bio || '');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isEditingResume, setIsEditingResume] = useState(false);
@@ -172,6 +175,9 @@ export default function CandidateDashboard({
       setProfileSeekingRoles(user.seeking_roles || '');
       setProfileCertificatesUrl(user.certificates_url || '');
       setProfilePoliceClearanceUrl(user.police_clearance_url || '');
+      setProfileLocation(user.location || '');
+      setProfileAvailability(user.availability || '');
+      setProfileBio(user.bio || '');
     }
   }, [user]);
 
@@ -483,6 +489,9 @@ export default function CandidateDashboard({
           seeking_roles: profileSeekingRoles,
           certificates_url: profileCertificatesUrl,
           police_clearance_url: profilePoliceClearanceUrl,
+          location: profileLocation,
+          availability: profileAvailability,
+          bio: profileBio,
         }),
       });
 
@@ -609,6 +618,12 @@ export default function CandidateDashboard({
           setProfileCertificatesUrl={setProfileCertificatesUrl}
           profilePoliceClearanceUrl={profilePoliceClearanceUrl}
           setProfilePoliceClearanceUrl={setProfilePoliceClearanceUrl}
+          profileLocation={profileLocation}
+          setProfileLocation={setProfileLocation}
+          profileAvailability={profileAvailability}
+          setProfileAvailability={setProfileAvailability}
+          profileBio={profileBio}
+          setProfileBio={setProfileBio}
           profileQualifications={profileQualifications}
           setProfileQualifications={setProfileQualifications}
           profileSkills={profileSkills}
