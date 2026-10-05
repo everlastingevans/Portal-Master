@@ -9,6 +9,10 @@ import {
   Users,
   Building2,
   Briefcase,
+  Inbox,
+  Layers,
+  Handshake,
+  SlidersHorizontal,
   CalendarClock,
   Sparkles,
   BellRing,
@@ -68,6 +72,9 @@ export default function AdminShell({ children }: { children: ReactNode }) {
     {
       label: 'Manage',
       items: [
+        { href: '/admin/vacancies', label: 'Vacancies', icon: Inbox },
+        { href: '/admin/programmes', label: 'Programmes', icon: Layers },
+        { href: '/admin/partner', label: 'Companies & Partner', icon: Handshake },
         { href: '/admin/talent', label: 'Talent', icon: Users, count: pendingVideos },
         { href: '/admin/corporate', label: 'Employers', icon: Building2 },
         { href: '/admin/jobs', label: 'Jobs', icon: Briefcase, count: pendingJobs },
@@ -79,6 +86,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
       items: [
         { href: '/admin/matcher', label: 'Matchmaker', icon: Sparkles },
         { href: '/admin/notifications', label: 'Notifications', icon: BellRing },
+        { href: '/admin/setup', label: 'Commercial setup', icon: SlidersHorizontal },
       ],
     },
   ];

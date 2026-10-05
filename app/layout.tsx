@@ -3,9 +3,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { POPIAConsent } from "@/components/POPIAConsent";
 import { ToastProvider } from "@/components/ToastNotification";
 import localFont from "next/font/local";
-import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import { GoogleAnalytics } from "@next/third-parties/google";
+import { AnalyticsScripts } from "@/components/AnalyticsScripts";
 
 // Brand typeface, self-hosted from /public/fonts
 const lexendDeca = localFont({
@@ -25,6 +23,8 @@ const lexendDeca = localFont({
 });
 
 export const metadata = {
+  // Absolute base for canonical URLs and social images
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://launchpath.co.za"),
   title: "LaunchPath Recruitment",
   description: "AI-Powered Recruitment and Job Readiness Platform",
   icons: {
@@ -45,8 +45,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={lexendDeca.variable}>
       <body>
-        <Analytics />
-        <SpeedInsights/>
         {/* Each surface owns its palette (light portals, dark admin, navy marketing),
             so OS dark mode must not flip `dark:` variants on and half-theme pages. */}
         <ThemeProvider attribute="class" forcedTheme="light" enableSystem={false}>
@@ -55,7 +53,7 @@ export default function RootLayout({
             <POPIAConsent />
           </ToastProvider>
         </ThemeProvider>
-        <GoogleAnalytics gaId="G-PM0PE0XNEW" />
+        <AnalyticsScripts gaId="G-PM0PE0XNEW" />
       </body>
     </html>
   );

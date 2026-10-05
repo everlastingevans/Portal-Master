@@ -13,12 +13,12 @@ const FEATURES = [
   {
     icon: Sparkles,
     title: "Jobs ranked for you",
-    body: "See how well you fit each role, why you matched, and the skills worth building next.",
+    body: "See how well you fit each role and the skills worth building next.",
   },
   {
     icon: Mic,
     title: "Practise your interview",
-    body: "Record practice answers, get AI feedback and build a readiness score employers can see.",
+    body: "Record practice answers, get feedback and build a readiness score employers can see.",
   },
   {
     icon: Route,
@@ -85,9 +85,9 @@ export const TalentSection = () => (
         <div className="order-1 lg:order-2">
           <Reveal>
             <SectionHeading
-              eyebrow="For graduates and job seekers"
+              eyebrow="For job seekers"
               title="Get seen for what you can actually do."
-              description="Built for graduates, bootcamp learners and junior professionals. Free for job seekers, always."
+              description="Built for school leavers, graduates, bootcamp learners and junior professionals early in their careers. Free for job seekers, always."
             />
           </Reveal>
 

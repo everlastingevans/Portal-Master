@@ -11,7 +11,7 @@ const SIDES = [
   },
   {
     icon: GraduationCap,
-    who: "For graduates",
+    who: "For job seekers",
     line: "Eighty-seven applications, three replies.",
     body: "Talented young people who never get seen, and start to believe the problem is them.",
   },
@@ -19,7 +19,7 @@ const SIDES = [
     icon: Sparkles,
     who: "What LaunchPath does",
     line: "Fix the middle.",
-    body: "Vet candidates properly, match them to real requirements, and put the right shortlist in front of the right employer.",
+    body: "Screen candidates properly against the real requirements, and put a short, relevant shortlist in front of the employer.",
     highlight: true,
   },
 ];
@@ -42,7 +42,7 @@ export const ProblemSection = () => (
               right. The role stays open another month.
             </p>
             <p>
-              Meanwhile, somewhere in Soweto, a graduate has applied to her eighty-seventh job. She has heard back from three. She is starting to wonder if the problem is her.
+              Meanwhile, somewhere in Soweto, a young job seeker has applied to her eighty-seventh job. She has heard back from three. She is starting to wonder if the problem is her.
             </p>
             <p className="text-2xl font-semibold tracking-tight text-brand-navy">It isn’t.</p>
             <p>

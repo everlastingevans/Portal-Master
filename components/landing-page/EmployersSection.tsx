@@ -1,35 +1,36 @@
-import { ArrowRight, CalendarClock, FileText, ListChecks, Users, Video } from "lucide-react";
+import { ArrowRight, MessagesSquare, ListChecks, ShieldCheck, UserCheck, Wallet } from "lucide-react";
 import Link from "next/link";
 import { Reveal } from "./Reveal";
 import { Container, Cta, MockAvatar, SectionHeading } from "./primitives";
+import { TALENT_CATEGORIES } from "@/lib/content/talent-categories";
 
 const FEATURES = [
   {
-    icon: FileText,
-    title: "Post a role in minutes",
-    body: "Define the title, skills, salary band, location and work style. Our assistant drafts the post for you.",
+    icon: MessagesSquare,
+    title: "A role calibrated with you",
+    body: "We talk through the role, the must-haves and what would rule someone out, so the search starts from what you actually need.",
   },
   {
-    icon: Users,
-    title: "Ranked, pre-screened applicants",
-    body: "Candidates are surfaced by verified skills fit, location and availability, with the reasons they matched.",
+    icon: UserCheck,
+    title: "3–5 screened candidates",
+    body: "A short, considered shortlist for serviceable roles within five working days, instead of hundreds of unfiltered CVs.",
   },
   {
-    icon: Video,
-    title: "See ability, not buzzwords",
-    body: "Review CVs, readiness scores and recorded video answers before you spend time on a call.",
+    icon: Wallet,
+    title: "Nothing to pay upfront",
+    body: "Submitting a vacancy and receiving your shortlist are free. A placement fee applies only when you hire.",
   },
   {
-    icon: CalendarClock,
-    title: "Interviews without the admin",
-    body: "Propose times and candidates are notified by email, SMS and WhatsApp automatically.",
+    icon: ShieldCheck,
+    title: "Replacement guarantee",
+    body: "If a hire doesn’t work out early on, we run a replacement search at no additional placement fee, subject to our terms.",
   },
 ];
 
 const COLUMNS = [
-  { title: "New", count: 12, people: [{ n: "Thabo N", s: 91 }, { n: "Zanele P", s: 84 }] },
-  { title: "Shortlisted", count: 4, people: [{ n: "Lerato M", s: 94 }, { n: "Sipho D", s: 89 }] },
-  { title: "Interviewing", count: 2, people: [{ n: "Ayanda K", s: 86 }] },
+  { title: "Shortlist", people: [{ n: "Thabo N", s: "Screened" }, { n: "Zanele P", s: "Screened" }] },
+  { title: "Interviewing", people: [{ n: "Lerato M", s: "Thu 10:00" }, { n: "Sipho D", s: "Fri 14:00" }] },
+  { title: "Offer", people: [{ n: "Ayanda K", s: "Offer made" }] },
 ];
 
 function PipelinePreview() {
@@ -38,17 +39,17 @@ function PipelinePreview() {
       <div className="rounded-[22px] bg-white shadow-[0_32px_64px_-32px_rgba(10,27,61,0.35)] ring-1 ring-slate-200/70">
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
           <div>
-            <p className="text-[13px] font-semibold text-brand-navy">Junior Data Analyst</p>
-            <p className="text-[11px] text-slate-500">Johannesburg · Hybrid · R14k – R18k</p>
+            <p className="text-[13px] font-semibold text-brand-navy">Junior Marketing Coordinator</p>
+            <p className="text-[11px] text-slate-500">Johannesburg · Hybrid · 0–2 years</p>
           </div>
-          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/15">Live</span>
+          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/15">Shortlist sent</span>
         </div>
         <div className="grid grid-cols-3 gap-3 p-4">
           {COLUMNS.map((col, ci) => (
             <div key={col.title} className="rounded-2xl bg-slate-50 p-2.5">
               <p className="flex items-center justify-between px-1 text-[11px] font-medium text-slate-500">
                 {col.title}
-                <span className="tabular-nums text-slate-400">{col.count}</span>
+                <span className="tabular-nums text-slate-400">{col.people.length}</span>
               </p>
               <ul className="mt-2.5 space-y-2">
                 {col.people.map((p, pi) => (
@@ -57,10 +58,7 @@ function PipelinePreview() {
                       <MockAvatar name={p.n} tone={ci + pi} />
                       <span className="min-w-0 truncate text-[12px] font-medium text-brand-navy">{p.n}.</span>
                     </div>
-                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                      <div className="h-full rounded-full bg-[#5E8C14]" style={{ width: `${p.s}%` }} />
-                    </div>
-                    <p className="mt-1 text-[10px] tabular-nums text-slate-500">{p.s}% match</p>
+                    <p className="mt-2 text-[10px] text-slate-500">{p.s}</p>
                   </li>
                 ))}
               </ul>
@@ -68,7 +66,7 @@ function PipelinePreview() {
           ))}
         </div>
       </div>
-      <p className="sr-only">Illustrative preview of the employer hiring pipeline.</p>
+      <p className="sr-only">Illustrative example of a hiring pipeline with LaunchPath.</p>
     </div>
   );
 }
@@ -80,10 +78,22 @@ export const EmployersSection = () => (
         <div>
           <Reveal>
             <SectionHeading
-              eyebrow="For employers and recruiters"
+              eyebrow="LaunchPath Hire"
               title="Hire the right junior talent, without the weekend of CVs."
-              description="From your first hire to a full graduate programme, LaunchPath gives lean teams a hiring pipeline that does the filtering for them."
+              description="A managed recruitment service for junior and early-career roles in Sales, Marketing, Business Operations, Technology and Finance. Hiring for something else? Tell us anyway and we’ll let you know if we can help."
             />
+            <ul className="mt-6 flex flex-wrap gap-2" aria-label="Roles we hire for">
+              {TALENT_CATEGORIES.map((c) => (
+                <li key={c.slug}>
+                  <Link
+                    href={`/hire/${c.slug}`}
+                    className="inline-flex h-9 items-center rounded-full bg-white px-4 text-[14px] font-medium text-brand-navy ring-1 ring-inset ring-slate-200 transition-colors hover:ring-brand-navy/40"
+                  >
+                    {c.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </Reveal>
 
           <ul className="mt-10 grid gap-x-8 gap-y-7 sm:grid-cols-2">
@@ -100,10 +110,10 @@ export const EmployersSection = () => (
 
           <Reveal delay={120}>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-              <Cta href="/register?type=client" variant="navy" arrow>
-                Start hiring
+              <Cta href="/find-candidates" variant="navy" arrow track={{ cta: "find_candidates", location: "employers" }}>
+                Find Candidates
               </Cta>
-              <Cta href="/#pricing" variant="outline-dark">
+              <Cta href="/#pricing" variant="outline-dark" track={{ cta: "pricing", location: "employers" }}>
                 See pricing
               </Cta>
             </div>
@@ -115,14 +125,16 @@ export const EmployersSection = () => (
           {/* Recruiter callout */}
           <Link
             href="/#contact"
+            data-track-cta="bulk_hiring"
+            data-track-location="employers"
             className="group mt-5 flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 transition-all hover:border-slate-300 hover:shadow-[0_8px_24px_-16px_rgba(10,27,61,0.3)]"
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-lime text-brand-navy">
               <ListChecks className="h-5 w-5" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-semibold text-brand-navy">Recruiter, agency or BPO?</span>
-              <span className="block text-sm text-slate-500">Source vetted early-career candidates for your clients. Let’s talk volume.</span>
+              <span className="block text-[15px] font-semibold text-brand-navy">Hiring several people at once?</span>
+              <span className="block text-sm text-slate-500">Intakes, multiple seats or recurring roles: let’s plan the search together.</span>
             </span>
             <ArrowRight className="h-5 w-5 shrink-0 text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-navy" />
           </Link>

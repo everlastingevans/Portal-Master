@@ -3,37 +3,49 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Reveal } from "./Reveal";
+import { HireTerms, formatRand, formatRate } from "@/lib/hire/terms";
 import { Container, SectionHeading, cx } from "./primitives";
 
-const FAQS = [
-  {
-    q: "How much does it cost to hire through LaunchPath?",
-    a: "R1,999 per role, paid once. That covers posting the role, a review of your requirements, screening and matching, and a curated shortlist delivered by email. There’s no placement commission and no hidden costs.",
-  },
-  {
-    q: "How quickly will I receive candidates?",
-    a: "Once your role is live, we usually send a shortlist of candidates who fit within five working days.",
-  },
-  {
-    q: "How are candidates vetted?",
-    a: "Every candidate is screened by a real person, not just an algorithm. We look at skills, attitude, communication and readiness to work, alongside how well they match your requirements.",
-  },
-  {
-    q: "What kind of candidates are on LaunchPath?",
-    a: "Mainly graduates, bootcamp learners and junior professionals from across South Africa. We also work with university and training partners to reach new talent.",
-  },
-  {
-    q: "Is LaunchPath free for job seekers?",
-    a: "Yes. Creating a profile, getting matched to jobs, practising interviews and applying are all free for candidates.",
-  },
-  {
-    q: "I’m a recruiter or agency. Can I use LaunchPath?",
-    a: "Yes. Get in touch through the form below and tell us about the roles you’re filling and the volume you need, and we’ll set things up with you.",
-  },
-];
+function buildFaqs(t: HireTerms) {
+  return [
+    {
+      q: "Is it really free to submit a vacancy?",
+      a: "Yes. Submitting a vacancy, calibrating the role with us and receiving your shortlist are all free. You don’t need to create an account or enter payment details.",
+    },
+    {
+      q: "When do I pay, and how much?",
+      a: `Only when you make a successful hire. The placement fee is ${formatRate(t.feeRateBps)} of the hire’s annual cost to company, with a minimum of ${formatRand(t.feeMin)} and a maximum of ${formatRand(t.feeMax)}. If you don’t hire, you don’t pay.`,
+    },
+    {
+      q: "How quickly will I receive candidates?",
+      a: "For serviceable roles, our target is a shortlist of 3–5 screened candidates within five working days of calibrating the role with you. If a role is harder to fill, we’ll tell you upfront and agree a realistic timeline.",
+    },
+    {
+      q: "How are candidates screened?",
+      a: "The LaunchPath team screens every shortlisted candidate against the brief we agree with you, looking at role-relevant skills, communication, attitude, readiness to work, location and salary expectations.",
+    },
+    {
+      q: "What does the replacement guarantee cover?",
+      a: `If your hire leaves voluntarily, or is legitimately dismissed for performance, within ${t.guaranteeDays} days of starting, we’ll run one replacement search at no additional placement fee. The guarantee is subject to our final employer terms.`,
+    },
+    {
+      q: "What kind of roles do you recruit for?",
+      a: "Junior and early-career roles, typically 0–3 years’ experience, across Sales, Marketing, Business Operations, Technology and Finance in South Africa. If your role is outside these areas, submit it anyway and we’ll let you know whether we can help.",
+    },
+    {
+      q: "Can you help us hire several people at once?",
+      a: "Yes. If you’re hiring for multiple seats, an intake or recurring roles, submit one vacancy or get in touch through the form below and we’ll plan the search with you.",
+    },
+    {
+      q: "Do candidates pay anything?",
+      a: "No. Candidates never pay to create a profile, be considered for a role or be placed.",
+    },
+  ];
+}
 
-export const FaqSection = () => {
+export const FaqSection = ({ terms }: { terms: HireTerms }) => {
   const [open, setOpen] = useState<number | null>(0);
+  const faqs = buildFaqs(terms);
 
   return (
     <section id="faq" className="scroll-mt-20 bg-white pb-24 md:pb-32">
@@ -45,7 +57,7 @@ export const FaqSection = () => {
 
           <Reveal delay={80} className="lg:col-span-8">
             <ul className="divide-y divide-slate-200 border-y border-slate-200">
-              {FAQS.map((item, i) => {
+              {faqs.map((item, i) => {
                 const isOpen = open === i;
                 return (
                   <li key={item.q}>

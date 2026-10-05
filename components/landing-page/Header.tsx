@@ -8,10 +8,10 @@ import { cx } from "./primitives";
 export const Logo = () => <LaunchPathLogo />;
 
 const navItems = [
-  { label: "For employers", id: "employers" },
-  { label: "For talent", id: "talent" },
   { label: "How it works", id: "how-it-works" },
   { label: "Pricing", id: "pricing" },
+  { label: "FAQ", id: "faq" },
+  { label: "For job seekers", id: "talent" },
   { label: "Contact", id: "contact" },
 ];
 
@@ -104,10 +104,12 @@ export const Header = () => {
             Log in
           </Link>
           <Link
-            href="/portal"
+            href="/find-candidates"
+            data-track-cta="find_candidates"
+            data-track-location="header"
             className="hidden h-10 items-center rounded-full bg-brand-lime px-5 text-[14px] font-semibold text-brand-navy transition-colors hover:bg-brand-lime-soft md:inline-flex"
           >
-            Get started
+            Find Candidates
           </Link>
 
           <button
@@ -158,12 +160,22 @@ export const Header = () => {
       </nav>
       <div className="mt-8 grid gap-3">
         <Link
-          href="/portal"
+          href="/find-candidates"
           onClick={() => setIsOpen(false)}
           tabIndex={isOpen ? 0 : -1}
+          data-track-cta="find_candidates"
+          data-track-location="mobile_menu"
           className="flex h-12 items-center justify-center rounded-full bg-brand-lime text-base font-semibold text-brand-navy"
         >
-          Get started
+          Find Candidates
+        </Link>
+        <Link
+          href="/register?type=talent"
+          onClick={() => setIsOpen(false)}
+          tabIndex={isOpen ? 0 : -1}
+          className="flex h-12 items-center justify-center rounded-full text-base font-medium text-white ring-1 ring-inset ring-white/25"
+        >
+          Looking for work? Join free
         </Link>
         <Link
           href="/login"
