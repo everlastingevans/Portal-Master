@@ -1,34 +1,34 @@
-import { Check, ShieldCheck, Target, Wallet } from "lucide-react";
+import { Check, ClipboardList, Handshake, UserCheck } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { Container, Cta, SectionHeading } from "./primitives";
 
 const STEPS = [
   {
-    icon: ShieldCheck,
-    title: "We vet",
-    body: "Every candidate is screened by a real person, not just an algorithm. We check skills, attitude, communication and readiness to work.",
+    icon: ClipboardList,
+    title: "Tell us who you need",
+    body: "Share the role in a short form. It’s free and you don’t need an account. We’ll call you to calibrate what good looks like for your team.",
   },
   {
-    icon: Target,
-    title: "We match",
-    body: "You tell us what you actually need. We send a shortlist of candidates who fit, usually within five working days.",
+    icon: UserCheck,
+    title: "Meet your shortlist",
+    body: "Within five working days for serviceable roles, we send you 3–5 screened candidates who fit the brief. You choose who to interview.",
   },
   {
-    icon: Wallet,
-    title: "We make it affordable",
-    body: "Our pricing is built for SMEs, not corporate recruitment budgets. One flat fee per role, no placement commission.",
+    icon: Handshake,
+    title: "Hire",
+    body: "Make your offer. You only pay a placement fee once someone starts, and every placement is backed by our replacement guarantee.",
   },
 ];
 
-const FACTORS = [
-  "Skills overlap",
+const SCREENING = [
+  "Role-relevant skills",
+  "Communication",
+  "Attitude and readiness to work",
   "Experience relevance",
-  "Geography and commute",
-  "Salary alignment",
-  "Qualification level",
-  "Industry fit",
-  "Behavioural signals",
-  "Employer preferences",
+  "Location and commute",
+  "Salary expectations",
+  "Availability to start",
+  "Your must-haves",
 ];
 
 export const HowItWorksSection = () => (
@@ -38,13 +38,13 @@ export const HowItWorksSection = () => (
         <Reveal>
           <SectionHeading
             eyebrow="How it works"
-            title="A simpler way to hire junior talent."
-            description="Built for South African employers who need to hire well without burning weeks doing it. We do three things, and we do them properly."
+            title="Three steps to your next junior hire."
+            description="Built for South African employers hiring for junior and early-career roles, typically 0–3 years’ experience. We do the searching and screening; you meet the people worth meeting."
           />
         </Reveal>
         <Reveal delay={80} className="shrink-0">
-          <Cta href="/register?type=client" variant="navy" arrow>
-            Post a role
+          <Cta href="/find-candidates" variant="navy" arrow track={{ cta: "find_candidates", location: "how_it_works" }}>
+            Find Candidates
           </Cta>
         </Reveal>
       </div>
@@ -58,7 +58,7 @@ export const HowItWorksSection = () => (
               <span className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-navy text-brand-lime shadow-[0_0_0_8px_white]">
                 <Icon className="h-5 w-5" />
               </span>
-              <span className="text-sm font-medium tabular-nums text-slate-400">0{i + 1}</span>
+              <span className="text-sm font-medium tabular-nums text-slate-400">Step {i + 1}</span>
             </div>
             <h3 className="mt-6 text-xl font-semibold text-brand-navy">{title}</h3>
             <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{body}</p>
@@ -71,13 +71,13 @@ export const HowItWorksSection = () => (
           <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(166,242,60,0.18),transparent_65%)]" />
           <div className="relative grid gap-10 lg:grid-cols-12 lg:items-center">
             <div className="lg:col-span-5">
-              <h3 className="text-[28px] font-semibold leading-tight tracking-tight text-white sm:text-[34px]">Matching that goes beyond keywords.</h3>
+              <h3 className="text-[28px] font-semibold leading-tight tracking-tight text-white sm:text-[34px]">Screened by people, for your role.</h3>
               <p className="mt-4 text-[16px] leading-relaxed text-white/70">
-                Traditional job boards rely on crude keyword filters. LaunchPath weighs several signals together to connect the right candidate to the right role.
+                Every candidate on your shortlist has been screened by the LaunchPath team against the brief we agreed with you, not just filtered by keywords.
               </p>
             </div>
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:col-span-7">
-              {FACTORS.map((f) => (
+              {SCREENING.map((f) => (
                 <li key={f} className="flex items-center gap-3 rounded-2xl bg-white/[0.04] px-4 py-3.5 text-[15px] text-white/90 ring-1 ring-inset ring-white/[0.08]">
                   <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-lime text-brand-navy">
                     <Check className="h-3 w-3" strokeWidth={3} />

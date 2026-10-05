@@ -6,6 +6,14 @@ interface EmailOptions {
 }
 
 /**
+ * True only when a real email provider is configured. `sendEmail` returns true in mock mode too,
+ * so use this before telling anyone an email was actually delivered.
+ */
+export function isEmailConfigured(): boolean {
+  return Boolean(process.env.BREVO_API_KEY);
+}
+
+/**
  * Sends a real Brevo email if configured, else logs structured contents to console.
  */
 export async function sendEmail({ to, subject, html, text }: EmailOptions): Promise<boolean> {

@@ -51,15 +51,15 @@ export default function PortalChooserPage() {
           href="/register?type=talent"
           icon={GraduationCap}
           title="I’m looking for work"
-          description="For graduates and early-career job seekers."
-          points={['AI job matches', 'Interview practice', 'Free']}
+          description="For early-career job seekers."
+          points={['Job matches', 'Interview practice', 'Free']}
         />
         <PathCard
-          href="/register?type=client"
+          href="/find-candidates"
           icon={Building2}
           title="I’m hiring"
-          description="For businesses hiring entry-level talent."
-          points={['AI-drafted job posts', 'Ranked applicants', 'Video screening']}
+          description="Tell us who you need. No account or payment needed to start."
+          points={['Free to submit', 'Screened shortlist', 'Pay only if you hire']}
         />
       </div>
 

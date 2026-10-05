@@ -1,34 +1,39 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Building2, Check, GraduationCap, Mail, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Building2, Check, ClipboardCheck, GraduationCap, Mail, Users } from "lucide-react";
 import HeroImage from "@/assets/models/models1.jpg";
 import { Container, Cta, Eyebrow, MockAvatar } from "./primitives";
 
 const AUDIENCES = [
   {
     icon: Building2,
-    title: "Employers & SMEs",
-    body: "Post a role and get a vetted shortlist instead of four hundred CVs.",
-    href: "/register?type=client",
-    cta: "Start hiring",
+    title: "Hiring for a role",
+    body: "Tell us who you need and meet a short list of screened candidates, not a pile of CVs.",
+    href: "/find-candidates",
+    cta: "Find Candidates",
+    track: "find_candidates",
   },
   {
     icon: Users,
-    title: "Recruiters & partners",
-    body: "Source pre-screened early-career talent for the roles you’re filling.",
+    title: "Hiring several people",
+    body: "Filling a few seats or a whole intake? We’ll plan the search with you.",
     href: "/#contact",
     cta: "Talk to our team",
+    track: "bulk_hiring",
   },
   {
     icon: GraduationCap,
-    title: "Graduates & job seekers",
-    body: "Build one profile and get matched to roles that fit your skills.",
+    title: "Looking for work",
+    body: "Early in your career? Build one free profile and get considered for real roles.",
     href: "/register?type=talent",
     cta: "Find a job",
+    track: "candidate_signup",
   },
 ];
 
-export const HeroSection = () => {
+export const HeroSection = ({ guaranteeDays }: { guaranteeDays: number }) => {
+  const promises = ["No upfront fees", "Skills-screened talent", `${guaranteeDays}-day replacement guarantee`];
+
   return (
     <section id="top" className="relative overflow-hidden bg-brand-navy">
       {/* Atmosphere */}
@@ -43,28 +48,28 @@ export const HeroSection = () => {
           {/* Copy */}
           <div className="lg:col-span-6 xl:col-span-7">
             <div className="animate-fade-in">
-              <Eyebrow tone="dark">Hiring infrastructure for South Africa’s early careers</Eyebrow>
+              <Eyebrow tone="dark">Recruitment for South African junior and early-career roles</Eyebrow>
             </div>
 
-            <h1 className="mt-6 text-[40px] font-semibold leading-[1.05] tracking-tight text-white animate-fade-in [animation-delay:80ms] sm:text-[56px] xl:text-[68px]">
-              The bridge between <span className="text-brand-lime">overlooked talent</span> and growing businesses.
+            <h1 className="mt-6 text-[40px] font-semibold leading-[1.05] tracking-tight text-white animate-fade-in [animation-delay:80ms] sm:text-[56px] xl:text-[64px]">
+              Hire <span className="text-brand-lime">great junior talent</span> without sorting through hundreds of CVs.
             </h1>
 
             <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-white/70 animate-fade-in [animation-delay:160ms] sm:text-lg">
-              LaunchPath helps South African graduates reach meaningful work, and helps SMEs hire quality entry-level talent quickly and affordably, with vetting and matching done properly.
+              Tell us who you’re hiring. We’ll send you 3–5 screened candidates within five working days. You only pay if you hire.
             </p>
 
             <div className="mt-9 flex flex-col gap-3 animate-fade-in [animation-delay:240ms] sm:flex-row">
-              <Cta href="/register?type=client" variant="lime" arrow>
-                Hire talent
+              <Cta href="/find-candidates" variant="lime" arrow track={{ cta: "find_candidates", location: "hero" }}>
+                Find Candidates
               </Cta>
-              <Cta href="/register?type=talent" variant="outline-light">
-                Find a job
+              <Cta href="/#how-it-works" variant="outline-light" track={{ cta: "how_it_works", location: "hero" }}>
+                How It Works
               </Cta>
             </div>
 
-            <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/60 animate-fade-in [animation-delay:320ms]">
-              {["Every candidate screened by a person", "Shortlists by email", "No placement fees"].map((t) => (
+            <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/70 animate-fade-in [animation-delay:320ms]" aria-label="What you get">
+              {promises.map((t) => (
                 <li key={t} className="flex items-center gap-2">
                   <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand-lime/15 text-brand-lime">
                     <Check className="h-2.5 w-2.5" strokeWidth={3} />
@@ -80,7 +85,7 @@ export const HeroSection = () => {
             <div className="relative aspect-[4/5] overflow-hidden rounded-[32px] ring-1 ring-white/10 animate-scale-in [animation-delay:120ms]">
               <Image
                 src={HeroImage}
-                alt="A young graduate at a graduation ceremony"
+                alt="A young South African celebrating a career milestone"
                 fill
                 priority
                 placeholder="blur"
@@ -90,42 +95,36 @@ export const HeroSection = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/70 via-transparent to-transparent" />
             </div>
 
-            {/* Product preview: shortlist card */}
+            {/* Illustrative shortlist card */}
             <div className="absolute -left-4 bottom-10 w-[260px] rounded-2xl bg-white p-4 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)] animate-fade-in [animation-delay:420ms] sm:-left-10 sm:w-[290px]">
               <div className="flex items-center justify-between">
-                <p className="text-[13px] font-semibold text-brand-navy">Shortlist ready</p>
+                <p className="text-[13px] font-semibold text-brand-navy">Your shortlist</p>
                 <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
                   <Mail className="h-3 w-3" /> Sent
                 </span>
               </div>
-              <p className="mt-0.5 text-[11px] text-slate-500">Junior Data Analyst · Johannesburg</p>
+              <p className="mt-0.5 text-[11px] text-slate-500">Junior Sales Consultant · Johannesburg</p>
               <ul className="mt-3 space-y-2">
-                {[
-                  { name: "Lerato M", score: 94 },
-                  { name: "Sipho D", score: 89 },
-                  { name: "Ayanda K", score: 86 },
-                ].map((c, i) => (
-                  <li key={c.name} className="flex items-center gap-2.5">
-                    <MockAvatar name={c.name} tone={i} />
-                    <span className="flex-1 text-[13px] font-medium text-brand-navy">{c.name}.</span>
-                    <span className="rounded-full bg-brand-lime/25 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-brand-navy ring-1 ring-inset ring-brand-lime/60">
-                      {c.score}%
-                    </span>
+                {["Lerato M", "Sipho D", "Ayanda K"].map((name, i) => (
+                  <li key={name} className="flex items-center gap-2.5">
+                    <MockAvatar name={name} tone={i} />
+                    <span className="flex-1 text-[13px] font-medium text-brand-navy">{name}.</span>
+                    <span className="rounded-full bg-brand-lime/25 px-2 py-0.5 text-[11px] font-semibold text-brand-navy ring-1 ring-inset ring-brand-lime/60">Screened</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Product preview: match card */}
+            {/* Illustrative screening card */}
             <div className="absolute -right-3 top-8 w-[210px] rounded-2xl bg-white/95 p-4 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)] backdrop-blur animate-fade-in [animation-delay:560ms] sm:-right-8">
               <div className="flex items-center gap-2">
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-navy text-brand-lime">
-                  <Sparkles className="h-3.5 w-3.5" />
+                  <ClipboardCheck className="h-3.5 w-3.5" />
                 </span>
-                <p className="text-[13px] font-semibold text-brand-navy">Why you matched</p>
+                <p className="text-[13px] font-semibold text-brand-navy">Screened for</p>
               </div>
               <ul className="mt-3 space-y-1.5 text-[12px] text-slate-600">
-                {["SQL & Excel", "BCom Informatics", "Based in Gauteng"].map((s) => (
+                {["Role-relevant skills", "Communication", "Availability & location"].map((s) => (
                   <li key={s} className="flex items-center gap-1.5">
                     <Check className="h-3 w-3 text-emerald-600" strokeWidth={3} />
                     {s}
@@ -133,7 +132,7 @@ export const HeroSection = () => {
                 ))}
               </ul>
             </div>
-            <p className="sr-only">Illustrative preview of the LaunchPath product.</p>
+            <p className="sr-only">Illustrative example of a LaunchPath shortlist.</p>
           </div>
         </div>
       </Container>
@@ -142,9 +141,14 @@ export const HeroSection = () => {
       <div className="relative border-t border-white/[0.08] bg-white/[0.02]">
         <Container>
           <ul className="grid divide-y divide-white/[0.08] md:grid-cols-3 md:divide-x md:divide-y-0">
-            {AUDIENCES.map(({ icon: Icon, title, body, href, cta }) => (
+            {AUDIENCES.map(({ icon: Icon, title, body, href, cta, track }) => (
               <li key={title}>
-                <Link href={href} className="group flex h-full flex-col gap-3 py-8 transition-colors md:px-8 md:first:pl-0 md:last:pr-0">
+                <Link
+                  href={href}
+                  data-track-cta={track}
+                  data-track-location="audience_strip"
+                  className="group flex h-full flex-col gap-3 py-8 transition-colors md:px-8 md:first:pl-0 md:last:pr-0"
+                >
                   <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.06] text-brand-lime ring-1 ring-inset ring-white/10 transition-colors group-hover:bg-brand-lime group-hover:text-brand-navy">
                     <Icon className="h-5 w-5" />
                   </span>

@@ -6,39 +6,53 @@ import { ProblemSection } from "@/components/landing-page/ProblemSection";
 import { HowItWorksSection } from "@/components/landing-page/HowItWorksSection";
 import { EmployersSection } from "@/components/landing-page/EmployersSection";
 import { TalentSection } from "@/components/landing-page/TalentSection";
-import { StrategySection } from "@/components/landing-page/StrategySection";
 import { EmployerPricingSection } from "@/components/landing-page/EmployerPricingSection";
-import { TestimonialSection } from "@/components/landing-page/TestimonialSection";
+import { CaseStudiesSection } from "@/components/landing-page/CaseStudiesSection";
 import { FaqSection } from "@/components/landing-page/FaqSection";
 import { ContactFooter } from "@/components/landing-page/ContactFooter";
+import { EmployerAnalytics } from "@/components/landing-page/EmployerAnalytics";
+import { getHireTerms } from "@/lib/hire/settings";
+import { jsonLd, siteUrl } from "@/lib/seo";
+
+// Pricing and guarantee terms come from settings; refresh at most every 5 minutes
+// (saving the terms in admin also revalidates this page immediately).
+export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "LaunchPath | Hire vetted graduate talent in South Africa",
+  title: "LaunchPath | Hire great junior talent in South Africa",
   description:
-    "LaunchPath connects South African graduates with growing businesses. Employers get vetted, matched shortlists for R1,999 per role. Free for job seekers.",
+    "Tell us who you’re hiring. We’ll send you 3–5 screened candidates within five working days. No upfront fees: you only pay if you hire.",
   openGraph: {
-    title: "LaunchPath | The bridge between overlooked talent and growing businesses",
-    description: "Vetted, matched shortlists of early-career talent for SMEs and recruiters. Free for job seekers.",
+    title: "LaunchPath | Hire great junior talent without sorting through hundreds of CVs",
+    description: "Screened shortlists for South African junior and early-career roles. No upfront fees. Free for job seekers.",
     type: "website",
     locale: "en_ZA",
   },
+  alternates: { canonical: "/" },
 };
 
-export default function Home() {
+export default async function Home() {
+  const terms = await getHireTerms();
+
   return (
     <div className="bg-white font-sans text-slate-600 antialiased">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLd({ "@context": "https://schema.org", "@type": "Organization", name: "LaunchPath", url: siteUrl(), logo: `${siteUrl()}/icon.png`, email: "hello@launchpath.co.za" })}
+      />
+      <EmployerAnalytics page="home" />
       <Header />
       <main>
-        <HeroSection />
+        <HeroSection guaranteeDays={terms.guaranteeDays} />
         <PartnersSection />
-        <ProblemSection />
         <HowItWorksSection />
         <EmployersSection />
+        <EmployerPricingSection terms={terms} />
+        {/* Renders only verified, approved case studies; nothing until they exist */}
+        <CaseStudiesSection />
+        <ProblemSection />
         <TalentSection />
-        <StrategySection />
-        <EmployerPricingSection />
-        <TestimonialSection />
-        <FaqSection />
+        <FaqSection terms={terms} />
       </main>
       <ContactFooter />
     </div>

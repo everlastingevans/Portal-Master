@@ -285,3 +285,508 @@ model Attachment {
 
   @@map("attachments")
 }
+
+/// Platform-wide settings stored as validated JSON (e.g. key "hire_terms"). Defaults live in code,
+/// so a missing row is never an error.
+model AppSetting {
+  key           String   @id
+  value         String   // JSON
+  updated_by_id Int?
+  updated_at    DateTime @updatedAt
+
+  @@map("app_settings")
+}
+
+/// An employer contact captured from the public vacancy form. NOT an account and NOT proof of
+/// ownership: grouped by email only so operations can see repeat submissions. Never link this to a
+/// User automatically by email.
+model EmployerLead {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique // normalised (trimmed, lower-case)
+  company_name String
+  contact_name String
+  phone        String?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  vacancies    Vacancy[]
+
+  @@map("employer_leads")
+}
+
+/// A role submitted to the managed LaunchPath Hire service, tracked by operations from
+/// "New Vacancy" through placement and the guarantee period.
+model Vacancy {
+  id                    Int       @id @default(autoincrement())
+  submission_key        String    @unique // client idempotency key, stops double submits
+  lead_id               Int
+  lead                  EmployerLead @relation(fields: [lead_id], references: [id])
+  /// Set only when the submitter was signed in as an employer (session-verified, not email-matched)
+  submitted_by_user_id  Int?
+
+  // Snapshot of what was submitted (the lead keeps its first-seen values)
+  company_name          String
+  contact_name          String
+  contact_email         String
+  contact_phone         String
+  role_title            String
+  role_category         String    // SALES | MARKETING | BUSINESS_OPERATIONS | TECHNOLOGY | FINANCE | OTHER
+  role_category_other   String?
+  location              String
+  work_arrangement      String    // ON_SITE | HYBRID | REMOTE
+  salary_min            Int       // monthly, ZAR
+  salary_max            Int       // monthly, ZAR
+  employment_type       String
+  required_experience   String
+  key_skills            String[]  @default([])
+  start_date            DateTime?
+  description           String
+
+  // Operations
+  status                String    @default("NEW_VACANCY")
+  status_changed_at     DateTime  @default(now())
+  owner_id              Int?
+  internal_notes        String?
+
+  // Phase 3: commercial context. A vacancy is STANDARD unless staff explicitly link it to a
+  // verified company's Hiring Partner subscription or a bulk programme.
+  company_id              Int?
+  commercial_model        String    @default("STANDARD") // STANDARD | PARTNER | PROGRAMME
+  partner_subscription_id Int?
+  programme_id            Int?
+  salary_benchmark_note   String?   // Hiring Partner entitlement
+
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+
+  company               Company?             @relation(fields: [company_id], references: [id])
+  partner_subscription  PartnerSubscription? @relation(fields: [partner_subscription_id], references: [id])
+  programme             BulkProgramme?       @relation(fields: [programme_id], references: [id])
+  events                VacancyStatusEvent[]
+  shortlists            Shortlist[]
+  interview_requests    InterviewRequest[]
+  placements            Placement[]
+  hire_events           HireEvent[]
+
+  @@index([status])
+  @@index([contact_email, created_at])
+  @@map("vacancies")
+}
+
+/// Audit trail of vacancy status changes
+model VacancyStatusEvent {
+  id          Int      @id @default(autoincrement())
+  vacancy_id  Int
+  from_status String?
+  to_status   String
+  actor_id    Int?
+  created_at  DateTime @default(now())
+
+  vacancy Vacancy @relation(fields: [vacancy_id], references: [id], onDelete: Cascade)
+
+  @@index([vacancy_id, created_at])
+  @@map("vacancy_status_events")
+}
+
+/// A set of candidates (normally 3-5) prepared for one vacancy. Delivered to the employer through
+/// an expiring, revocable ShortlistLink.
+model Shortlist {
+  id            Int       @id @default(autoincrement())
+  vacancy_id    Int
+  title         String?
+  status        String    @default("DRAFT") // DRAFT | SENT
+  sent_at       DateTime?
+  created_by_id Int?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  vacancy    Vacancy              @relation(fields: [vacancy_id], references: [id], onDelete: Cascade)
+  candidates ShortlistCandidate[]
+  links      ShortlistLink[]
+
+  @@index([vacancy_id])
+  @@map("shortlists")
+}
+
+/// Employer access to a shortlist. Only a SHA-256 hash of the token is stored; the raw token exists
+/// only in the link given to the employer. Access requires a hash match, not revoked, not expired.
+model ShortlistLink {
+  id             Int       @id @default(autoincrement())
+  shortlist_id   Int
+  token_hash     String    @unique
+  expires_at     DateTime
+  revoked_at     DateTime?
+  created_by_id  Int?
+  view_count     Int       @default(0)
+  last_viewed_at DateTime?
+  created_at     DateTime  @default(now())
+
+  shortlist Shortlist @relation(fields: [shortlist_id], references: [id], onDelete: Cascade)
+
+  @@index([shortlist_id])
+  @@map("shortlist_links")
+}
+
+/// One candidate on a shortlist: the Candidate Card snapshot shown to the employer, the screening
+/// done for THIS vacancy, and the employer process (interview, offer). candidate_id optionally points
+/// at a platform User; it is deliberately not a foreign key so history survives account deletion.
+/// Assessments here are always LaunchPath recruiter assessments; null means "not assessed".
+model ShortlistCandidate {
+  id                    Int       @id @default(autoincrement())
+  shortlist_id          Int
+  candidate_id          Int?
+  position              Int       @default(0)
+
+  // Card content
+  display_name          String
+  target_role           String?
+  location              String?
+  experience            String?
+  salary_expectation    Int?      // monthly, ZAR
+  availability          String?
+  key_skills            String[]  @default([])
+  recruiter_note        String?
+  cv_s3_key             String?
+  cv_external_url       String?
+
+  // Recruiter screening for this vacancy (manual, labelled as such)
+  match_level           String?   // STRONG | GOOD | PARTIAL
+  communication_rating  Int?      // 1-5
+  communication_note    String?
+  role_assessment_name  String?
+  role_assessment_score Int?
+  role_assessment_max   Int?
+  role_assessment_note  String?
+  interview_readiness   Int?      // 1-5
+  assessed_by_id        Int?
+  assessed_at           DateTime?
+
+  // Employer process
+  employer_feedback     String?
+  interview_outcome     String?   // ADVANCED | NOT_PROGRESSED | CANDIDATE_WITHDREW
+  offer_status          String?   // OFFERED | ACCEPTED | DECLINED | WITHDRAWN
+  offer_made_at         DateTime?
+  offer_responded_at    DateTime?
+
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+
+  shortlist          Shortlist          @relation(fields: [shortlist_id], references: [id], onDelete: Cascade)
+  interview_requests InterviewRequest[]
+  placement          Placement?
+  employer_feedback_entries EmployerFeedback[]
+
+  @@index([shortlist_id])
+  @@index([candidate_id])
+  @@map("shortlist_candidates")
+}
+
+/// A request to interview a shortlisted candidate, from the shortlist link or recorded by staff
+/// when the employer asks by phone or email.
+model InterviewRequest {
+  id                     Int       @id @default(autoincrement())
+  vacancy_id             Int
+  shortlist_candidate_id Int
+  source                 String    // EMPLOYER_LINK | STAFF | EMPLOYER_DASHBOARD
+  requested_by_user_id   Int?      // employer user, when made from the employer dashboard
+  requester_name         String?
+  message                String?
+  preferred_times        String?
+  status                 String    @default("NEW") // NEW | SCHEDULED | COMPLETED | CANCELLED
+  scheduled_for          DateTime?
+  created_by_id          Int?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+
+  vacancy             Vacancy            @relation(fields: [vacancy_id], references: [id], onDelete: Cascade)
+  shortlist_candidate ShortlistCandidate @relation(fields: [shortlist_candidate_id], references: [id], onDelete: Cascade)
+
+  @@index([vacancy_id])
+  @@index([shortlist_candidate_id])
+  @@map("interview_requests")
+}
+
+/// A successful hire. Fee terms are snapshotted when the placement is created so later settings
+/// changes never alter an agreed fee. Follow-up outcomes: null = not yet checked.
+model Placement {
+  id                     Int       @id @default(autoincrement())
+  vacancy_id             Int
+  shortlist_candidate_id Int?      @unique
+  candidate_id           Int?
+  candidate_name         String
+  start_date             DateTime
+  annual_ctc             Int
+  // STANDARD and PARTNER fees are a rate with optional min/max; PROGRAMME fees are a flat per-hire amount.
+  fee_basis              String    @default("PERCENT") // PERCENT | FLAT
+  commercial_model       String    @default("STANDARD") // STANDARD | PARTNER | PROGRAMME
+  fee_rate_bps           Int?
+  fee_min                Int?
+  fee_max                Int?
+  fee_flat               Int?
+  partner_subscription_id Int?
+  programme_terms_id     Int?
+  guarantee_days         Int
+  placement_fee          Int
+  guarantee_end_date     DateTime
+  invoice_status         String    @default("NOT_INVOICED")
+  invoiced_at            DateTime?
+  paid_at                DateTime?
+  employer_feedback      String?
+
+  // RETAINED | LEFT_VOLUNTARY | DISMISSED_PERFORMANCE | LEFT_OTHER | UNREACHABLE
+  check_30_outcome       String?
+  check_30_at            DateTime?
+  check_30_note          String?
+  check_60_outcome       String?
+  check_60_at            DateTime?
+  check_60_note          String?
+  check_90_outcome       String?
+  check_90_at            DateTime?
+  check_90_note          String?
+
+  created_by_id          Int?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+
+  vacancy             Vacancy             @relation(fields: [vacancy_id], references: [id], onDelete: Restrict)
+  shortlist_candidate ShortlistCandidate? @relation(fields: [shortlist_candidate_id], references: [id], onDelete: SetNull)
+
+  @@index([vacancy_id])
+  @@index([start_date])
+  @@map("placements")
+}
+
+/// Hiring-funnel tracking (role calibration, shortlist sent, interview requested, offer made,
+/// accepted or declined, hire completed, fee invoiced and paid). dedupe_key makes each event idempotent.
+model HireEvent {
+  id                     Int      @id @default(autoincrement())
+  type                   String
+  vacancy_id             Int
+  shortlist_id           Int?
+  shortlist_candidate_id Int?
+  placement_id           Int?
+  actor_id               Int?
+  dedupe_key             String   @unique
+  occurred_at            DateTime @default(now())
+
+  vacancy Vacancy @relation(fields: [vacancy_id], references: [id], onDelete: Cascade)
+
+  @@index([vacancy_id])
+  @@index([type, occurred_at])
+  @@map("hire_events")
+}
+
+/// Transactional email ledger. One row per logical notification (dedupe_key), so retries never send
+/// twice. Bodies are not stored; they are re-rendered from the records on retry.
+model EmailLog {
+  id         Int       @id @default(autoincrement())
+  dedupe_key String    @unique
+  template   String
+  to_email   String
+  subject    String
+  vacancy_id Int?
+  status     String    @default("PENDING") // PENDING | SENDING | SENT | FAILED | NOT_CONFIGURED
+  attempts   Int       @default(0)
+  last_error String?
+  sent_at    DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@index([vacancy_id])
+  @@index([status])
+  @@map("email_logs")
+}
+
+/// A verified customer company for Phase 3 features (Hiring Partner, programmes, employer dashboard).
+/// Created by LaunchPath staff only. Access is granted per user through CompanyMember, explicitly;
+/// never inferred from an email address or domain.
+model Company {
+  id         Int      @id @default(autoincrement())
+  name       String
+  notes      String?
+  created_by_id Int?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  members       CompanyMember[]
+  vacancies     Vacancy[]
+  subscriptions PartnerSubscription[]
+  programmes    BulkProgramme[]
+
+  @@map("companies")
+}
+
+model CompanyMember {
+  id            Int      @id @default(autoincrement())
+  company_id    Int
+  user_id       Int
+  role          String   @default("MEMBER") // OWNER | MEMBER
+  granted_by_id Int?
+  created_at    DateTime @default(now())
+
+  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+
+  @@unique([company_id, user_id])
+  @@index([user_id])
+  @@map("company_members")
+}
+
+/// A version of the Hiring Partner offer. Versions have effective dates; subscriptions copy the
+/// version's terms when created, so later changes never alter an existing customer's agreement.
+model PartnerPlanVersion {
+  id              Int       @id @default(autoincrement())
+  name            String
+  status          String    @default("DRAFT") // DRAFT | ACTIVE | RETIRED
+  monthly_price   Int       // ZAR
+  vat_treatment   String    @default("UNDECIDED") // UNDECIDED | INCLUSIVE | EXCLUSIVE
+  vacancy_limit   Int
+  success_fee_bps Int
+  fee_rule        String    @default("UNDECIDED") // UNDECIDED | STANDARD_MIN_MAX | NO_MIN_MAX | CUSTOM
+  fee_min         Int?
+  fee_max         Int?
+  guarantee_days  Int
+  entitlements    String[]  @default([])
+  effective_from  DateTime
+  effective_to    DateTime?
+  notes           String?
+  created_by_id   Int?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  subscriptions PartnerSubscription[]
+
+  @@map("partner_plan_versions")
+}
+
+/// One customer's Hiring Partner agreement, with the agreed terms copied from the plan version.
+model PartnerSubscription {
+  id                 Int       @id @default(autoincrement())
+  company_id         Int
+  plan_version_id    Int
+  status             String    @default("PENDING") // PENDING | ACTIVE | PAST_DUE | CANCELLED
+  billing_mode       String    @default("MANUAL")  // MANUAL | PAYFAST_SANDBOX
+  checkout_ref       String    @unique // m_payment_id sent to the billing provider
+
+  // Agreed terms (snapshot)
+  monthly_price      Int
+  vat_treatment      String
+  vacancy_limit      Int
+  success_fee_bps    Int
+  fee_rule           String
+  fee_min            Int?
+  fee_max            Int?
+  guarantee_days     Int
+  entitlements       String[]  @default([])
+  terms_note         String?
+
+  talent_partner_id  Int?
+  starts_on          DateTime
+  ends_on            DateTime?
+  current_period_end DateTime?
+  provider_token     String?   @unique // PayFast subscription token
+  cancelled_at       DateTime?
+  created_by_id      Int?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  company        Company            @relation(fields: [company_id], references: [id])
+  plan_version   PartnerPlanVersion @relation(fields: [plan_version_id], references: [id])
+  vacancies      Vacancy[]
+  billing_events BillingEvent[]
+
+  @@index([company_id])
+  @@map("partner_subscriptions")
+}
+
+/// Billing notifications and manual payment records. event_key makes provider retries idempotent.
+model BillingEvent {
+  id              Int       @id @default(autoincrement())
+  provider        String    // PAYFAST_SANDBOX | MANUAL
+  event_key       String    @unique
+  subscription_id Int?
+  payment_status  String?
+  amount_cents    Int?
+  provider_payment_id String?
+  verified        Boolean   @default(false)
+  outcome         String    // APPLIED | IGNORED | REJECTED
+  detail          String?
+  recorded_by_id  Int?
+  received_at     DateTime  @default(now())
+
+  subscription PartnerSubscription? @relation(fields: [subscription_id], references: [id])
+
+  @@index([subscription_id])
+  @@map("billing_events")
+}
+
+/// A bulk hiring programme (multiple hires), from a "Talk to LaunchPath" enquiry or created by staff.
+model BulkProgramme {
+  id              Int       @id @default(autoincrement())
+  company_id      Int?
+  source          String    // ENQUIRY_FORM | STAFF
+  status          String    @default("ENQUIRY") // ENQUIRY | SCOPING | QUOTED | AGREED | ACTIVE | COMPLETED | CANCELLED
+  submission_key  String?   @unique
+  company_name    String
+  contact_name    String
+  contact_email   String
+  contact_phone   String?
+  name            String
+  requirements    String
+  role_categories String[]  @default([])
+  locations       String?
+  target_hires    Int
+  start_by        DateTime?
+  owner_id        Int?
+  internal_notes  String?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  company   Company?         @relation(fields: [company_id], references: [id])
+  vacancies Vacancy[]
+  terms     ProgrammeTerms[]
+
+  @@index([status])
+  @@map("bulk_programmes")
+}
+
+/// Accepted commercial terms for a programme. Append-only: a new agreement applies to placements
+/// recorded after it, never retroactively. Placements reference the terms they were priced with.
+model ProgrammeTerms {
+  id             Int      @id @default(autoincrement())
+  programme_id   Int
+  pricing_model  String   // TIER | CUSTOM_QUOTE
+  tier_label     String?
+  per_hire_fee   Int      // ZAR, per successful hire
+  guarantee_days Int
+  note           String?
+  agreed_on      DateTime
+  agreed_by_id   Int?
+  created_at     DateTime @default(now())
+
+  programme BulkProgramme @relation(fields: [programme_id], references: [id], onDelete: Cascade)
+
+  @@index([programme_id])
+  @@map("programme_terms")
+}
+
+/// Feedback from an employer user on a shortlisted candidate (employer dashboard). Scorecard fields
+/// are accepted only for companies entitled to interview scorecards.
+model EmployerFeedback {
+  id                     Int      @id @default(autoincrement())
+  shortlist_candidate_id Int
+  company_id             Int
+  user_id                Int
+  decision               String   // INTERESTED | MAYBE | NOT_A_FIT
+  comment                String?
+  score_skills           Int?
+  score_communication    Int?
+  score_culture          Int?
+  score_overall          Int?
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  shortlist_candidate ShortlistCandidate @relation(fields: [shortlist_candidate_id], references: [id], onDelete: Cascade)
+
+  @@unique([shortlist_candidate_id, user_id])
+  @@map("employer_feedback")
+}

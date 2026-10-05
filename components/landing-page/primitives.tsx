@@ -78,16 +78,21 @@ export function Cta({
   variant = "lime",
   arrow = false,
   className,
+  track,
 }: {
   href: string;
   children: ReactNode;
   variant?: CtaVariant;
   arrow?: boolean;
   className?: string;
+  /** Analytics: CTA id and its position on the page (picked up by EmployerAnalytics) */
+  track?: { cta: string; location: string };
 }) {
   return (
     <Link
       href={href}
+      data-track-cta={track?.cta}
+      data-track-location={track?.location}
       className={cx(
         "group inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-[15px] font-semibold transition-all duration-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-lime focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy",

@@ -104,7 +104,19 @@ export async function middleware(req: NextRequest) {
   }
 
   // Public routes to bypass auth
-  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron') || pathname === '/api/contact';
+  // Shortlist links are protected by their own unguessable token (checked in each API route), not a login.
+  // Keep them out of search engines, caches and Referer headers.
+  if (pathname === '/shortlist' || pathname.startsWith('/api/shortlists/')) {
+    const res = applySecureHeaders(NextResponse.next({ request: { headers: requestHeaders } }));
+    res.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+    res.headers.set('Referrer-Policy', 'no-referrer');
+    res.headers.set('Cache-Control', 'private, no-store, max-age=0');
+    return res;
+  }
+
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron') || pathname === '/api/contact' || pathname === '/api/vacancies' ||
+    // Public by design; each verifies its own input (flag-gated, signature-verified webhook)
+    pathname === '/api/programmes/enquiry' || pathname === '/api/webhooks/payfast-subscriptions';
   const isPublicAsset = pathname.startsWith('/_next') || pathname.includes('.');
 
   if (isAuthRoute || isPublicAsset) {

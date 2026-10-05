@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Mail, MapPin, Phone } from "lucide-react";
 import LaunchPathLogo from "@/components/LaunchPathLogo";
+import { TALENT_CATEGORIES } from "@/lib/content/talent-categories";
 import { Spinner } from "@/components/PortalLoader";
 import { Container, cx } from "./primitives";
 
@@ -151,7 +152,7 @@ const FOOTER_LINKS = [
     title: "Platform",
     links: [
       { label: "For employers", href: "/#employers" },
-      { label: "For talent", href: "/#talent" },
+      { label: "For job seekers", href: "/#talent" },
       { label: "How it works", href: "/#how-it-works" },
       { label: "Pricing", href: "/#pricing" },
     ],
@@ -159,11 +160,15 @@ const FOOTER_LINKS = [
   {
     title: "Get started",
     links: [
+      { label: "Find Candidates", href: "/find-candidates" },
       { label: "Create an account", href: "/portal" },
-      { label: "Post a role", href: "/register?type=client" },
       { label: "Find a job", href: "/register?type=talent" },
       { label: "Log in", href: "/login" },
     ],
+  },
+  {
+    title: "Roles we hire for",
+    links: TALENT_CATEGORIES.map((c) => ({ label: c.name, href: `/hire/${c.slug}` })),
   },
   {
     title: "Company",
@@ -228,10 +233,10 @@ export const ContactFooter = () => (
           <div className="md:col-span-5">
             <LaunchPathLogo className="h-10" />
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/55">
-              Hiring infrastructure connecting South African graduates with the growing businesses that need them.
+              Recruitment for South African junior and early-career roles. Free to submit a vacancy; you only pay if you hire.
             </p>
           </div>
-          <nav className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7" aria-label="Footer">
+          <nav className="grid grid-cols-2 gap-8 sm:grid-cols-4 md:col-span-7" aria-label="Footer">
             {FOOTER_LINKS.map((group) => (
               <div key={group.title}>
                 <p className="text-sm font-semibold text-white">{group.title}</p>
