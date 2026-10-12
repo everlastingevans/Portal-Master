@@ -22,12 +22,9 @@ import {
 import PortalShell from '@/components/portal/PortalShell';
 import PortalLoader from '@/components/PortalLoader';
 import { Alert, Badge, Button, Card, PageHeader, cx } from '@/components/portal/ui';
+import { READINESS_QUESTIONS, CRITERION_MAX } from '@/lib/readiness';
 
-const INTERVIEW_QUESTIONS = [
-  "Introduce yourself and explain why you're a great fit for your dream tech position.",
-  "Describe a challenging technical project you built recently, your specific approach, and the final results.",
-  "How do you prioritize deliverables under aggressive timelines or high-pressure situations?"
-];
+const INTERVIEW_QUESTIONS = READINESS_QUESTIONS;
 
 const SUBMIT_START_MESSAGE = 'Starting a secure upload...';
 
@@ -69,7 +66,9 @@ export default function ReadinessInterviewPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitProgress, setSubmitProgress] = useState<string>('');
   const [submissionResult, setSubmissionResult] = useState<{
+    pending: boolean;
     score: number;
+    criteria: { key: string; label: string; score: number; reason: string }[];
     feedback: string;
     transcript: string;
   } | null>(null);
@@ -299,8 +298,7 @@ export default function ReadinessInterviewPage() {
 
       const formData = new FormData();
       formData.append('video', file);
-      formData.append('questions', JSON.stringify(INTERVIEW_QUESTIONS));
-      formData.append('job_id', '1'); // Default fallback job association for Readiness evaluation
+      formData.append('question_index', String(currentQuestionIndex));
 
       SUBMIT_STAGES.forEach((stage, index) => {
         setTimeout(() => {
@@ -313,14 +311,15 @@ export default function ReadinessInterviewPage() {
         body: formData,
       });
 
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error('API server failed during video file processing.');
+        throw new Error(data.error || 'We couldn’t process your recording. Please try again.');
       }
 
-      const data = await response.json();
-
       setSubmissionResult({
+        pending: Boolean(data.pending),
         score: data.score,
+        criteria: Array.isArray(data.criteria) ? data.criteria : [],
         feedback: data.feedback,
         transcript: data.transcript,
       });
@@ -701,25 +700,56 @@ export default function ReadinessInterviewPage() {
             {submissionResult && (
               <Card padded={false} className="overflow-hidden animate-scale-in">
                 <div className="flex flex-col gap-5 border-b border-slate-100 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
-                  <div>
-                    <p className="flex items-center gap-1.5 text-sm font-medium text-emerald-700">
-                      <CheckCircle2 className="h-4 w-4" /> Feedback ready
-                    </p>
-                    <h3 className="mt-1 text-lg font-semibold tracking-tight text-brand-navy">Here&apos;s how you did</h3>
-                    <p className="mt-0.5 text-sm text-slate-500">Use the tips below and try again to beat your score.</p>
-                  </div>
-                  <div className="flex items-center gap-4 rounded-2xl bg-brand-navy px-5 py-4">
+                  {submissionResult.pending ? (
                     <div>
-                      <p className="text-xs text-white/60">Readiness score</p>
-                      <p className="text-3xl font-semibold tabular-nums tracking-tight text-brand-lime">
-                        {submissionResult.score}
-                        <span className="text-base font-medium text-white/50">/100</span>
+                      <p className="flex items-center gap-1.5 text-sm font-medium text-amber-700">
+                        <Timer className="h-4 w-4" /> Awaiting review
                       </p>
+                      <h3 className="mt-1 text-lg font-semibold tracking-tight text-brand-navy">Your answer has been submitted</h3>
+                      <p className="mt-0.5 text-sm text-slate-500">We&apos;ll add your score and feedback to your dashboard after review.</p>
                     </div>
-                  </div>
+                  ) : (
+                    <>
+                      <div>
+                        <p className="flex items-center gap-1.5 text-sm font-medium text-emerald-700">
+                          <CheckCircle2 className="h-4 w-4" /> Feedback ready
+                        </p>
+                        <h3 className="mt-1 text-lg font-semibold tracking-tight text-brand-navy">Here&apos;s how you did</h3>
+                        <p className="mt-0.5 text-sm text-slate-500">Use the tips below and try again to beat your score.</p>
+                      </div>
+                      <div className="flex items-center gap-4 rounded-2xl bg-brand-navy px-5 py-4">
+                        <div>
+                          <p className="text-xs text-white/60">Readiness score</p>
+                          <p className="text-3xl font-semibold tabular-nums tracking-tight text-brand-lime">
+                            {submissionResult.score}
+                            <span className="text-base font-medium text-white/50">/100</span>
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="space-y-6 p-6 sm:p-8">
+                  {submissionResult.criteria.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-brand-navy">How your score was calculated</h4>
+                      <ul className="mt-2 divide-y divide-slate-100 rounded-xl ring-1 ring-inset ring-slate-200/80">
+                        {submissionResult.criteria.map((c) => (
+                          <li key={c.key} className="flex items-start justify-between gap-4 p-3">
+                            <div>
+                              <p className="text-sm font-medium text-slate-800">{c.label}</p>
+                              <p className="mt-0.5 text-xs leading-relaxed text-slate-500">{c.reason}</p>
+                            </div>
+                            <span className="shrink-0 text-sm font-semibold tabular-nums text-brand-navy">
+                              {c.score}/{CRITERION_MAX}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   <div>
                     <h4 className="flex items-center gap-2 text-sm font-semibold text-brand-navy">
                       <Sparkles className="h-4 w-4 text-slate-400" /> Coaching feedback
@@ -729,14 +759,16 @@ export default function ReadinessInterviewPage() {
                     </p>
                   </div>
 
-                  <div>
-                    <h4 className="flex items-center gap-2 text-sm font-semibold text-brand-navy">
-                      <FileText className="h-4 w-4 text-slate-400" /> Transcript
-                    </h4>
-                    <div className="mt-2 max-h-48 overflow-y-auto rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-600 ring-1 ring-inset ring-slate-200/80">
-                      {submissionResult.transcript}
+                  {submissionResult.transcript && (
+                    <div>
+                      <h4 className="flex items-center gap-2 text-sm font-semibold text-brand-navy">
+                        <FileText className="h-4 w-4 text-slate-400" /> Transcript
+                      </h4>
+                      <div className="mt-2 max-h-48 overflow-y-auto rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-600 ring-1 ring-inset ring-slate-200/80">
+                        {submissionResult.transcript}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 <div className="flex flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50/60 px-6 py-4 sm:flex-row sm:justify-end sm:px-8">

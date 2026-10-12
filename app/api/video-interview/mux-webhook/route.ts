@@ -1,20 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { GoogleGenAI } from '@google/genai';
-
-// Simple helper to lazy initialize Gemini for webhook triggered transcriptions
-function getGeminiClient() {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
-  return new GoogleGenAI({
-    apiKey,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      },
-    },
-  });
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -54,42 +39,8 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        // Trigger AI transcription asynchronously (or update state)
-        const interview = await prisma.videoInterview.findFirst({
-          where: { mux_asset_id: assetId },
-          include: { candidate: true },
-        });
-
-        if (interview && !interview.transcript) {
-          const ai = getGeminiClient();
-          if (ai) {
-            console.info(`[MUX AI TRANSCRIPTION] Running transcription for interview ${interview.id}...`);
-            try {
-              // Mux provides a standard low-resolution audio file, or we can use standard webm/mp4 stream url if public
-              const mediaStreamUrl = playbackId
-                ? `https://stream.mux.com/${playbackId}/low.mp4`
-                : interview.video_url;
-
-              if (mediaStreamUrl) {
-                const response = await ai.models.generateContent({
-                  model: 'gemini-3.5-flash',
-                  contents: `Listen to the audio or view this video stream at ${mediaStreamUrl}. Provide a verbatim transcript of the candidate response, a performance score from 0-100, and a summary of constructive feedback.`,
-                });
-
-                const content = response.text || '';
-                await prisma.videoInterview.update({
-                  where: { id: interview.id },
-                  data: {
-                    transcript: content,
-                  },
-                });
-                console.info('[MUX AI TRANSCRIPTION] Finished webhook transcription.');
-              }
-            } catch (transcribeError) {
-              console.error('[MUX AI TRANSCRIPTION ERROR] Failed during async webhook transcription.', transcribeError);
-            }
-          }
-        }
+        // Transcription and scoring happen at upload (/api/video-interview/upload) from the actual recording.
+        // The model can't fetch a URL from a text prompt, so transcribing here would only produce invented text.
       }
     }
 

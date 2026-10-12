@@ -112,8 +112,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     const role = userRoleHeader ? userRoleHeader.toUpperCase() : 'CANDIDATE';
-    if (role !== 'SUPERADMIN' && role !== 'EMPLOYER' && role !== 'CLIENT') {
-      return NextResponse.json({ error: 'Forbidden: Recruiter access required' }, { status: 403 });
+    // Readiness scores are shown to every employer, so only LaunchPath staff may change them
+    if (role !== 'SUPERADMIN') {
+      return NextResponse.json({ error: 'Forbidden: LaunchPath staff access required' }, { status: 403 });
     }
 
     const body = await req.json();

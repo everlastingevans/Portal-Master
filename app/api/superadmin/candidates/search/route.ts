@@ -3,8 +3,8 @@ import { checkRole } from '@/lib/auth';
 import db from '@/lib/db';
 
 // Staff search of platform candidates when building a shortlist. SUPERADMIN only.
-// Practice-interview scores are returned for staff reference ONLY. Candidates can re-run them and the
-// existing re-evaluation flow changes scores without review, so they are never copied onto a card.
+// Practice-interview scores are returned for staff reference ONLY. Candidates can re-run practice
+// interviews as often as they like, so these scores are never copied onto a card.
 export async function GET(req: Request) {
   const auth = await checkRole(['SUPERADMIN']);
   if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });

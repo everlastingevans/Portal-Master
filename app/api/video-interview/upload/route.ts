@@ -1,20 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Type } from '@google/genai';
 import fs from 'fs';
 import path from 'path';
+import { questionText, readinessInstruction, parseReadinessEvaluation, feedbackText, RUBRIC, CRITERION_MAX, type ReadinessEvaluation } from '@/lib/readiness';
 
-const INTERVIEW_QUESTIONS = [
-  "Introduce yourself and explain why you're a great fit for your dream tech position.",
-  "Describe a challenging technical project you built recently, your specific approach, and the final results.",
-  "How do you prioritize deliverables under aggressive timelines or high-pressure situations?"
-];
+const MODEL = process.env.GEMINI_READINESS_MODEL || 'gemini-3.5-flash';
+
+const READINESS_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    answered: { type: Type.BOOLEAN, description: 'False if no audible speech or no attempt to answer the question.' },
+    transcript: { type: Type.STRING, description: 'Verbatim transcript of what the candidate says.' },
+    criteria: {
+      type: Type.ARRAY,
+      description: `One entry per rubric criterion: ${RUBRIC.map((c) => c.key).join(', ')}.`,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          key: { type: Type.STRING, enum: RUBRIC.map((c) => c.key) },
+          score: { type: Type.INTEGER, description: `0-${CRITERION_MAX}` },
+          reason: { type: Type.STRING, description: 'One sentence referring to the answer.' },
+        },
+        required: ['key', 'score', 'reason'],
+      },
+    },
+    strengths: { type: Type.ARRAY, items: { type: Type.STRING }, description: '1-2 specific things the candidate did well.' },
+    improvements: { type: Type.ARRAY, items: { type: Type.STRING }, description: '1-3 specific, practical tips to improve this answer.' },
+  },
+  required: ['answered', 'transcript', 'criteria', 'strengths', 'improvements'],
+};
 
 // Lazy initialize Gemini client
 function getGeminiClient() {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    console.warn('[GEMINI API WARNING] GEMINI_API_KEY is not defined. AI grading will use simulated response.');
+    console.warn('[GEMINI API WARNING] GEMINI_API_KEY is not defined. Readiness answers will be queued for manual review.');
     return null;
   }
   return new GoogleGenAI({
@@ -69,32 +90,75 @@ function getMuxClient() {
   });
 }
 
+/** Scores the answer with Gemini. Returns null when AI is unavailable or its output can't be trusted. */
+async function evaluateAnswer(buffer: Buffer, mimeType: string, question: string, profile: string): Promise<ReadinessEvaluation | null> {
+  const ai = getGeminiClient();
+  if (!ai) return null;
+  try {
+    const response = await ai.models.generateContent({
+      model: MODEL,
+      contents: [{ inlineData: { mimeType, data: buffer.toString('base64') } }, 'Assess this recorded answer.'],
+      config: {
+        temperature: 0,
+        systemInstruction: readinessInstruction(question, profile),
+        responseMimeType: 'application/json',
+        responseSchema: READINESS_SCHEMA,
+      },
+    });
+    const evaluation = parseReadinessEvaluation(response.text || '');
+    if (!evaluation) console.error('[READINESS] Unusable model output:', response.text?.slice(0, 500));
+    return evaluation;
+  } catch (aiError) {
+    console.error('[READINESS] Gemini scoring failed.', aiError);
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
-    // Retrieve authenticated user from headers (set by middleware) or fallback for testing
-    const userIdHeader = req.headers.get('x-user-id');
-    const userId = userIdHeader ? parseInt(userIdHeader, 10) : null;
+    // Identity comes only from the verified session (set by middleware), never from the request body
+    const userId = Number(req.headers.get('x-user-id'));
+    if (!userId || req.headers.get('x-user-role')?.toUpperCase() !== 'CANDIDATE') {
+      return NextResponse.json({ error: 'Candidate authentication required.' }, { status: 401 });
+    }
 
     const formData = await req.formData();
     const file = formData.get('video') as File | null;
     const jobIdStr = formData.get('job_id') as string | null;
-    const candidateIdStr = formData.get('candidate_id') as string | null;
-    const questionsStr = formData.get('questions') as string | null;
-
-    const finalCandidateId = userId || (candidateIdStr ? parseInt(candidateIdStr, 10) : null);
-    if (!finalCandidateId) {
-      return NextResponse.json({ error: 'Candidate authentication required.' }, { status: 401 });
-    }
+    const questionIndex = formData.get('question_index') ?? 0;
 
     if (!file) {
       return NextResponse.json({ error: 'No video file uploaded.' }, { status: 400 });
     }
 
-    const jobId = jobIdStr ? parseInt(jobIdStr, 10) : null;
-    const questions = questionsStr || JSON.stringify(INTERVIEW_QUESTIONS);
+    const question = questionText(questionIndex);
+    if (!question) {
+      return NextResponse.json({ error: 'Unknown interview question.' }, { status: 400 });
+    }
+
+    const candidate = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { professional_title: true, experience_level: true },
+    });
+    if (!candidate) {
+      return NextResponse.json({ error: 'Candidate profile not found.' }, { status: 404 });
+    }
+    const profile = [
+      candidate.professional_title && `target role: ${candidate.professional_title.slice(0, 120)}`,
+      candidate.experience_level && `experience level: ${candidate.experience_level.slice(0, 60)}`,
+    ].filter(Boolean).join('; ');
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+
+    // 1. SCORE THE ANSWER FIRST, so a recording with no answer is rejected before it is stored
+    const evaluation = await evaluateAnswer(buffer, file.type || 'video/webm', question, profile);
+    if (evaluation && !evaluation.answered) {
+      return NextResponse.json(
+        { error: 'We couldn’t hear an answer to the question in your recording. Check your microphone and try again.' },
+        { status: 422 },
+      );
+    }
 
     // Initial storage and streaming variables
     let videoUrl = '';
@@ -105,12 +169,12 @@ export async function POST(req: NextRequest) {
     const s3Config = getS3Client();
     const mux = getMuxClient();
 
-    // 1. UPLOAD TO AWS S3 IF CONFIG EXISTS
+    // 2. UPLOAD TO AWS S3 IF CONFIG EXISTS
     if (s3Config) {
       const { PutObjectCommand } = require('@aws-sdk/client-s3');
-      const key = `video-interviews/${finalCandidateId}-${Date.now()}-${file.name || 'recording.webm'}`;
+      const key = `video-interviews/${userId}-${Date.now()}-${file.name || 'recording.webm'}`;
       try {
-        console.info(`[S3 UPLOAD] Uploading video for candidate ${finalCandidateId} to S3 bucket ${s3Config.bucketName}...`);
+        console.info(`[S3 UPLOAD] Uploading video for candidate ${userId} to S3 bucket ${s3Config.bucketName}...`);
         await s3Config.client.send(new PutObjectCommand({
           Bucket: s3Config.bucketName,
           Key: key,
@@ -125,20 +189,20 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. FALLBACK TO LOCAL STORAGE IF NOT ON S3 OR S3 FAILED
+    // 3. FALLBACK TO LOCAL STORAGE IF NOT ON S3 OR S3 FAILED
     if (!videoUrl) {
       const uploadDir = path.join(process.cwd(), 'public', 'uploads');
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
-      const fileName = `${finalCandidateId}-${Date.now()}-${file.name || 'recording.webm'}`;
+      const fileName = `${userId}-${Date.now()}-${file.name || 'recording.webm'}`;
       const filePath = path.join(uploadDir, fileName);
       console.info(`[LOCAL STORAGE] Writing video response to disk: ${filePath}`);
       fs.writeFileSync(filePath, buffer);
       videoUrl = `/uploads/${fileName}`;
     }
 
-    // 3. INTEGRATE MUX STREAMING IF CONFIG EXISTS
+    // 4. INTEGRATE MUX STREAMING IF CONFIG EXISTS
     if (mux) {
       try {
         console.info('[MUX ASSET] Creating Mux asset from video url:', videoUrl);
@@ -163,154 +227,63 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 4. GENERATE AI TRANSCRIPTION AND GRADINGS USING GEMINI FLASH
-    let transcript = '';
-    let score = 75;
-    let feedback = '';
+    // 5. SAVE. Without a trustworthy AI result the answer goes to a LaunchPath reviewer instead of getting a guessed score.
+    const pending = !evaluation;
+    const score = evaluation?.score ?? 0;
+    const transcript = evaluation?.transcript ?? '';
+    const feedback = evaluation
+      ? feedbackText(evaluation)
+      : 'We couldn’t score your answer automatically, so a LaunchPath reviewer will watch it and add your score and feedback.';
 
-    const ai = getGeminiClient();
-    if (ai) {
-      try {
-        console.info(`[GEMINI TRANSCRIPTION] Processing video recording for candidate ${finalCandidateId} using gemini-3.5-flash...`);
-        
-        // Pass the recorded audio/video track base64 directly to Gemini for high-integrity transcription
-        const base64Data = buffer.toString('base64');
-        const mimeType = file.type || 'video/webm';
-
-        const prompt = `You are an expert HR Talent Evaluator and technical coach. 
-We have a webcam recording of a candidate responding to these interview questions:
-${questions}
-
-Analyze the candidate's recording and provide three items:
-1. "TRANSCRIPT": An accurate transcript of everything spoken by the candidate.
-2. "SCORE": A numeric performance score out of 100 based on response structure, clarity, and communication.
-3. "FEEDBACK": Structured feedback (2-3 sentences) detailing their strengths and specific developmental recommendations.
-
-Format your output EXACTLY as follows:
-[TRANSCRIPT]
-(your transcribed text here)
-[/TRANSCRIPT]
-
-[SCORE]
-(number from 0 to 100)
-[/SCORE]
-
-[FEEDBACK]
-(your written feedback here)
-[/FEEDBACK]`;
-
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.5-flash',
-          contents: [
-            {
-              inlineData: {
-                mimeType,
-                data: base64Data,
-              },
-            },
-            prompt,
-          ],
-        });
-
-        const outputText = response.text || '';
-        console.info('[GEMINI RESPONSE] Content received.');
-
-        // Simple parser
-        const transcriptMatch = outputText.match(/\[TRANSCRIPT\]([\s\S]*?)\[\/TRANSCRIPT\]/);
-        const scoreMatch = outputText.match(/\[SCORE\]([\s\S]*?)\[\/SCORE\]/);
-        const feedbackMatch = outputText.match(/\[FEEDBACK\]([\s\S]*?)\[\/FEEDBACK\]/);
-
-        transcript = transcriptMatch ? transcriptMatch[1].trim() : '';
-        if (scoreMatch) {
-          const parsedScore = parseInt(scoreMatch[1].trim(), 10);
-          if (!isNaN(parsedScore)) {
-            score = parsedScore;
-          }
-        }
-        feedback = feedbackMatch ? feedbackMatch[1].trim() : '';
-
-        // Fallback parsers if format was not strictly matched
-        if (!transcript) {
-          transcript = outputText.slice(0, 1000);
-        }
-        if (!feedback) {
-          feedback = 'Good response format. The candidate structured their ideas clearly and demonstrated fundamental readiness.';
-        }
-      } catch (aiError: any) {
-        console.error('[GEMINI ERROR] Transcription/grading failed.', aiError);
-        transcript = "Hi there, I am highly motivated to join your engineering team because of my strong background in React, TypeScript, Node.js, and Prisma databases. I have spent the last three years building resilient full-stack architectures and automating scalable cloud pipelines. I excel at resolving complex technical challenges under intense pressure, and I would love to bring my expertise in clean-code paradigms and client-centric designs to your active job placements.";
-        feedback = "Gemini processing failed: Simulated grading is active. Excellent professional tone, highly relevant skill indicators mentioned, and structured response format.";
-      }
-    } else {
-      // Local simulated response if Gemini API key is missing
-      transcript = "Hi there, I am highly motivated to join your engineering team because of my strong background in React, TypeScript, Node.js, and Prisma databases. I have spent the last three years building resilient full-stack architectures and automating scalable cloud pipelines. I excel at resolving complex technical challenges under intense pressure, and I would love to bring my expertise in clean-code paradigms and client-centric designs to your active job placements.";
-      feedback = "AI grading active. Excellent professional tone, highly relevant skill indicators mentioned, and structured response format.";
-    }
-
-    // 5. SAVE OR UPDATE THE VIDEO INTERVIEW IN DATABASE
-    const halfLen = Math.floor(transcript.length / 2);
-    const q1Text = INTERVIEW_QUESTIONS[0];
-    const q2Text = INTERVIEW_QUESTIONS[1];
-    const q3Text = INTERVIEW_QUESTIONS[2];
-
-    const structuredQuestionsJson = JSON.stringify([
-      {
-        id: 1,
-        title: q1Text,
-        questionScore: score,
-        transcript: transcript.substring(0, halfLen) || "The candidate introduced themselves clearly and expressed key professional interests.",
-      },
-      {
-        id: 2,
-        title: q2Text,
-        questionScore: Math.min(100, score + 2),
-        transcript: transcript.substring(halfLen) || "The candidate described a highly resilient full-stack cloud system project.",
-      },
-      {
-        id: 3,
-        title: q3Text,
-        questionScore: Math.max(0, score - 3),
-        transcript: "The candidate described managing engineering scope under tight deadlines using Agile systems.",
-      }
-    ]);
+    // Only link the interview to a job the candidate has actually applied to
+    const jobId = jobIdStr ? parseInt(jobIdStr, 10) : null;
+    const application = jobId
+      ? await prisma.jobApplication.findUnique({ where: { candidate_id_job_id: { candidate_id: userId, job_id: jobId } }, select: { id: true } })
+      : null;
 
     const videoInterview = await prisma.videoInterview.create({
       data: {
-        candidate_id: finalCandidateId,
-        job_id: jobId,
+        candidate_id: userId,
+        job_id: application ? jobId : null,
         video_url: videoUrl,
-        questions: structuredQuestionsJson,
+        questions: JSON.stringify([
+          {
+            id: Number(questionIndex) + 1,
+            title: question,
+            questionScore: score,
+            transcript: transcript || 'Awaiting review.',
+            points: evaluation ? evaluation.criteria.map((c) => `${c.label} (${c.score}/${CRITERION_MAX}): ${c.reason}`) : ['Pending manual evaluation'],
+            criteria: evaluation?.criteria ?? [],
+          },
+        ]),
         score,
         feedback,
-        status: 'COMPLETED',
+        status: pending ? 'PENDING_REVIEW' : 'COMPLETED',
         mux_upload_id: s3Key || 'local-disk',
         mux_asset_id: muxAssetId || 'simulated-asset',
         mux_playback_id: muxPlaybackId || 'simulated-playback',
-        transcript,
+        transcript: transcript || null,
       },
     });
 
     console.info(`[DATABASE SUCCESS] VideoInterview created with ID ${videoInterview.id}`);
 
-    // If candidate has an active application, let's update its status to 'Shortlisted' or trigger notification!
-    if (jobId) {
+    if (application && jobId) {
       try {
-        await prisma.jobApplication.updateMany({
-          where: {
-            candidate_id: finalCandidateId,
-            job_id: jobId,
-          },
+        await prisma.jobApplication.update({
+          where: { id: application.id },
           data: {
             status: 'Interviewing',
           },
         });
 
-        // Also create a notification for the candidate
         await prisma.notification.create({
           data: {
-            user_id: finalCandidateId,
-            title: 'Video Interview Submitted & Processed',
-            content: `Your asynchronous video interview for the job has been analyzed and sent to the employer. AI Score: ${score}/100.`,
+            user_id: userId,
+            title: 'Video Interview Submitted',
+            content: pending
+              ? 'Your video interview for the job has been submitted and is waiting for review.'
+              : `Your video interview for the job has been scored and shared with the employer. Score: ${score}/100.`,
             type: 'INTERVIEW',
           }
         });
@@ -323,14 +296,16 @@ Format your output EXACTLY as follows:
       success: true,
       interviewId: videoInterview.id,
       videoUrl,
+      pending,
       score,
+      criteria: evaluation?.criteria ?? [],
       feedback,
       transcript,
       playbackId: muxPlaybackId,
-    });
+    }, { status: pending ? 202 : 200 });
 
   } catch (error: any) {
     console.error('[VIDEO INTERVIEW ERROR] Internal processing failed.', error);
-    return NextResponse.json({ error: 'Video upload processing failed.', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Video upload processing failed.' }, { status: 500 });
   }
 }
