@@ -65,3 +65,13 @@ describe('POST /api/employer/unlock (bypass)', () => {
     expect(JSON.parse(tenant?.features || '{}').unlockedJobIds).toBeUndefined();
   });
 });
+
+describe('POST /api/jobs', () => {
+  it('creates jobs as PENDING so they need payment to go live', async () => {
+    const { POST: createJob } = await import('@/app/api/jobs/route');
+    signedInAs('EMPLOYER', 1);
+    const res = await createJob(jsonRequest('http://localhost/api/jobs', { title: 'Junior Designer', description: '<p>Design things</p>' }));
+    expect(res.status).toBe(200);
+    expect((await res.json()).job.status).toBe('PENDING');
+  });
+});
