@@ -29,7 +29,7 @@ describe('parseReadinessEvaluation', () => {
 
   it('rejects an answered result with a missing criterion instead of guessing it', () => {
     expect(parseReadinessEvaluation(output({ criteria: [rating('relevance', 20), rating('structure', 15), rating('evidence', 18)] }))).toBeNull();
-    expect(parseReadinessEvaluation(output({ criteria: [rating('relevance', 20), rating('structure', 'n/a'), rating('evidence', 18), rating('delivery', 12)] }))).toBeNull();
+    expect(parseReadinessEvaluation(output({ criteria: [rating('relevance', 20), rating('structure', 'n/a' as any), rating('evidence', 18), rating('delivery', 12)] }))).toBeNull();
   });
 
   it('ignores unknown and duplicate criteria', () => {

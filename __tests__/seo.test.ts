@@ -2,16 +2,21 @@ import sitemap from '@/app/sitemap';
 import robots from '@/app/robots';
 import { ROLE_PAGES, SERVICE_FAQS } from '@/lib/content/role-pages';
 import { TALENT_CATEGORIES } from '@/lib/content/talent-categories';
+import { publishedCaseStudies } from '@/lib/content/case-studies';
 import { faqJsonLd, jsonLd } from '@/lib/seo';
 
 describe('sitemap and robots', () => {
   afterEach(() => delete process.env.FEATURE_BULK_ENQUIRY_PUBLIC);
 
   it('lists public marketing pages only', () => {
+    // Flags come from the environment (next/jest loads .env), so pin the off state first
+    process.env.FEATURE_BULK_ENQUIRY_PUBLIC = 'false';
     const urls = sitemap().map((e) => e.url);
     expect(urls).toContain('https://launchpath.co.za/find-candidates');
     for (const r of ROLE_PAGES) expect(urls).toContain(`https://launchpath.co.za/hire/${r.categorySlug}/${r.slug}`);
-    for (const bad of ['/shortlist', '/admin', '/employer', '/candidate', '/api', '/results', '/hire/bulk']) expect(urls.some((u) => u.includes(bad))).toBe(false);
+    // /results is listed only once a case study is published
+    expect(urls.includes('https://launchpath.co.za/results')).toBe(publishedCaseStudies().length > 0);
+    for (const bad of ['/shortlist', '/admin', '/employer', '/candidate', '/api', '/hire/bulk']) expect(urls.some((u) => u.includes(bad))).toBe(false);
     process.env.FEATURE_BULK_ENQUIRY_PUBLIC = 'true';
     expect(sitemap().map((e) => e.url)).toContain('https://launchpath.co.za/hire/bulk');
   });

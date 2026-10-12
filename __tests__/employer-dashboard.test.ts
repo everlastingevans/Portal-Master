@@ -23,11 +23,11 @@ const fdb = db as any;
 const ctx = { actorId: 1, terms: DEFAULT_HIRE_TERMS };
 const account = (a: string, p: Record<string, unknown>) => runAccountAction(fdb, a, p, ctx);
 const get = async () => {
-  const r = await dashboardGet();
+  const r = (await dashboardGet())!;
   return { status: r.status, body: await r.json() };
 };
 const post = async (body: object) => {
-  const r = await dashboardPost(jsonRequest('http://localhost/api/employer/hire', body));
+  const r = (await dashboardPost(jsonRequest('http://localhost/api/employer/hire', body)))!;
   return { status: r.status, body: await r.json() };
 };
 
