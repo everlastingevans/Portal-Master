@@ -4,6 +4,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import fs from 'fs';
 import path from 'path';
 import { questionText, readinessInstruction, parseReadinessEvaluation, feedbackText, RUBRIC, CRITERION_MAX, type ReadinessEvaluation } from '@/lib/readiness';
+import { safeUploadName } from '@/lib/uploads';
 
 const MODEL = process.env.GEMINI_READINESS_MODEL || 'gemini-3.5-flash';
 
@@ -172,7 +173,7 @@ export async function POST(req: NextRequest) {
     // 2. UPLOAD TO AWS S3 IF CONFIG EXISTS
     if (s3Config) {
       const { PutObjectCommand } = require('@aws-sdk/client-s3');
-      const key = `video-interviews/${userId}-${Date.now()}-${file.name || 'recording.webm'}`;
+      const key = `video-interviews/${safeUploadName(userId, file.name)}`;
       try {
         console.info(`[S3 UPLOAD] Uploading video for candidate ${userId} to S3 bucket ${s3Config.bucketName}...`);
         await s3Config.client.send(new PutObjectCommand({
@@ -195,7 +196,7 @@ export async function POST(req: NextRequest) {
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
-      const fileName = `${userId}-${Date.now()}-${file.name || 'recording.webm'}`;
+      const fileName = safeUploadName(userId, file.name);
       const filePath = path.join(uploadDir, fileName);
       console.info(`[LOCAL STORAGE] Writing video response to disk: ${filePath}`);
       fs.writeFileSync(filePath, buffer);
