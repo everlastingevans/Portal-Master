@@ -23,6 +23,12 @@ export async function verifyPassword(password: string, storedHash: string): Prom
   }
 }
 
+/** A user row safe to return from an API: never the password hash or reset token. */
+export function withoutSecrets<T extends Record<string, any>>(user: T): Omit<T, 'password' | 'reset_token' | 'reset_token_expiry'> {
+  const { password: _password, reset_token: _resetToken, reset_token_expiry: _resetExpiry, ...rest } = user;
+  return rest;
+}
+
 /** Password reset codes are stored only as a SHA-256 hash, so a database leak can't be used to reset accounts. */
 export function hashResetToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');

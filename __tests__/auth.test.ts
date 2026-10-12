@@ -48,3 +48,11 @@ describe('Auth Utilities', () => {
     });
   });
 });
+
+describe('withoutSecrets', () => {
+  it('drops the password hash and reset token, keeps everything else', () => {
+    const { withoutSecrets } = require('@/lib/auth');
+    const out = withoutSecrets({ id: 1, email: 'a@b.co.za', password: 'hash.salt', reset_token: 'abc', reset_token_expiry: new Date(), name: 'A' });
+    expect(out).toEqual({ id: 1, email: 'a@b.co.za', name: 'A' });
+  });
+});
