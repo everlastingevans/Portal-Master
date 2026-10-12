@@ -118,7 +118,7 @@ export async function middleware(req: NextRequest) {
 
   const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron') || pathname === '/api/contact' || pathname === '/api/vacancies' ||
     // Public by design; each verifies its own input (flag-gated, signature-verified webhook)
-    pathname === '/api/programmes/enquiry' || pathname === '/api/webhooks/payfast-subscriptions';
+    pathname === '/api/programmes/enquiry' || pathname === '/api/webhooks/payfast-subscriptions' || pathname === '/api/webhooks/payfast';
   // Static files (e.g. /logo.png) skip auth; API paths never do, even if they contain a dot
   const isPublicAsset = pathname.startsWith('/_next') || (!pathname.startsWith('/api') && pathname.includes('.'));
 
