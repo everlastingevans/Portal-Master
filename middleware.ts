@@ -85,6 +85,9 @@ export async function middleware(req: NextRequest) {
   const tenantId = tenantHeader || tenantCookie || 'default-tenant';
   
   const requestHeaders = new Headers(req.headers);
+  // Identity headers are set below from the verified JWT only; drop any copies the client sent
+  requestHeaders.delete('x-user-id');
+  requestHeaders.delete('x-user-role');
   requestHeaders.set('x-resolved-tenant-id', tenantId);
 
   // 3. AUTHENTICATION & ROUTE GUARDS
@@ -116,7 +119,8 @@ export async function middleware(req: NextRequest) {
   const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron') || pathname === '/api/contact' || pathname === '/api/vacancies' ||
     // Public by design; each verifies its own input (flag-gated, signature-verified webhook)
     pathname === '/api/programmes/enquiry' || pathname === '/api/webhooks/payfast-subscriptions';
-  const isPublicAsset = pathname.startsWith('/_next') || pathname.includes('.');
+  // Static files (e.g. /logo.png) skip auth; API paths never do, even if they contain a dot
+  const isPublicAsset = pathname.startsWith('/_next') || (!pathname.startsWith('/api') && pathname.includes('.'));
 
   if (isAuthRoute || isPublicAsset) {
     return applySecureHeaders(NextResponse.next({
@@ -137,7 +141,7 @@ export async function middleware(req: NextRequest) {
     }
     // Allow pass-through for public marketing pages or handle 401 on APIs
     if (pathname.startsWith('/api')) {
-       return applySecureHeaders(NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: requestHeaders }));
+       return applySecureHeaders(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }));
     }
   } else {
     try {
