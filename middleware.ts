@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
+import { jwtSecret } from '@/lib/jwt-secret';
 
 // In-Memory store for sliding-window rate limiting (extremely fast, compatible with Edge Runtime)
 const inMemoryRateLimitStore = new Map<string, { timestamps: number[] }>();
@@ -58,8 +59,6 @@ function applySecureHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-super-secret-key-12345');
-
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -94,7 +93,7 @@ export async function middleware(req: NextRequest) {
   const entryToken = req.cookies.get('auth-token')?.value;
   if (isEntryPage && entryToken) {
     try {
-      const { payload } = await jwtVerify(entryToken, JWT_SECRET);
+      const { payload } = await jwtVerify(entryToken, jwtSecret());
       const role = String(payload.role).toUpperCase();
       const portal = role === 'SUPERADMIN' ? '/admin/dashboard' : role === 'EMPLOYER' || role === 'CLIENT' ? '/employer/dashboard' : '/candidate/dashboard';
       return applySecureHeaders(NextResponse.redirect(new URL(portal, req.url)));
@@ -142,7 +141,7 @@ export async function middleware(req: NextRequest) {
     }
   } else {
     try {
-      const { payload } = await jwtVerify(token, JWT_SECRET);
+      const { payload } = await jwtVerify(token, jwtSecret());
       // Inject user metadata into headers for downstream API routes
       requestHeaders.set('x-user-id', String(payload.userId));
       requestHeaders.set('x-user-role', String(payload.role));

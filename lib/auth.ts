@@ -1,8 +1,7 @@
 import { scryptSync, randomBytes, timingSafeEqual, createHash } from 'crypto';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
-
-const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-super-secret-key-12345');
+import { jwtSecret } from '@/lib/jwt-secret';
 
 export function hashPassword(password: string): string {
   const salt = randomBytes(16).toString('hex');
@@ -34,12 +33,12 @@ export async function signToken(payload: any) {
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('24h')
-    .sign(SECRET_KEY);
+    .sign(jwtSecret());
 }
 
 export async function verifyToken(token: string) {
   try {
-    const { payload } = await jwtVerify(token, SECRET_KEY);
+    const { payload } = await jwtVerify(token, jwtSecret());
     return payload;
   } catch (error) {
     return null;
