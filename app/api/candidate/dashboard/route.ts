@@ -51,8 +51,9 @@ export async function GET() {
         orderBy: { created_at: 'desc' }
       });
 
-      // Fetch all active/available jobs first
+      // Only live (paid, open) jobs are shown and can be applied to
       const rawAllJobs = await db.job.findMany({
+        where: { status: 'ACTIVE' },
         include: {
           tenant: true
         },
@@ -61,7 +62,8 @@ export async function GET() {
 
       let rawMatches = await db.jobMatch.findMany({
         where: { 
-          candidate_id: session.userId
+          candidate_id: session.userId,
+          job: { status: 'ACTIVE' }
         },
         include: {
           job: {
@@ -102,7 +104,7 @@ export async function GET() {
           
           // Re-fetch rawMatches so our local data is up-to-date!
           rawMatches = await db.jobMatch.findMany({
-            where: { candidate_id: session.userId },
+            where: { candidate_id: session.userId, job: { status: 'ACTIVE' } },
             include: {
               job: {
                 include: { tenant: true }

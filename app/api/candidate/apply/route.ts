@@ -10,6 +10,12 @@ async function applyHandler(req: Request, context: any, session: any) {
     return NextResponse.json({ error: 'Job ID required' }, { status: 400 });
   }
 
+  // Only live jobs take applications (unpaid PENDING and CLOSED jobs don't)
+  const openJob = await db.job.findFirst({ where: { id: Number(jobId), status: 'ACTIVE' }, select: { id: true } });
+  if (!openJob) {
+    return NextResponse.json({ error: 'This job is no longer accepting applications.' }, { status: 404 });
+  }
+
   // Ensure it doesn't already exist to avoid unique constraint violations
   const existing = await db.jobApplication.findUnique({
     where: {

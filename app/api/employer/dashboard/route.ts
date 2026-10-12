@@ -2,6 +2,8 @@ import { getSession } from '@/lib/auth';
 import db from '@/lib/db';
 import { NextResponse } from 'next/server';
 
+const LOCKED_CANDIDATE_FIELDS = { email: null, phone: null, resume_text: null, linkedin_url: null, github_url: null };
+
 export async function GET() {
   try {
     const session = await getSession();
@@ -27,7 +29,7 @@ export async function GET() {
       orderBy: { id: 'desc' }
     });
 
-    const applications = await db.jobApplication.findMany({
+    const rawApplications = await db.jobApplication.findMany({
       where: { job: { employer_id: session.userId } },
       include: {
         candidate: {
@@ -47,11 +49,19 @@ export async function GET() {
             }
           }
         },
-        job: { select: { title: true } },
+        job: { select: { title: true, status: true } },
         interviews: true
       },
       orderBy: { applied_at: 'desc' }
     });
+
+    // Contact details, CVs and interview recordings are part of what the employer pays for, so they
+    // only leave the server once the job is paid and live (the dashboard's isJobUnlocked rule).
+    const applications = rawApplications.map((app) =>
+      app.job.status === 'ACTIVE'
+        ? app
+        : { ...app, candidate: { ...app.candidate, ...LOCKED_CANDIDATE_FIELDS, video_interviews: [] } }
+    );
 
     // Also get the match scores for these applicants for their applied jobs!
     const applicationMatches = await Promise.all(
