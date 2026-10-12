@@ -21,6 +21,15 @@ export function jobBoardPayfastConfig() {
   return { live, merchantId, passphrase: process.env.PAYFAST_PASSPHRASE || '', validateUrl: `${host}/eng/query/validate` };
 }
 
+/**
+ * Who may activate or unlock a job without a verified PayFast payment: a real SUPERADMIN account and
+ * anyone on a local dev server. Never a regular employer.
+ */
+export function paymentBypassAllowed(session: { realRole?: string } | null): boolean {
+  if (session?.realRole === 'SUPERADMIN') return true;
+  return process.env.NODE_ENV === 'development';
+}
+
 /** "JOB_12" -> JOB / 12, "UNLOCK_JOB_12" -> UNLOCK_JOB / 12. */
 export function parsePaymentRef(ref: string | undefined): { purpose: JobBoardPurpose; jobId: number } | null {
   const m = /^(JOB|UNLOCK_JOB)_(\d+)$/.exec(ref || '');

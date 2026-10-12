@@ -408,9 +408,12 @@ export default function ApplicantsTab({
               <Button variant="accent" size="lg" icon={CreditCard} loading={unlocking} onClick={() => handleUnlock('checkout', selectedJobFilter)}>
                 Activate role · R1,999 once-off
               </Button>
-              <Button variant="ghost" size="lg" disabled={unlocking} onClick={() => handleUnlock('bypass', selectedJobFilter)}>
-                Simulate payment (demo)
-              </Button>
+              {/* Local development only: the API refuses a bypass anywhere else */}
+              {process.env.NODE_ENV === 'development' && (
+                <Button variant="ghost" size="lg" disabled={unlocking} onClick={() => handleUnlock('bypass', selectedJobFilter)}>
+                  Simulate payment (demo)
+                </Button>
+              )}
             </div>
             <p className="text-xs text-slate-500">Secure payment by PayFast. No subscriptions or placement fees.</p>
             {jobs.length > 1 && (

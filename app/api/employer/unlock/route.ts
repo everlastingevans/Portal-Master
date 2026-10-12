@@ -2,6 +2,7 @@ import { getSession } from '@/lib/auth';
 import db from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { PayfastService } from '@/services/integrations/payfast.service';
+import { paymentBypassAllowed } from '@/lib/billing/payfast-itn';
 
 export async function POST(req: Request) {
   try {
@@ -60,6 +61,10 @@ export async function POST(req: Request) {
     }
 
     if (action === 'bypass') {
+      // Free unlock is for local development and SUPERADMIN fixes only
+      if (!paymentBypassAllowed(session)) {
+        return NextResponse.json({ error: 'Unlocking a pipeline requires payment.' }, { status: 403 });
+      }
       let featuresObj: any = {};
       try {
         featuresObj = JSON.parse(tenant?.features || '{}');

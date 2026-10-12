@@ -54,22 +54,12 @@ function EmployerPaymentSuccessInner() {
       const checkData = await checkRes.json();
       let activeJob = checkData.job;
 
-      // Automatically activate the job when landing on the success page to guarantee instant activation
-      // (This handles delayed Payfast webhooks, sandbox limitations, local port blocks, and dev previews seamlessly)
-      if (activeJob && activeJob.status === 'PENDING') {
-        console.log('[Payment System] Activating job status and sending confirmation email upon successful checkout landing.');
-        const simulateRes = await fetch('/api/jobs/pay-simulate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jobId: Number(jobId) }),
-        });
-        if (simulateRes.ok) {
-          const updatedCheckRes = await fetch(`/api/jobs/checkout?jobId=${jobId}`);
-          if (updatedCheckRes.ok) {
-            const updatedCheckData = await updatedCheckRes.json();
-            activeJob = updatedCheckData.job;
-          }
-        }
+      // The job goes live when PayFast's notification reaches /api/webhooks/payfast, which can take a
+      // few seconds after the redirect. Re-check briefly; this page never activates the job itself.
+      for (let attempt = 0; activeJob?.status === 'PENDING' && attempt < 5; attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        const recheck = await fetch(`/api/jobs/checkout?jobId=${jobId}`);
+        if (recheck.ok) activeJob = (await recheck.json()).job;
       }
 
       setJob(activeJob);
