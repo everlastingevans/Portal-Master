@@ -2,12 +2,18 @@ import { getSession } from '@/lib/auth';
 import db from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { EmailService } from '@/services/integrations/email.service';
+import { paymentBypassAllowed } from '@/lib/billing/payfast-itn';
 
+// Activates the caller's own job without PayFast. Only on a local dev server or for a real
+// SUPERADMIN account; in production employers' jobs go live only via /api/webhooks/payfast.
 export async function POST(req: Request) {
   try {
     const session = await getSession();
     if (!session || (session.role !== 'CLIENT' && session.role !== 'EMPLOYER')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!paymentBypassAllowed(session)) {
+      return NextResponse.json({ error: 'Jobs go live once PayFast confirms the payment.' }, { status: 403 });
     }
 
     const { jobId } = await req.json();
@@ -92,6 +98,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, status: updatedJob.status });
   } catch (error: any) {
     console.error('Simulation payment error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

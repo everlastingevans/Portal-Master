@@ -90,7 +90,7 @@ describe('ITN processing', () => {
     const validate = jest.fn(valid);
     const r = await processSubscriptionItn(fdb, itn(baseFields()), { fetchImpl: validate, now: new Date('2026-10-05T10:00:00Z') });
     expect(r).toMatchObject({ status: 200, outcome: 'APPLIED' });
-    expect(validate.mock.calls[0][0]).toBe('https://sandbox.payfast.co.za/eng/query/validate');
+    expect((validate.mock.calls[0] as unknown[])[0]).toBe('https://sandbox.payfast.co.za/eng/query/validate');
     const sub = fdb._tables.partnerSubscription[0];
     expect(sub).toMatchObject({ status: 'ACTIVE', provider_token: 'dc0521d3-55fe-269b-fa00-b647310d760f' });
     expect(sub.current_period_end.toISOString().slice(0, 10)).toBe('2026-11-05');

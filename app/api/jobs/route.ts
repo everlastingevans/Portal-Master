@@ -65,6 +65,8 @@ export async function POST(req: Request) {
         description: sanitizedDescription,
         employer_id: session.userId,
         tenant_id: userWithTenant?.tenant_id || null,
+        // Same as jobs/checkout: a job goes live only once PayFast confirms payment (schema default is ACTIVE)
+        status: 'PENDING',
         years_experience: yearsExp,
         mandatory_skills: mandatorySkillsArr,
         tech_stack: techStackArr,

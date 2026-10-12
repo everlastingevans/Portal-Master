@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
-import { getSession } from '@/lib/auth';
+import { getSession, withoutSecrets } from '@/lib/auth';
 import { scoreMatch } from '@/lib/gemini';
 import { sanitizeTalentFields } from '@/lib/talent';
 
@@ -87,7 +87,7 @@ export async function PUT(req: Request) {
       processResumeTaskInProfile(session.userId, resume_text, jobs, task.id);
     }
 
-    return NextResponse.json({ success: true, user: updatedUser, taskId });
+    return NextResponse.json({ success: true, user: withoutSecrets(updatedUser), taskId });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

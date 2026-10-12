@@ -1,41 +1,47 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
-import { getSession } from '@/lib/auth';
+import { getEmployerApplicationAccess } from '@/lib/application-access';
 import { dispatchInterviewInvitation } from '@/lib/notifications';
 
+// Employer proposes an interview on an application they (or their hiring team) can access.
+// The candidate is taken from the application, never from the request body.
 export async function POST(req: Request) {
   try {
-    const session = await getSession();
-    if (!session || (session.role !== 'CLIENT' && session.role !== 'EMPLOYER')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { application_id, proposed_time, notes } = await req.json();
+
+    const access = await getEmployerApplicationAccess(Number(application_id));
+    if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
+
+    const proposedAt = new Date(proposed_time);
+    if (!proposed_time || Number.isNaN(proposedAt.getTime())) {
+      return NextResponse.json({ error: 'Choose a valid interview time.' }, { status: 400 });
     }
 
-    const { application_id, candidate_id, proposed_time, notes } = await req.json();
+    const jobApp = await db.jobApplication.findUnique({
+      where: { id: access.application.id },
+      include: {
+        candidate: true,
+        job: true
+      }
+    });
+    if (!jobApp) return NextResponse.json({ error: 'Application not found.' }, { status: 404 });
+    const candidate_id = jobApp.candidate_id;
 
     const interview = await db.interview.create({
       data: {
-        application_id,
-        employer_id: session.userId,
+        application_id: jobApp.id,
+        employer_id: access.userId,
         candidate_id,
-        proposed_time: new Date(proposed_time),
-        notes,
+        proposed_time: proposedAt,
+        notes: typeof notes === 'string' ? notes : null,
         status: 'Proposed'
       }
     });
 
     // Also update application status to Interviewing if it's not already
     await db.jobApplication.update({
-      where: { id: application_id },
+      where: { id: jobApp.id },
       data: { status: 'Interviewing' }
-    });
-
-    // Fetch candidate and job info to send real communications
-    const jobApp = await db.jobApplication.findUnique({
-      where: { id: application_id },
-      include: {
-        candidate: true,
-        job: true
-      }
     });
 
     if (jobApp) {

@@ -107,7 +107,7 @@ describe('feature flag', () => {
 describe('vacancy limit and eligibility (server-side)', () => {
   it('allows up to the agreed number of active partner vacancies', async () => {
     const { company, sub } = await partnerSetup();
-    const results = [];
+    const results: any[] = [];
     for (let i = 0; i < 4; i++) results.push(await partnerVacancy(company.id, sub.id, `Role ${i}`));
     expect(results.map((r) => r.res.status)).toEqual([200, 200, 200, 400]);
     expect(results[3].res.body.error).toMatch(/3 of 3/);

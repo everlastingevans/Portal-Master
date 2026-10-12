@@ -1,6 +1,6 @@
 /**
  * Minimal in-memory stand-in for the Prisma client, covering only the operations the LaunchPath Hire
- * code uses (where filters incl. relation filters, include/select, orderBy, unique constraints,
+ * code (and the job-board routes under test) uses (where filters incl. relation filters, include/select, orderBy, unique constraints,
  * increments, upsert, updateMany, count, groupBy). For tests only: no real transactions.
  */
 type Row = Record<string, any>;
@@ -57,6 +57,26 @@ const RELATIONS: Record<string, Record<string, Rel>> = {
     shortlist_candidate: { model: 'shortlistCandidate', kind: 'one', fk: 'shortlist_candidate_id', owner: 'self' },
   },
   user: { video_interviews: { model: 'videoInterview', kind: 'many', fk: 'candidate_id', owner: 'other' } },
+  // Job board
+  job: {
+    employer: { model: 'user', kind: 'one', fk: 'employer_id', owner: 'self' },
+    tenant: { model: 'tenant', kind: 'one', fk: 'tenant_id', owner: 'self' },
+    applications: { model: 'jobApplication', kind: 'many', fk: 'job_id', owner: 'other' },
+  },
+  jobApplication: {
+    job: { model: 'job', kind: 'one', fk: 'job_id', owner: 'self' },
+    candidate: { model: 'user', kind: 'one', fk: 'candidate_id', owner: 'self' },
+    interviews: { model: 'interview', kind: 'many', fk: 'application_id', owner: 'other' },
+  },
+  interview: {
+    application: { model: 'jobApplication', kind: 'one', fk: 'application_id', owner: 'self' },
+    employer: { model: 'user', kind: 'one', fk: 'employer_id', owner: 'self' },
+    candidate: { model: 'user', kind: 'one', fk: 'candidate_id', owner: 'self' },
+  },
+  videoInterview: {
+    candidate: { model: 'user', kind: 'one', fk: 'candidate_id', owner: 'self' },
+    job: { model: 'job', kind: 'one', fk: 'job_id', owner: 'self' },
+  },
 };
 
 const UNIQUE: Record<string, string[]> = {
@@ -94,6 +114,13 @@ const DEFAULTS: Record<string, () => Row> = {
   appSetting: () => ({}),
   user: () => ({ role: 'CANDIDATE' }),
   videoInterview: () => ({}),
+  // Job board
+  tenant: () => ({ plan: 'free', features: '{}' }),
+  job: () => ({ status: 'ACTIVE', company: 'Acme', location: 'Remote', description: '', tenant_id: null, mandatory_skills: [], tech_stack: [] }),
+  jobApplication: () => ({ status: 'Pending', applied_at: new Date() }),
+  jobMatch: () => ({}),
+  interview: () => ({ status: 'Proposed', notes: null }),
+  notification: () => ({ is_read: false }),
 };
 
 const PK: Record<string, string> = { appSetting: 'key' };

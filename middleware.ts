@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
+import { jwtSecret } from '@/lib/jwt-secret';
 
 // In-Memory store for sliding-window rate limiting (extremely fast, compatible with Edge Runtime)
 const inMemoryRateLimitStore = new Map<string, { timestamps: number[] }>();
@@ -58,8 +59,6 @@ function applySecureHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-super-secret-key-12345');
-
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -86,6 +85,9 @@ export async function middleware(req: NextRequest) {
   const tenantId = tenantHeader || tenantCookie || 'default-tenant';
   
   const requestHeaders = new Headers(req.headers);
+  // Identity headers are set below from the verified JWT only; drop any copies the client sent
+  requestHeaders.delete('x-user-id');
+  requestHeaders.delete('x-user-role');
   requestHeaders.set('x-resolved-tenant-id', tenantId);
 
   // 3. AUTHENTICATION & ROUTE GUARDS
@@ -94,7 +96,7 @@ export async function middleware(req: NextRequest) {
   const entryToken = req.cookies.get('auth-token')?.value;
   if (isEntryPage && entryToken) {
     try {
-      const { payload } = await jwtVerify(entryToken, JWT_SECRET);
+      const { payload } = await jwtVerify(entryToken, jwtSecret());
       const role = String(payload.role).toUpperCase();
       const portal = role === 'SUPERADMIN' ? '/admin/dashboard' : role === 'EMPLOYER' || role === 'CLIENT' ? '/employer/dashboard' : '/candidate/dashboard';
       return applySecureHeaders(NextResponse.redirect(new URL(portal, req.url)));
@@ -116,8 +118,9 @@ export async function middleware(req: NextRequest) {
 
   const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron') || pathname === '/api/contact' || pathname === '/api/vacancies' ||
     // Public by design; each verifies its own input (flag-gated, signature-verified webhook)
-    pathname === '/api/programmes/enquiry' || pathname === '/api/webhooks/payfast-subscriptions';
-  const isPublicAsset = pathname.startsWith('/_next') || pathname.includes('.');
+    pathname === '/api/programmes/enquiry' || pathname === '/api/webhooks/payfast-subscriptions' || pathname === '/api/webhooks/payfast';
+  // Static files (e.g. /logo.png) skip auth; API paths never do, even if they contain a dot
+  const isPublicAsset = pathname.startsWith('/_next') || (!pathname.startsWith('/api') && pathname.includes('.'));
 
   if (isAuthRoute || isPublicAsset) {
     return applySecureHeaders(NextResponse.next({
@@ -138,11 +141,11 @@ export async function middleware(req: NextRequest) {
     }
     // Allow pass-through for public marketing pages or handle 401 on APIs
     if (pathname.startsWith('/api')) {
-       return applySecureHeaders(NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: requestHeaders }));
+       return applySecureHeaders(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }));
     }
   } else {
     try {
-      const { payload } = await jwtVerify(token, JWT_SECRET);
+      const { payload } = await jwtVerify(token, jwtSecret());
       // Inject user metadata into headers for downstream API routes
       requestHeaders.set('x-user-id', String(payload.userId));
       requestHeaders.set('x-user-role', String(payload.role));

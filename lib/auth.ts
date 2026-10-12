@@ -1,8 +1,7 @@
-import { scryptSync, randomBytes, timingSafeEqual } from 'crypto';
+import { scryptSync, randomBytes, timingSafeEqual, createHash } from 'crypto';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
-
-const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-super-secret-key-12345');
+import { jwtSecret } from '@/lib/jwt-secret';
 
 export function hashPassword(password: string): string {
   const salt = randomBytes(16).toString('hex');
@@ -24,17 +23,28 @@ export async function verifyPassword(password: string, storedHash: string): Prom
   }
 }
 
+/** A user row safe to return from an API: never the password hash or reset token. */
+export function withoutSecrets<T extends Record<string, any>>(user: T): Omit<T, 'password' | 'reset_token' | 'reset_token_expiry'> {
+  const { password: _password, reset_token: _resetToken, reset_token_expiry: _resetExpiry, ...rest } = user;
+  return rest;
+}
+
+/** Password reset codes are stored only as a SHA-256 hash, so a database leak can't be used to reset accounts. */
+export function hashResetToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
+
 export async function signToken(payload: any) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('24h')
-    .sign(SECRET_KEY);
+    .sign(jwtSecret());
 }
 
 export async function verifyToken(token: string) {
   try {
-    const { payload } = await jwtVerify(token, SECRET_KEY);
+    const { payload } = await jwtVerify(token, jwtSecret());
     return payload;
   } catch (error) {
     return null;

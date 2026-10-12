@@ -1,4 +1,4 @@
-import { checkRole, hashPassword } from '@/lib/auth';
+import { checkRole, hashPassword, withoutSecrets } from '@/lib/auth';
 import db from '@/lib/db';
 import { NextResponse } from 'next/server';
 
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
         }
       });
 
-      return NextResponse.json({ success: true, message: 'Candidate created successfully', user: newUser });
+      return NextResponse.json({ success: true, message: 'Candidate created successfully', user: withoutSecrets(newUser) });
     }
 
     if (action === 'UPDATE_CANDIDATE') {
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
         data: updateData
       });
 
-      return NextResponse.json({ success: true, message: 'Candidate updated successfully', user: updatedUser });
+      return NextResponse.json({ success: true, message: 'Candidate updated successfully', user: withoutSecrets(updatedUser) });
     }
 
     if (action === 'DELETE_CANDIDATE') {
@@ -121,7 +121,7 @@ export async function POST(req: Request) {
         }
       });
 
-      return NextResponse.json({ success: true, message: 'Employer created successfully', user: newUser });
+      return NextResponse.json({ success: true, message: 'Employer created successfully', user: withoutSecrets(newUser) });
     }
 
     if (action === 'UPDATE_EMPLOYER') {
@@ -144,7 +144,7 @@ export async function POST(req: Request) {
         data: updateData
       });
 
-      return NextResponse.json({ success: true, message: 'Employer updated successfully', user: updatedUser });
+      return NextResponse.json({ success: true, message: 'Employer updated successfully', user: withoutSecrets(updatedUser) });
     }
 
     if (action === 'DELETE_EMPLOYER') {
