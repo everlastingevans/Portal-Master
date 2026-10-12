@@ -1,4 +1,4 @@
-import { scryptSync, randomBytes, timingSafeEqual } from 'crypto';
+import { scryptSync, randomBytes, timingSafeEqual, createHash } from 'crypto';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
@@ -22,6 +22,11 @@ export async function verifyPassword(password: string, storedHash: string): Prom
   } catch (e) {
     return false;
   }
+}
+
+/** Password reset codes are stored only as a SHA-256 hash, so a database leak can't be used to reset accounts. */
+export function hashResetToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
 }
 
 export async function signToken(payload: any) {
