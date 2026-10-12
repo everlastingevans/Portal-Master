@@ -38,21 +38,25 @@ export async function GET(req: NextRequest) {
               id: true,
               title: true,
               company: true,
+              employer_id: true,
             },
           },
         },
       });
 
-      if (!interview) {
+      // Candidates see their own; employers only interviews for their own jobs (never standalone
+      // practice interviews); superadmins everything. 404 rather than 403 so ids can't be probed.
+      const allowed =
+        !!interview &&
+        (role === 'SUPERADMIN' ||
+          ((role === 'EMPLOYER' || role === 'CLIENT') && interview.job?.employer_id === userId) ||
+          (role === 'CANDIDATE' && interview.candidate_id === userId));
+      if (!interview || !allowed) {
         return NextResponse.json({ error: 'Interview not found' }, { status: 404 });
       }
 
-      // Check RBAC permission for single view
-      if (role === 'CANDIDATE' && interview.candidate_id !== userId) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-      }
-
-      return NextResponse.json({ interview });
+      const { employer_id: _owner, ...job } = interview.job || ({} as any);
+      return NextResponse.json({ interview: { ...interview, job: interview.job ? job : null } });
     }
 
     // 2. Fetch list based on role
@@ -67,12 +71,10 @@ export async function GET(req: NextRequest) {
         orderBy: { created_at: 'desc' },
       });
     } else if (role === 'EMPLOYER' || role === 'CLIENT') {
-      // Fetch interviews for jobs posted by this employer
-      const filter: any = {};
+      // Fetch interviews for jobs posted by this employer (optionally one of their jobs)
+      const filter: any = { job: { employer_id: userId } };
       if (jobIdStr) {
         filter.job_id = parseInt(jobIdStr, 10);
-      } else {
-        filter.job = { employer_id: userId };
       }
 
       interviews = await prisma.videoInterview.findMany({
