@@ -19,12 +19,12 @@ import { jsonLd, siteUrl } from "@/lib/seo";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "LaunchPath | Hire great junior talent in South Africa",
+  title: "LaunchPath | Hire great talent in South Africa",
   description:
     "Tell us who you’re hiring. We’ll send you 3–5 screened candidates within five working days. No upfront fees: you only pay if you hire.",
   openGraph: {
-    title: "LaunchPath | Hire great junior talent without sorting through hundreds of CVs",
-    description: "Screened shortlists for South African junior and early-career roles. No upfront fees. Free for job seekers.",
+    title: "LaunchPath | Hire great talent without sorting through hundreds of CVs",
+    description: "Screened shortlists for South African roles at every level, from graduates to experienced professionals. No upfront fees. Free for job seekers.",
     type: "website",
     locale: "en_ZA",
   },

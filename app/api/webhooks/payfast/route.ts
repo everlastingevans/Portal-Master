@@ -57,7 +57,7 @@ async function activatePaidJob(jobId: number) {
             <span style="font-size: 13px; color: #64748b;">${job.company} &bull; ${job.location}</span>
           </div>
           <p style="font-size: 14px; line-height: 1.6; color: #334155;">
-            Our candidate screening and vetting pipelines have officially commenced. Our internal sourcing team is currently matching your hiring requirements with our vetted junior talent pool.
+            Our candidate screening and vetting pipelines have officially commenced. Our internal sourcing team is currently matching your hiring requirements with our vetted talent pool.
           </p>
           <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 16px; border-radius: 8px; margin: 18px 0;">
             <strong style="font-size: 13px; color: #166534; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;">What happens next?</strong>

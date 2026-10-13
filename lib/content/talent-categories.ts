@@ -1,5 +1,5 @@
 /**
- * Content for the talent category pages (/hire/<slug>). Describes the junior roles we recruit for and
+ * Content for the talent category pages (/hire/<slug>). Describes the roles we recruit for (at every level) and
  * what our screening covers. Keep this factual: no placement statistics, speed or outcome claims unless
  * they are measured and verified.
  */
@@ -20,12 +20,12 @@ export const TALENT_CATEGORIES: TalentCategory[] = [
     slug: 'sales',
     code: 'SALES',
     name: 'Sales',
-    headline: 'Hire junior sales talent who are ready to pick up the phone.',
-    intro: 'Entry-level and early-career sales people for teams that need to book meetings, follow up leads and look after customers.',
+    headline: 'Hire sales talent who are ready to pick up the phone.',
+    intro: 'Sales people at every level, from first-time SDRs to experienced closers, for teams that need to book meetings, win deals and look after customers.',
     roles: [
       { title: 'Sales Development Representative', summary: 'Prospecting, outbound calls and emails, and booking meetings for the sales team.' },
       { title: 'Inside Sales Consultant', summary: 'Handling inbound enquiries, quoting and closing smaller deals by phone and email.' },
-      { title: 'Junior Account Executive', summary: 'Running a small book of accounts with support from a senior seller.' },
+      { title: 'Account Executive', summary: 'Managing a book of accounts, running the sales cycle and closing deals.' },
       { title: 'Telesales Agent', summary: 'Structured outbound calling against targets, often in a contact-centre setting.' },
       { title: 'Customer Success Associate', summary: 'Onboarding and supporting existing customers, renewals and upsell conversations.' },
       { title: 'Sales Administrator', summary: 'Quotes, orders, CRM updates and reporting that keep a sales team running.' },
@@ -44,14 +44,14 @@ export const TALENT_CATEGORIES: TalentCategory[] = [
     slug: 'marketing',
     code: 'MARKETING',
     name: 'Marketing',
-    headline: 'Hire junior marketers who can write, create and keep campaigns moving.',
-    intro: 'Early-career marketing people for teams that need content, social media, campaign support and coordination.',
+    headline: 'Hire marketers who can write, create and keep campaigns moving.',
+    intro: 'Marketing people at every level for teams that need content, social media, campaigns and coordination.',
     roles: [
       { title: 'Marketing Assistant or Coordinator', summary: 'Supporting campaigns, events, suppliers and day-to-day marketing admin.' },
       { title: 'Social Media Coordinator', summary: 'Planning, posting and reporting on social channels, and responding to the community.' },
       { title: 'Content Writer or Copywriter', summary: 'Writing website, email, social and sales copy in your brand’s voice.' },
       { title: 'Digital Marketing Assistant', summary: 'Supporting paid ads, email campaigns, SEO basics and reporting.' },
-      { title: 'Junior Content Designer', summary: 'Creating social and marketing assets with tools such as Canva or Adobe.' },
+      { title: 'Content or Graphic Designer', summary: 'Creating social and marketing assets with tools such as Canva or Adobe.' },
     ],
     screening: [
       'Written communication, with a sample where relevant',
@@ -67,8 +67,8 @@ export const TALENT_CATEGORIES: TalentCategory[] = [
     slug: 'business-operations',
     code: 'BUSINESS_OPERATIONS',
     name: 'Business Operations',
-    headline: 'Hire reliable junior people who keep the business running.',
-    intro: 'Early-career administrators, coordinators and support staff for operations, customer service and back-office teams.',
+    headline: 'Hire reliable people who keep the business running.',
+    intro: 'Administrators, coordinators, support staff and team leads for operations, customer service and back-office teams.',
     roles: [
       { title: 'Operations or Office Administrator', summary: 'Scheduling, records, suppliers and the admin that keeps an office running.' },
       { title: 'Customer Service Agent', summary: 'Resolving customer queries by phone, email or chat.' },
@@ -91,14 +91,14 @@ export const TALENT_CATEGORIES: TalentCategory[] = [
     slug: 'technology',
     code: 'TECHNOLOGY',
     name: 'Technology',
-    headline: 'Hire junior tech talent with skills you can see.',
-    intro: 'Early-career developers, testers, analysts and support technicians for teams that need practical skills from day one.',
+    headline: 'Hire tech talent with skills you can see.',
+    intro: 'Developers, testers, analysts and support technicians at every level, for teams that need practical skills from day one.',
     roles: [
-      { title: 'Junior Software Developer', summary: 'Building and maintaining features under the guidance of senior developers.' },
-      { title: 'Junior Web Developer', summary: 'Websites and front-end work in the stack your team uses.' },
+      { title: 'Software Developer', summary: 'Designing, building and maintaining features, from graduate to senior level.' },
+      { title: 'Web Developer', summary: 'Websites and front-end work in the stack your team uses.' },
       { title: 'IT Support or Service Desk Technician', summary: 'User support, devices, accounts and first-line troubleshooting.' },
       { title: 'QA or Software Tester', summary: 'Testing releases, writing test cases and reporting defects clearly.' },
-      { title: 'Junior Data Analyst', summary: 'Cleaning data, building reports and dashboards, and answering business questions.' },
+      { title: 'Data Analyst', summary: 'Cleaning data, building reports and dashboards, and answering business questions.' },
     ],
     screening: [
       'Practical skills in the tools and stack you need',
@@ -108,20 +108,20 @@ export const TALENT_CATEGORIES: TalentCategory[] = [
       'Salary expectations and availability',
       'Your must-haves from role calibration',
     ],
-    goodToKnow: 'Tell us your stack and what “junior” means for your team. A junior developer at a five-person start-up and at a bank are different hires.',
+    goodToKnow: 'Tell us your stack and the level you need. A developer at a five-person start-up and at a bank are different hires, even with the same job title.',
   },
   {
     slug: 'finance',
     code: 'FINANCE',
     name: 'Finance',
-    headline: 'Hire junior finance staff who are accurate and dependable.',
-    intro: 'Early-career clerks, administrators and analysts for finance teams and accounting practices.',
+    headline: 'Hire finance staff who are accurate and dependable.',
+    intro: 'Clerks, administrators, analysts and accountants at every level for finance teams and accounting practices.',
     roles: [
       { title: 'Accounts Clerk or Bookkeeper', summary: 'Capturing transactions, reconciliations and keeping the books up to date.' },
       { title: 'Accounts Payable or Receivable Clerk', summary: 'Supplier payments, invoicing, statements and follow-up.' },
       { title: 'Credit Controller', summary: 'Managing debtors, collections calls and payment arrangements.' },
       { title: 'Payroll Administrator', summary: 'Preparing payroll inputs, leave records and related admin.' },
-      { title: 'Junior Financial Analyst', summary: 'Supporting budgets, management reports and spreadsheet analysis.' },
+      { title: 'Financial Analyst', summary: 'Budgets, forecasts, management reports and financial analysis.' },
     ],
     screening: [
       'Numeracy and accuracy',

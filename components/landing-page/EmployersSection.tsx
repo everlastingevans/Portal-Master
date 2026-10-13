@@ -39,8 +39,8 @@ function PipelinePreview() {
       <div className="rounded-[22px] bg-white shadow-[0_32px_64px_-32px_rgba(10,27,61,0.35)] ring-1 ring-slate-200/70">
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
           <div>
-            <p className="text-[13px] font-semibold text-brand-navy">Junior Marketing Coordinator</p>
-            <p className="text-[11px] text-slate-500">Johannesburg · Hybrid · 0–2 years</p>
+            <p className="text-[13px] font-semibold text-brand-navy">Marketing Coordinator</p>
+            <p className="text-[11px] text-slate-500">Johannesburg · Hybrid · 3–5 years</p>
           </div>
           <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/15">Shortlist sent</span>
         </div>
@@ -79,8 +79,8 @@ export const EmployersSection = () => (
           <Reveal>
             <SectionHeading
               eyebrow="LaunchPath Hire"
-              title="Hire the right junior talent, without the weekend of CVs."
-              description="A managed recruitment service for junior and early-career roles in Sales, Marketing, Business Operations, Technology and Finance. Hiring for something else? Tell us anyway and we’ll let you know if we can help."
+              title="Hire the right talent, without the weekend of CVs."
+              description="A managed recruitment service for roles at every level, from graduates to experienced professionals, in Sales, Marketing, Business Operations, Technology and Finance. Hiring for something else? Tell us anyway and we’ll let you know if we can help."
             />
             <ul className="mt-6 flex flex-wrap gap-2" aria-label="Roles we hire for">
               {TALENT_CATEGORIES.map((c) => (

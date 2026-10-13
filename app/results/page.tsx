@@ -9,7 +9,7 @@ const studies = publishedCaseStudies();
 
 export const metadata: Metadata = {
   title: "Results and case studies | LaunchPath",
-  description: "Verified results from employers who hired junior talent through LaunchPath.",
+  description: "Verified results from employers who hired talent through LaunchPath.",
   // Don't ask search engines to index an empty page
   robots: studies.length ? undefined : { index: false, follow: true },
   alternates: { canonical: "/results" },

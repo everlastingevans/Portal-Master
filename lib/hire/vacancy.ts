@@ -31,8 +31,12 @@ export const EXPERIENCE_LEVELS = [
   { value: 'UP_TO_1', label: 'Up to 1 year' },
   { value: '1_TO_2', label: '1–2 years' },
   { value: '2_TO_3', label: '2–3 years' },
-  { value: 'OVER_3', label: 'More than 3 years' },
+  { value: '3_TO_5', label: '3–5 years' },
+  { value: 'OVER_5', label: 'More than 5 years' },
 ] as const;
+
+/** Form options plus retired values still stored on older vacancies; use for display labels. */
+export const EXPERIENCE_LABELS = [...EXPERIENCE_LEVELS, { value: 'OVER_3', label: 'More than 3 years' }] as const;
 
 /** Pipeline order. Ops may move a vacancy to any status manually in v1. */
 export const VACANCY_STATUSES = [

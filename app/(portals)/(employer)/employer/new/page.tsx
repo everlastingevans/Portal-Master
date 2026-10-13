@@ -343,7 +343,7 @@ ${description}
                         icon={Briefcase}
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        placeholder="e.g. Junior bookkeeper"
+                        placeholder="e.g. Bookkeeper"
                         required
                         autoComplete="off"
                       />
@@ -369,7 +369,7 @@ ${description}
                   <Field label="Company name" htmlFor="company">
                     <Input id="company" icon={Building2} value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. Ubuntu Logistics" required />
                   </Field>
-                  <Field label="Experience required" htmlFor="experience" optional hint="For example “2+ years” or “Entry level”.">
+                  <Field label="Experience required" htmlFor="experience" optional hint="For example “Entry level”, “2+ years” or “8+ years, including management”.">
                     <Input id="experience" value={yearsExperience} onChange={(e) => setYearsExperience(e.target.value)} placeholder="e.g. 2+ years" />
                   </Field>
                   <Field label="Listing duration">

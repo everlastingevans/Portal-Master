@@ -233,7 +233,7 @@ export const ContactFooter = () => (
           <div className="md:col-span-5">
             <LaunchPathLogo className="h-10" />
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/55">
-              Recruitment for South African junior and early-career roles. Free to submit a vacancy; you only pay if you hire.
+              Recruitment for South African roles at every level of experience. Free to submit a vacancy; you only pay if you hire.
             </p>
           </div>
           <nav className="grid grid-cols-2 gap-8 sm:grid-cols-4 md:col-span-7" aria-label="Footer">

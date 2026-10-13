@@ -1,13 +1,13 @@
-import { Briefcase, GraduationCap, Rocket, Target } from "lucide-react";
+import { Briefcase, Rocket, Target, Users } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { Container, Cta, SectionHeading } from "./primitives";
 
 const ITEMS = [
   {
-    icon: GraduationCap,
-    title: "Graduate matching",
+    icon: Users,
+    title: "Candidate matching",
     sub: "Vetted shortlists, ready to interview.",
-    body: "We screen, assess and shortlist graduates from across South Africa, so you only meet people genuinely fit for the role and your team.",
+    body: "We screen, assess and shortlist candidates at every level from across South Africa, so you only meet people genuinely fit for the role and your team.",
   },
   {
     icon: Briefcase,
@@ -19,13 +19,13 @@ const ITEMS = [
     icon: Target,
     title: "Practical skills assessment",
     sub: "See ability, not buzzwords.",
-    body: "Short, role-relevant tasks reveal how candidates actually think and work. Fairer for graduates and more useful for SMEs.",
+    body: "Short, role-relevant tasks reveal how candidates actually think and work. Fairer for candidates and more useful for employers.",
   },
   {
     icon: Rocket,
     title: "Onboarding and mentoring",
-    sub: "Turn day one into a real career start.",
-    body: "Onboarding frameworks and mentor pairings improve first-year retention and help graduates hit their stride faster.",
+    sub: "Turn day one into a strong start.",
+    body: "Onboarding frameworks and mentor pairings improve first-year retention and help new hires hit their stride faster.",
   },
 ];
 
@@ -38,7 +38,7 @@ export const StrategySection = () => (
             <SectionHeading
               eyebrow="Hiring and growth options"
               title="Support beyond the shortlist."
-              description="Whether it’s your first hire, a graduate programme or an early team, we tailor support so you hire better and keep your people."
+              description="Whether it’s your first hire, a senior appointment or a graduate programme, we tailor support so you hire better and keep your people."
             />
             <div className="mt-8">
               <Cta href="/#contact" variant="outline-dark" arrow>

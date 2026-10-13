@@ -8,7 +8,7 @@ import { useToast } from '@/components/ToastNotification';
 import { Badge, Button, Card, Field, PageSkeleton, Segmented, Select, Textarea } from '../../_components/ui';
 import {
   EMPLOYMENT_TYPES,
-  EXPERIENCE_LEVELS,
+  EXPERIENCE_LABELS,
   HIRE_EVENT_TYPES,
   ROLE_CATEGORIES,
   VACANCY_STATUSES,
@@ -168,7 +168,7 @@ export default function VacancyDetailPage() {
                   ['Work arrangement', labelFor(WORK_ARRANGEMENTS, v.work_arrangement)],
                   ['Salary (monthly)', `${formatRand(v.salary_min)} – ${formatRand(v.salary_max)}`],
                   ['Employment', labelFor(EMPLOYMENT_TYPES, v.employment_type)],
-                  ['Experience', labelFor(EXPERIENCE_LEVELS, v.required_experience)],
+                  ['Experience', labelFor(EXPERIENCE_LABELS, v.required_experience)],
                   ['Key skills', v.key_skills.join(', ') || '—'],
                   ['Start date', v.start_date ? fmtDate(v.start_date) : 'Flexible'],
                 ] as [string, string][]

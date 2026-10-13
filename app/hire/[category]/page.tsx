@@ -23,7 +23,7 @@ export function generateMetadata({ params }: { params: { category: string } }): 
   const c = categoryBySlug(params.category);
   if (!c) return {};
   return {
-    title: `Hire junior ${c.name} talent in South Africa | LaunchPath`,
+    title: `Hire ${c.name} talent in South Africa | LaunchPath`,
     description: `${c.intro} Free to submit a vacancy; you only pay if you hire.`,
     alternates: { canonical: `/hire/${c.slug}` },
   };
@@ -52,10 +52,10 @@ export default async function TalentCategoryPage({ params }: { params: { categor
         <section className="relative overflow-hidden bg-brand-navy pb-20 pt-32 sm:pt-40">
           <div aria-hidden className="pointer-events-none absolute -right-40 -top-32 h-[560px] w-[560px] rounded-full bg-[radial-gradient(circle,rgba(166,242,60,0.14),transparent_62%)]" />
           <Container className="relative">
-            <Eyebrow tone="dark">Junior {c.name} talent</Eyebrow>
+            <Eyebrow tone="dark">{c.name} talent at every level</Eyebrow>
             <h1 className="mt-6 max-w-3xl text-[38px] font-semibold leading-[1.07] tracking-tight text-white sm:text-[52px]">{c.headline}</h1>
             <p className="mt-6 max-w-2xl text-[17px] leading-relaxed text-white/70">
-              {c.intro} Typically 0–3 years’ experience, across South Africa. Free to submit a vacancy; you only pay if you hire.
+              {c.intro} From first-time hires to experienced professionals, across South Africa. Free to submit a vacancy; you only pay if you hire.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Cta href={formHref} variant="lime" arrow track={{ cta: "find_candidates", location: "category_hero" }}>
@@ -70,7 +70,7 @@ export default async function TalentCategoryPage({ params }: { params: { categor
 
         <section className="py-20 md:py-28">
           <Container>
-            <SectionHeading eyebrow="Roles we recruit for" title={`Junior ${c.name.toLowerCase()} roles`} description="Common early-career roles in this area. If yours isn’t listed, submit it anyway and we’ll tell you whether we can help." />
+            <SectionHeading eyebrow="Roles we recruit for" title={`${c.name} roles`} description="Common roles in this area, at every level of experience. If yours isn’t listed, submit it anyway and we’ll tell you whether we can help." />
             <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {c.roles.map((r) => (
                 <li key={r.title} className="rounded-3xl border border-slate-200/80 bg-white p-6">

@@ -30,7 +30,7 @@ function buildFaqs(t: HireTerms) {
     },
     {
       q: "What kind of roles do you recruit for?",
-      a: "Junior and early-career roles, typically 0–3 years’ experience, across Sales, Marketing, Business Operations, Technology and Finance in South Africa. If your role is outside these areas, submit it anyway and we’ll let you know whether we can help.",
+      a: "Roles at every level of experience, from graduates and first-time hires to experienced professionals and managers, across Sales, Marketing, Business Operations, Technology and Finance in South Africa. If your role is outside these areas, submit it anyway and we’ll let you know whether we can help.",
     },
     {
       q: "Can you help us hire several people at once?",

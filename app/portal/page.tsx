@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, GraduationCap, Building2, LucideIcon } from 'lucide-react';
+import { ArrowRight, Briefcase, Building2, LucideIcon } from 'lucide-react';
 import AuthLayout, { AuthHeading, AuthTopLink, AuthDivider } from '@/components/auth/AuthLayout';
 import { buttonClasses } from '@/components/portal/ui';
 
@@ -49,9 +49,9 @@ export default function PortalChooserPage() {
       <div className="space-y-3">
         <PathCard
           href="/register?type=talent"
-          icon={GraduationCap}
+          icon={Briefcase}
           title="I’m looking for work"
-          description="For early-career job seekers."
+          description="For job seekers at every stage of their career."
           points={['Job matches', 'Interview practice', 'Free']}
         />
         <PathCard

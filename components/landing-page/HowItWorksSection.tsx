@@ -38,8 +38,8 @@ export const HowItWorksSection = () => (
         <Reveal>
           <SectionHeading
             eyebrow="How it works"
-            title="Three steps to your next junior hire."
-            description="Built for South African employers hiring for junior and early-career roles, typically 0–3 years’ experience. We do the searching and screening; you meet the people worth meeting."
+            title="Three steps to your next great hire."
+            description="Built for South African employers hiring at every level, from graduates to experienced professionals. We do the searching and screening; you meet the people worth meeting."
           />
         </Reveal>
         <Reveal delay={80} className="shrink-0">

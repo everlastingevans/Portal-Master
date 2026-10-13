@@ -35,7 +35,7 @@ function MatchPreview() {
           <Briefcase className="h-[18px] w-[18px]" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[14px] font-semibold text-brand-navy">Graduate Marketing Assistant</p>
+          <p className="truncate text-[14px] font-semibold text-brand-navy">Marketing Coordinator</p>
           <p className="mt-0.5 flex items-center gap-1 text-[12px] text-slate-500">
             <MapPin className="h-3 w-3" /> Cape Town · Hybrid
           </p>
@@ -87,7 +87,7 @@ export const TalentSection = () => (
             <SectionHeading
               eyebrow="For job seekers"
               title="Get seen for what you can actually do."
-              description="Built for school leavers, graduates, bootcamp learners and junior professionals early in their careers. Free for job seekers, always."
+              description="Built for job seekers at every stage, from school leavers and graduates to experienced professionals ready for their next move. Free for job seekers, always."
             />
           </Reveal>
 

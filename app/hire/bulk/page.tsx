@@ -12,8 +12,8 @@ import { formatRand } from "@/lib/hire/terms";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Hiring several junior people? Talk to LaunchPath",
-  description: "Intakes, multiple seats and recurring junior roles. Tell us what you need and we’ll plan the search with you.",
+  title: "Hiring several people? Talk to LaunchPath",
+  description: "Intakes, multiple seats and recurring roles. Tell us what you need and we’ll plan the search with you.",
   alternates: { canonical: "/hire/bulk" },
 };
 
@@ -31,7 +31,7 @@ export default async function BulkHiringPage() {
         <section className="bg-brand-navy pb-24 pt-32 sm:pt-40">
           <Container>
             <Eyebrow tone="dark">Bulk hiring</Eyebrow>
-            <h1 className="mt-6 max-w-3xl text-[38px] font-semibold leading-[1.07] tracking-tight text-white sm:text-[52px]">Hiring several junior people at once?</h1>
+            <h1 className="mt-6 max-w-3xl text-[38px] font-semibold leading-[1.07] tracking-tight text-white sm:text-[52px]">Hiring several people at once?</h1>
             <p className="mt-6 max-w-2xl text-[17px] leading-relaxed text-white/70">
               For intakes, multiple seats or recurring roles, we plan one search with you and agree pricing per successful hire. Tell us what you need and we’ll be in touch.
             </p>

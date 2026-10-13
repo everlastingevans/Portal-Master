@@ -119,7 +119,7 @@ const prettyUrl = (url: string) => url.replace(/^https?:\/\/(www\.)?/i, '').repl
 function getCompleteness(u: any) {
   const items = [
     { key: 'cv', label: 'Upload your CV', done: !!u?.resume_text, hint: 'Upload your CV so we can match you to the right roles.' },
-    { key: 'basics', label: 'Name and headline', done: !!u?.name && !!u?.professional_title, hint: 'Add a short headline, like "BCom Accounting graduate".' },
+    { key: 'basics', label: 'Name and headline', done: !!u?.name && !!u?.professional_title, hint: 'Add a short headline, like "Chartered accountant" or "BCom Accounting graduate".' },
     { key: 'skills', label: 'Skills', done: !!u?.skills, hint: 'List your key skills so employers can find you.' },
     { key: 'experience', label: 'Experience', done: !!u?.work_experience, hint: 'Add internships, projects, part-time work or volunteering.' },
     { key: 'education', label: 'Education', done: !!u?.qualifications || !!u?.study_institution, hint: 'Tell employers where and what you studied.' },
@@ -442,7 +442,7 @@ export default function ProfileTab({
                     {user?.professional_title || <span className="text-slate-400">Add a headline so employers know what you do</span>}
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <Badge tone="brand">{user?.experience_level || 'Entry level'}</Badge>
+                    {user?.experience_level && <Badge tone="brand">{user.experience_level}</Badge>}
                     {user?.location && (
                       <Badge>
                         <MapPin className="h-3 w-3" /> {user.location}
@@ -523,14 +523,14 @@ export default function ProfileTab({
                   <Input id="pf-name" value={profileName} onChange={(e) => setProfileName(e.target.value)} required autoComplete="name" />
                 </Field>
                 <Field label="Headline" htmlFor="pf-title" optional>
-                  <Input id="pf-title" value={profileTitle} onChange={(e) => setProfileTitle(e.target.value)} placeholder="e.g. Junior software developer" />
+                  <Input id="pf-title" value={profileTitle} onChange={(e) => setProfileTitle(e.target.value)} placeholder="e.g. Software developer" />
                 </Field>
                 <Field label="Experience level" htmlFor="pf-exp">
                   <Select id="pf-exp" value={profileExp} onChange={(e) => setProfileExp(e.target.value)}>
-                    <option value="Junior">Junior</option>
-                    <option value="Mid-Level">Mid-level</option>
-                    <option value="Senior">Senior</option>
-                    <option value="Lead">Lead</option>
+                    <option value="Junior">Junior (0–2 years)</option>
+                    <option value="Mid-Level">Mid-level (3–5 years)</option>
+                    <option value="Senior">Senior (5+ years)</option>
+                    <option value="Lead">Lead or manager</option>
                     <option value="Executive">Executive</option>
                   </Select>
                 </Field>
@@ -584,7 +584,7 @@ export default function ProfileTab({
                   id="pf-roles"
                   value={profileSeekingRoles}
                   onChange={(e) => setProfileSeekingRoles(e.target.value)}
-                  placeholder="e.g. Graduate trainee, Junior data analyst"
+                  placeholder="e.g. Data analyst, Operations manager"
                 />
               </Field>
               <Field label="Career direction" htmlFor="pf-direction" optional>

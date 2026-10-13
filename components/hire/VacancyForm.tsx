@@ -268,7 +268,7 @@ export function VacancyForm({ initialCategory, initialRoleTitle }: { initialCate
         <legend className="text-[13px] font-semibold uppercase tracking-wider text-slate-400">About the role</legend>
         <div className="mt-4 grid gap-5 sm:grid-cols-2">
           <Field label="Role title" name="roleTitle" error={errors.roleTitle}>
-            <input {...field("roleTitle")} type="text" maxLength={120} placeholder="e.g. Junior Sales Consultant" className={cx(inputClass(!!errors.roleTitle), "h-12")} />
+            <input {...field("roleTitle")} type="text" maxLength={120} placeholder="e.g. Sales Consultant" className={cx(inputClass(!!errors.roleTitle), "h-12")} />
           </Field>
           <Field label="Role category" name="roleCategory" error={errors.roleCategory}>
             <select {...field("roleCategory")} className={cx(inputClass(!!errors.roleCategory), "h-12")}>

@@ -18,7 +18,7 @@ export const ROLE_PAGES: RolePage[] = [
     categorySlug: 'sales',
     slug: 'sales-development-representative',
     title: 'Sales Development Representative',
-    summary: 'Junior SDRs open conversations with potential customers by phone, email and LinkedIn, qualify interest and book meetings for account executives.',
+    summary: 'SDRs open conversations with potential customers by phone, email and LinkedIn, qualify interest and book meetings for account executives.',
     responsibilities: ['Outbound calls and emails to target prospects', 'Qualifying leads against agreed criteria', 'Booking meetings for senior sellers', 'Keeping activity and notes up to date in the CRM'],
     screening: ['A short call to hear how they handle a cold conversation', 'Comfort with activity targets and rejection', 'Written follow-up quality', 'Basic CRM and spreadsheet use'],
     faqs: [
@@ -88,10 +88,10 @@ export const ROLE_PAGES: RolePage[] = [
   },
   {
     categorySlug: 'technology',
-    slug: 'junior-software-developer',
-    title: 'Junior Software Developer',
-    summary: 'Junior developers build and maintain features with guidance from senior developers, in your team’s stack.',
-    responsibilities: ['Building and fixing features', 'Writing tests and reviewing code with the team', 'Learning the codebase and tools', 'Documenting their work'],
+    slug: 'software-developer',
+    title: 'Software Developer',
+    summary: 'Software developers design, build and maintain features in your team’s stack, from graduates learning alongside senior engineers to experienced developers who lead the work.',
+    responsibilities: ['Building and fixing features', 'Writing tests and reviewing code with the team', 'Working across the codebase and tools', 'Documenting their work'],
     screening: ['Practical skills in your stack', 'A short, relevant task where agreed with you', 'How they explain their work and decisions', 'Portfolio, GitHub or project examples where available'],
     faqs: [
       { q: 'Do you run a technical test?', a: 'Where you agree to it at calibration, we include a short task relevant to your stack and note the result on the card as a LaunchPath assessment.' },

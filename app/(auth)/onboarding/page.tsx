@@ -15,6 +15,7 @@ const EXPERIENCE_LEVELS = [
   { value: 'Mid-Level', label: 'Mid-level (3–5 years)' },
   { value: 'Senior', label: 'Senior (5+ years)' },
   { value: 'Lead', label: 'Lead or manager' },
+  { value: 'Executive', label: 'Executive' },
 ];
 
 const STEPS = ['Your profile', 'Your CV'];
@@ -30,7 +31,7 @@ export default function OnboardingPage() {
 
   const [name, setName] = useState('');
   const [professionalTitle, setProfessionalTitle] = useState('');
-  const [experienceLevel, setExperienceLevel] = useState('Junior');
+  const [experienceLevel, setExperienceLevel] = useState('');
   const [phone, setPhone] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [githubUrl, setGithubUrl] = useState('');
@@ -185,12 +186,15 @@ export default function OnboardingPage() {
                     icon={Briefcase}
                     value={professionalTitle}
                     onChange={(e) => setProfessionalTitle(e.target.value)}
-                    placeholder="e.g. Junior Data Analyst"
+                    placeholder="e.g. Data Analyst"
                     required
                   />
                 </Field>
                 <Field label="Experience" htmlFor="ob-exp">
-                  <Select id="ob-exp" value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)}>
+                  <Select id="ob-exp" value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)} required>
+                    <option value="" disabled>
+                      Select your experience
+                    </option>
                     {EXPERIENCE_LEVELS.map((l) => (
                       <option key={l.value} value={l.value}>
                         {l.label}

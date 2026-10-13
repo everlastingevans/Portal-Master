@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Find Candidates | LaunchPath",
-  description: "Submit your vacancy for free. We’ll send you 3–5 screened junior candidates within five working days. You only pay if you hire.",
+  description: "Submit your vacancy for free. We’ll send you 3–5 screened candidates within five working days. You only pay if you hire.",
   // Prefill query strings (?category=, ?role=) all point at one canonical page
   alternates: { canonical: "/find-candidates" },
 };
@@ -39,7 +39,7 @@ export default async function FindCandidatesPage({ searchParams }: { searchParam
         <div aria-hidden className="pointer-events-none absolute -right-40 -top-32 h-[560px] w-[560px] rounded-full bg-[radial-gradient(circle,rgba(166,242,60,0.14),transparent_62%)]" />
         <Container className="relative">
           <Eyebrow tone="dark">LaunchPath Hire</Eyebrow>
-          <h1 className="mt-5 max-w-3xl text-[36px] font-semibold leading-[1.08] tracking-tight text-white sm:text-[48px]">Find great junior talent for your team.</h1>
+          <h1 className="mt-5 max-w-3xl text-[36px] font-semibold leading-[1.08] tracking-tight text-white sm:text-[48px]">Find great talent for your team.</h1>
           <p className="mt-5 max-w-2xl text-[17px] leading-relaxed text-white/70">
             Tell us who you’re hiring. It’s free, there’s no account to create and no payment details to enter. You only pay if you hire.
           </p>

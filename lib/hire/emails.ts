@@ -2,7 +2,7 @@
  * LaunchPath Hire transactional email templates. Pure render functions (used for sending, retries and
  * the admin development preview). Wording describes timelines as targets, never guarantees.
  */
-import { EMPLOYMENT_TYPES, EXPERIENCE_LEVELS, ROLE_CATEGORIES, WORK_ARRANGEMENTS, labelFor } from './vacancy';
+import { EMPLOYMENT_TYPES, EXPERIENCE_LABELS, ROLE_CATEGORIES, WORK_ARRANGEMENTS, labelFor } from './vacancy';
 
 export interface RenderedEmail {
   subject: string;
@@ -102,7 +102,7 @@ export function renderOpsNewVacancy(v: VacancyEmailData): RenderedEmail {
     ['Location', `${v.location} · ${labelFor(WORK_ARRANGEMENTS, v.work_arrangement)}`],
     ['Salary (monthly)', `${rand(v.salary_min)} – ${rand(v.salary_max)}`],
     ['Employment type', labelFor(EMPLOYMENT_TYPES, v.employment_type)],
-    ['Experience', labelFor(EXPERIENCE_LEVELS, v.required_experience)],
+    ['Experience', labelFor(EXPERIENCE_LABELS, v.required_experience)],
     ['Key skills', v.key_skills.join(', ')],
     ['Start date', v.start_date ? v.start_date.toISOString().slice(0, 10) : 'Flexible'],
   ];
@@ -236,7 +236,7 @@ export function previewEmail(template: string): RenderedEmail | null {
     contact_name: 'Alex Example',
     contact_email: 'alex@example.com',
     contact_phone: '+27 82 000 0000',
-    role_title: 'Junior Sales Consultant',
+    role_title: 'Sales Consultant',
     role_category: 'SALES',
     role_category_other: null,
     location: 'Sandton, Johannesburg',
@@ -277,7 +277,7 @@ export function previewEmail(template: string): RenderedEmail | null {
         message: 'Example message from the employer.',
       });
     case "ops_programme_enquiry":
-      return renderOpsProgrammeEnquiry({ id: 77, companyName: vacancy.company_name, contactName: vacancy.contact_name, workEmail: vacancy.contact_email, phone: vacancy.contact_phone, targetHires: 12, categories: ["SALES", "BUSINESS_OPERATIONS"], locations: "Johannesburg, Durban", requirements: "Example: a contact-centre intake of 12 junior agents starting in February." });
+      return renderOpsProgrammeEnquiry({ id: 77, companyName: vacancy.company_name, contactName: vacancy.contact_name, workEmail: vacancy.contact_email, phone: vacancy.contact_phone, targetHires: 12, categories: ["SALES", "BUSINESS_OPERATIONS"], locations: "Johannesburg, Durban", requirements: "Example: a contact-centre intake of 12 agents and 2 team leaders starting in February." });
     default:
       return null;
   }

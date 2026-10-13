@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Building2, Check, ClipboardCheck, GraduationCap, Mail, Users } from "lucide-react";
+import { ArrowRight, Briefcase, Building2, Check, ClipboardCheck, Mail, Users } from "lucide-react";
 import HeroImage from "@/assets/models/models1.jpg";
 import { Container, Cta, Eyebrow, MockAvatar } from "./primitives";
 
@@ -22,9 +22,9 @@ const AUDIENCES = [
     track: "bulk_hiring",
   },
   {
-    icon: GraduationCap,
+    icon: Briefcase,
     title: "Looking for work",
-    body: "Early in your career? Build one free profile and get considered for real roles.",
+    body: "Starting out or years in? Build one free profile and get considered for real roles.",
     href: "/register?type=talent",
     cta: "Find a job",
     track: "candidate_signup",
@@ -48,11 +48,11 @@ export const HeroSection = ({ guaranteeDays }: { guaranteeDays: number }) => {
           {/* Copy */}
           <div className="lg:col-span-6 xl:col-span-7">
             <div className="animate-fade-in">
-              <Eyebrow tone="dark">Recruitment for South African junior and early-career roles</Eyebrow>
+              <Eyebrow tone="dark">Recruitment for South African roles at every level</Eyebrow>
             </div>
 
             <h1 className="mt-6 text-[40px] font-semibold leading-[1.05] tracking-tight text-white animate-fade-in [animation-delay:80ms] sm:text-[56px] xl:text-[64px]">
-              Hire <span className="text-brand-lime">great junior talent</span> without sorting through hundreds of CVs.
+              Hire <span className="text-brand-lime">great talent</span> without sorting through hundreds of CVs.
             </h1>
 
             <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-white/70 animate-fade-in [animation-delay:160ms] sm:text-lg">
@@ -103,7 +103,7 @@ export const HeroSection = ({ guaranteeDays }: { guaranteeDays: number }) => {
                   <Mail className="h-3 w-3" /> Sent
                 </span>
               </div>
-              <p className="mt-0.5 text-[11px] text-slate-500">Junior Sales Consultant · Johannesburg</p>
+              <p className="mt-0.5 text-[11px] text-slate-500">Sales Consultant · Johannesburg</p>
               <ul className="mt-3 space-y-2">
                 {["Lerato M", "Sipho D", "Ayanda K"].map((name, i) => (
                   <li key={name} className="flex items-center gap-2.5">

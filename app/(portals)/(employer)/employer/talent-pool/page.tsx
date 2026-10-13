@@ -178,7 +178,7 @@ export default function TalentPoolPage() {
       <div className="space-y-6">
         <PageHeader
           title="Talent pool"
-          description="Search early-career candidates across LaunchPath and invite the right people to apply to your live roles."
+          description="Search candidates at every level across LaunchPath and invite the right people to apply to your live roles."
           actions={
             <Button variant="secondary" icon={SlidersHorizontal} onClick={() => setFiltersOpen(true)} className="lg:hidden">
               Filters{count > 0 ? ` (${count})` : ''}

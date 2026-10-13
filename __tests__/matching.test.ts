@@ -58,6 +58,20 @@ describe('explainable matching', () => {
     expect(status(matchCandidate({ ...vacancy, start_date: new Date('2026-10-10') }, cand(4, { availability: 'ONE_MONTH' }), NOW), 'availability')).toBe('partial');
   });
 
+  it('judges experience at every level, from entry to senior roles', () => {
+    const exp = (req: string, level: string) => status(matchCandidate({ ...vacancy, required_experience: req }, cand(5, { experience_level: level }), NOW), 'experience');
+    expect(exp('UP_TO_1', 'Senior')).toBe('partial');
+    expect(exp('2_TO_3', 'Junior')).toBe('partial');
+    expect(exp('3_TO_5', 'Mid-Level')).toBe('match');
+    expect(exp('3_TO_5', 'Junior')).toBe('mismatch');
+    expect(exp('OVER_5', 'Senior')).toBe('match');
+    expect(exp('OVER_5', 'Executive')).toBe('match');
+    expect(exp('OVER_5', 'Mid-Level')).toBe('partial');
+    expect(exp('OVER_5', 'Junior')).toBe('mismatch');
+    // Retired option still stored on older vacancies
+    expect(exp('OVER_3', 'Lead')).toBe('match');
+  });
+
   it('ranks by known matches but never drops anyone', () => {
     const pool = [cand(10, { skills: 'Python', location: 'Western Cape' }), cand(11), cand(12, { skills: null })];
     const ranked = rankMatches(pool.map((c) => matchCandidate(vacancy, c, NOW)));

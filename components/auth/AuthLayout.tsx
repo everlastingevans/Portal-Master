@@ -12,16 +12,16 @@ const PANEL_COPY: Record<AuthAudience, { headline: ReactNode; body: string; poin
   neutral: {
     headline: (
       <>
-        Where early-career talent meets <span className="text-brand-lime">growing businesses</span>.
+        Where great talent meets <span className="text-brand-lime">growing businesses</span>.
       </>
     ),
-    body: 'LaunchPath connects South African graduates with SMEs through AI matching, verified profiles and faster hiring.',
+    body: 'LaunchPath connects South African talent at every level with employers through AI matching, verified profiles and faster hiring.',
     points: ['AI-matched roles and candidates', 'Video interviews and readiness scores', 'Email, SMS and WhatsApp updates'],
   },
   talent: {
     headline: (
       <>
-        Your first role starts with the <span className="text-brand-lime">right match</span>.
+        Your next role starts with the <span className="text-brand-lime">right match</span>.
       </>
     ),
     body: 'Upload your CV once. We match you to roles that fit your skills and keep you updated at every step.',
@@ -30,7 +30,7 @@ const PANEL_COPY: Record<AuthAudience, { headline: ReactNode; body: string; poin
   employer: {
     headline: (
       <>
-        Hire entry-level talent <span className="text-brand-lime">faster and smarter</span>.
+        Hire great talent <span className="text-brand-lime">faster and smarter</span>.
       </>
     ),
     body: 'Post a role in minutes and review pre-matched candidates with CVs, scores and video answers.',

@@ -4,6 +4,7 @@
  * automatic rejection: missing data (including no LaunchPath assessment) is "unknown", never a fail.
  * Suggestions are for recruiter review only; nothing is sent to employers automatically.
  */
+import { EXPERIENCE_LABELS, labelFor } from './vacancy';
 
 export type CriterionStatus = 'match' | 'partial' | 'mismatch' | 'unknown';
 export interface Criterion {
@@ -67,7 +68,18 @@ export function provinceOf(text?: string | null): string | null {
 const AVAILABILITY_DAYS: Record<string, number> = { IMMEDIATE: 0, TWO_WEEKS: 14, ONE_MONTH: 30 };
 const AVAILABILITY_TEXT: Record<string, string> = { IMMEDIATE: 'immediately', TWO_WEEKS: 'in 2 weeks', ONE_MONTH: 'in 1 month' };
 const STOP = new Set(['junior', 'senior', 'graduate', 'intern', 'trainee', 'assistant', 'entry', 'level', 'the', 'and', 'of', 'a', 'to', 'in', 'for', 'officer', 'specialist']);
-const roleWords = (s?: string | null) => new Set(norm(s || '').split(' ').filter((w) => w.length > 2 && !STOP.has(w)));
+const LEVEL_RANK: Record<string, number> = { Junior: 0, 'Mid-Level': 1, Senior: 2, Lead: 3, Executive: 3 };
+/** Profile ranks that fit each vacancy requirement; `stretch` is the rank just below that is worth a look. */
+const REQUIRED_FIT: Record<string, { min: number; max: number; stretch?: number }> = {
+  NONE: { min: 0, max: 0 },
+  UP_TO_1: { min: 0, max: 0 },
+  '1_TO_2': { min: 0, max: 0 },
+  '2_TO_3': { min: 1, max: 1, stretch: 0 },
+  '3_TO_5': { min: 1, max: 1 },
+  OVER_3: { min: 1, max: 3 },
+  OVER_5: { min: 2, max: 3, stretch: 1 },
+};
+const roleWords =(s?: string | null) => new Set(norm(s || '').split(' ').filter((w) => w.length > 2 && !STOP.has(w)));
 const rand = (n: number) => `R${n.toLocaleString('en-ZA').replace(/\s/g, ',')}`;
 
 export function matchCandidate(v: MatchVacancy, c: MatchCandidate, now = new Date()) {
@@ -89,23 +101,30 @@ export function matchCandidate(v: MatchVacancy, c: MatchCandidate, now = new Dat
     });
   }
 
-  // Experience (profile levels: Junior 0–2, Mid-Level 3–5, Senior 5+)
+  // Experience (profile levels: Junior 0–2, Mid-Level 3–5, Senior 5+, Lead, Executive)
   const level = c.experience_level;
   const req = v.required_experience;
   if (!level) criteria.push({ key: 'experience', label: 'Experience', status: 'unknown', detail: 'No experience level on profile.' });
+  else if (!(level in LEVEL_RANK)) criteria.push({ key: 'experience', label: 'Experience', status: 'unknown', detail: `Profile level “${level}” not recognised.` });
+  else if (!REQUIRED_FIT[req]) criteria.push({ key: 'experience', label: 'Experience', status: 'unknown', detail: 'The vacancy’s experience requirement isn’t recognised.' });
   else {
-    const juniorOk = ['NONE', 'UP_TO_1', '1_TO_2'].includes(req);
+    const { min, max, stretch } = REQUIRED_FIT[req];
+    const rank = LEVEL_RANK[level];
+    const reqText = labelFor(EXPERIENCE_LABELS, req).toLowerCase();
     let status: CriterionStatus;
     let detail: string;
-    if (level === 'Junior') {
-      status = juniorOk ? 'match' : req === '2_TO_3' ? 'partial' : 'mismatch';
-      detail = juniorOk ? 'Junior profile fits the requirement.' : req === '2_TO_3' ? 'Junior (0–2 years) for a 2–3 year role; check experience.' : 'Junior profile for a role needing 3+ years.';
-    } else if (level === 'Mid-Level' || level === 'Senior') {
-      status = req === 'OVER_3' || (req === '2_TO_3' && level === 'Mid-Level') ? 'match' : 'partial';
-      detail = status === 'match' ? `${level} profile fits.` : `${level} profile is more experienced than this role asks for; check salary and fit.`;
+    if (rank >= min && rank <= max) {
+      status = 'match';
+      detail = `${level} profile fits the requirement.`;
+    } else if (rank > max) {
+      status = 'partial';
+      detail = `${level} profile is more experienced than this role asks for; check salary and fit.`;
+    } else if (rank === stretch) {
+      status = 'partial';
+      detail = `${level} profile for a role asking for ${reqText}; check experience.`;
     } else {
-      status = 'unknown';
-      detail = `Profile level “${level}” not recognised.`;
+      status = 'mismatch';
+      detail = `${level} profile for a role asking for ${reqText}.`;
     }
     criteria.push({ key: 'experience', label: 'Experience', status, detail });
   }

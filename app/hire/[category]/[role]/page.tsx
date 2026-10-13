@@ -12,6 +12,9 @@ import { breadcrumbJsonLd, faqJsonLd, jsonLd } from "@/lib/seo";
 
 export const dynamicParams = false;
 
+/** "a Software Developer", "an Accounts Clerk", "an IT Support…" */
+const withArticle = (title: string) => `${/^[aeiou]/i.test(title) ? "an" : "a"} ${title}`;
+
 export function generateStaticParams() {
   return ROLE_PAGES.map((r) => ({ category: r.categorySlug, role: r.slug }));
 }
@@ -21,10 +24,10 @@ export function generateMetadata({ params }: { params: { category: string; role:
   if (!r) return {};
   const path = `/hire/${r.categorySlug}/${r.slug}`;
   return {
-    title: `Hire a junior ${r.title} in South Africa | LaunchPath`,
+    title: `Hire ${withArticle(r.title)} in South Africa | LaunchPath`,
     description: `${r.summary} Screened shortlist; free to submit, pay only if you hire.`,
     alternates: { canonical: path },
-    openGraph: { title: `Hire a junior ${r.title} | LaunchPath`, description: r.summary, url: path, type: "website", locale: "en_ZA" },
+    openGraph: { title: `Hire ${withArticle(r.title)} | LaunchPath`, description: r.summary, url: path, type: "website", locale: "en_ZA" },
   };
 }
 
@@ -57,9 +60,9 @@ export default function RolePageView({ params }: { params: { category: string; r
               / <span className="text-white/80">{r.title}</span>
             </nav>
             <div className="mt-6">
-              <Eyebrow tone="dark">Junior {c.name.toLowerCase()} roles</Eyebrow>
+              <Eyebrow tone="dark">{c.name} roles at every level</Eyebrow>
             </div>
-            <h1 className="mt-6 max-w-3xl text-[38px] font-semibold leading-[1.07] tracking-tight text-white sm:text-[52px]">Hire a junior {r.title}</h1>
+            <h1 className="mt-6 max-w-3xl text-[38px] font-semibold leading-[1.07] tracking-tight text-white sm:text-[52px]">Hire {withArticle(r.title)}</h1>
             <p className="mt-6 max-w-2xl text-[17px] leading-relaxed text-white/70">{r.summary}</p>
             <div className="mt-9">
               <Cta href={formHref} variant="lime" arrow track={{ cta: "find_candidates", location: "role_hero" }}>
@@ -120,7 +123,7 @@ export default function RolePageView({ params }: { params: { category: string; r
 
         <section className="py-20 md:py-28">
           <Container>
-            <SectionHeading eyebrow="FAQ" title={`Hiring a ${r.title}: questions`} />
+            <SectionHeading eyebrow="FAQ" title={`Hiring ${withArticle(r.title)}: questions`} />
             <dl className="mt-10 divide-y divide-slate-200 border-y border-slate-200">
               {faqs.map((f) => (
                 <div key={f.q} className="py-6">
