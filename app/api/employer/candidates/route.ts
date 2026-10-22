@@ -6,9 +6,11 @@ import { AVAILABILITY_VALUES, CANDIDATE_LOCATIONS, parseSkills, TalentCandidate,
 
 const PAGE_SIZE = 12;
 
-// A profile counts as "active" once the candidate has given us something to match on
+// A profile counts as "active" once the candidate has given us something to match on. Profiles staff
+// imported from CVs stay hidden until the candidate signs in, unless the import made them visible.
 const ACTIVE_PROFILE: Prisma.UserWhereInput = {
   role: 'CANDIDATE',
+  talent_pool_visible: true,
   OR: [{ resume_text: { not: null } }, { skills: { not: null } }, { professional_title: { not: null } }],
 };
 

@@ -23,6 +23,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
+    // First sign-in to a profile staff imported from a CV: the candidate now owns it, so it joins the
+    // employer talent pool like any self-registered profile
+    if (user.created_via === 'CV_IMPORT' && !user.claimed_at) {
+      await db.user.update({ where: { id: user.id }, data: { claimed_at: new Date(), talent_pool_visible: true } });
+    }
+
     const token = await signToken({ userId: user.id, role: user.role });
     const cookieStore = cookies();
     cookieStore.set('auth-token', token, {
