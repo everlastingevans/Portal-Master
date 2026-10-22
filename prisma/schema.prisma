@@ -54,6 +54,14 @@ model User {
   location                String?          // e.g. "Gauteng", "Western Cape", "Remote"
   availability            String?          // IMMEDIATE | TWO_WEEKS | ONE_MONTH
   bio                     String?
+  // CV import: where a candidate came from and whether employers can see them in the talent pool
+  source_id               Int?
+  source                  CandidateSource? @relation(fields: [source_id], references: [id], onDelete: SetNull)
+  import_batch_id         Int?
+  import_batch            CvImportBatch?   @relation(fields: [import_batch_id], references: [id], onDelete: SetNull)
+  created_via             String           @default("SELF_SIGNUP") // SELF_SIGNUP | CV_IMPORT
+  claimed_at              DateTime?        // first sign-in of an imported profile
+  talent_pool_visible     Boolean          @default(true)
   reset_token             String?
   reset_token_expiry      DateTime?
   job_matches             JobMatch[]
@@ -71,7 +79,67 @@ model User {
   activities_authored     ApplicationActivity[] @relation("ActivityActor")
   notes_authored          ApplicationNote[]     @relation("NoteAuthor")
 
+  @@index([source_id])
+  @@index([import_batch_id])
   @@map("users")
+}
+
+/// A school, university or training organisation that candidates come from. Used to tag imported
+/// CVs so staff can filter the talent list by organisation.
+model CandidateSource {
+  id            Int      @id @default(autoincrement())
+  name          String   @unique
+  kind          String   @default("TRAINING_PROVIDER") // SCHOOL | UNIVERSITY | COLLEGE | TRAINING_PROVIDER | BOOTCAMP | OTHER
+  created_by_id Int?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  candidates User[]
+  batches    CvImportBatch[]
+
+  @@map("candidate_sources")
+}
+
+/// One staff CV upload session (a single CV or a bulk upload). The browser sends files one at a
+/// time, so a batch whose processed count is below total_files was interrupted or is still running.
+model CvImportBatch {
+  id                   Int      @id @default(autoincrement())
+  source_id            Int?
+  label                String?
+  mode                 String   @default("BULK") // SINGLE | BULK
+  total_files          Int      @default(0)
+  talent_pool_visible  Boolean  @default(false) // show created profiles to employers before the candidate signs in
+  consent_confirmed_at DateTime // staff confirmed the candidates agreed to LaunchPath processing their CVs
+  created_by_id        Int?
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+
+  source     CandidateSource? @relation(fields: [source_id], references: [id], onDelete: SetNull)
+  items      CvImportItem[]
+  candidates User[]
+
+  @@index([source_id])
+  @@map("cv_import_batches")
+}
+
+/// The outcome for one file in a batch. candidate_id is deliberately not a foreign key so the import
+/// history survives a candidate being deleted.
+model CvImportItem {
+  id           Int      @id @default(autoincrement())
+  batch_id     Int
+  file_name    String
+  file_size    Int
+  status       String   // CREATED | EXISTING | NEEDS_REVIEW | FAILED
+  candidate_id Int?
+  message      String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  batch CvImportBatch @relation(fields: [batch_id], references: [id], onDelete: Cascade)
+
+  @@index([batch_id])
+  @@index([candidate_id])
+  @@map("cv_import_items")
 }
 
 model Notification {

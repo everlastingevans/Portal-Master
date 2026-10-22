@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 
     const [job, candidate, employer] = await Promise.all([
       db.job.findUnique({ where: { id: jid }, select: { id: true, title: true, company: true, location: true, status: true, employer_id: true } }),
-      db.user.findUnique({ where: { id: cid }, select: { id: true, name: true, email: true, role: true } }),
+      db.user.findUnique({ where: { id: cid }, select: { id: true, name: true, email: true, role: true, talent_pool_visible: true } }),
       db.user.findUnique({ where: { id: employerId }, select: { name: true } }),
     ]);
 
@@ -37,7 +37,8 @@ export async function POST(req: Request) {
     if (job.status !== 'ACTIVE') {
       return NextResponse.json({ error: 'Only live roles can receive invitations. Publish the role first.' }, { status: 403 });
     }
-    if (!candidate || candidate.role !== 'CANDIDATE') {
+    // Hidden profiles (imported CVs not yet claimed) can't be found in the pool, so they can't be invited either
+    if (!candidate || candidate.role !== 'CANDIDATE' || !candidate.talent_pool_visible) {
       return NextResponse.json({ error: 'That candidate was not found.' }, { status: 404 });
     }
 

@@ -56,7 +56,18 @@ const RELATIONS: Record<string, Record<string, Rel>> = {
     vacancy: { model: 'vacancy', kind: 'one', fk: 'vacancy_id', owner: 'self' },
     shortlist_candidate: { model: 'shortlistCandidate', kind: 'one', fk: 'shortlist_candidate_id', owner: 'self' },
   },
-  user: { video_interviews: { model: 'videoInterview', kind: 'many', fk: 'candidate_id', owner: 'other' } },
+  user: {
+    video_interviews: { model: 'videoInterview', kind: 'many', fk: 'candidate_id', owner: 'other' },
+    source: { model: 'candidateSource', kind: 'one', fk: 'source_id', owner: 'self' },
+    import_batch: { model: 'cvImportBatch', kind: 'one', fk: 'import_batch_id', owner: 'self' },
+  },
+  // CV import
+  candidateSource: { candidates: { model: 'user', kind: 'many', fk: 'source_id', owner: 'other' } },
+  cvImportBatch: {
+    source: { model: 'candidateSource', kind: 'one', fk: 'source_id', owner: 'self' },
+    items: { model: 'cvImportItem', kind: 'many', fk: 'batch_id', owner: 'other' },
+  },
+  cvImportItem: { batch: { model: 'cvImportBatch', kind: 'one', fk: 'batch_id', owner: 'self' } },
   // Job board
   job: {
     employer: { model: 'user', kind: 'one', fk: 'employer_id', owner: 'self' },
@@ -90,6 +101,7 @@ const UNIQUE: Record<string, string[]> = {
   partnerSubscription: ['checkout_ref', 'provider_token'],
   billingEvent: ['event_key'],
   bulkProgramme: ['submission_key'],
+  candidateSource: ['name'],
 };
 
 const DEFAULTS: Record<string, () => Row> = {
@@ -112,7 +124,11 @@ const DEFAULTS: Record<string, () => Row> = {
   vacancyStatusEvent: () => ({}),
   employerLead: () => ({}),
   appSetting: () => ({}),
-  user: () => ({ role: 'CANDIDATE' }),
+  user: () => ({ role: 'CANDIDATE', created_via: 'SELF_SIGNUP', talent_pool_visible: true, claimed_at: null, source_id: null, import_batch_id: null }),
+  candidateSource: () => ({ kind: 'TRAINING_PROVIDER' }),
+  cvImportBatch: () => ({ mode: 'BULK', total_files: 0, talent_pool_visible: false, source_id: null, label: null }),
+  cvImportItem: () => ({ candidate_id: null, message: null }),
+  jobInvitation: () => ({}),
   videoInterview: () => ({}),
   // Job board
   tenant: () => ({ plan: 'free', features: '{}' }),

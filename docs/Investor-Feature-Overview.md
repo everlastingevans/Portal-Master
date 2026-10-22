@@ -6,12 +6,14 @@
 
 ## 1. What LaunchPath is
 
-LaunchPath is a recruitment platform for **junior and early-career hiring in South Africa**: roles needing roughly 0–3 years' experience in Sales, Marketing, Business Operations, Technology and Finance.
+LaunchPath is a recruitment platform for **South African hiring at every level of experience**, from graduates and first-time hires to experienced professionals and managers, in Sales, Marketing, Business Operations, Technology and Finance.
+
+LaunchPath started with junior and early-career roles and has since widened to every level, so the same service now covers an employer's first hire and their senior appointments.
 
 It addresses a problem on both sides of the market:
 
-- **Employers** advertise a junior role, get hundreds of CVs and find hardly any that fit. Hours go into filtering, interviews lead nowhere and roles stay open for weeks.
-- **Young job seekers** send dozens of applications, rarely hear back, and never get the chance to show what they can actually do.
+- **Employers** advertise a role, get hundreds of CVs and find hardly any that fit. Hours go into filtering, interviews lead nowhere and roles stay open for weeks.
+- **Job seekers** send dozens of applications, rarely hear back, and never get the chance to show what they can actually do.
 
 LaunchPath's answer has three parts:
 
@@ -42,7 +44,7 @@ All three run on one platform, with an internal operations console that lets a s
 
 The main offer. It is designed to be as easy as possible to start.
 
-- **Free vacancy submission, no account needed.** A short "Find Candidates" form captures the role, location, work arrangement, salary range, experience level, key skills and start date. A live fee estimate shows the employer the cost up front.
+- **Free vacancy submission, no account needed.** A short "Find Candidates" form captures the role, location, work arrangement, salary range, experience required (from "no experience needed" to "more than 5 years"), key skills and start date. A live fee estimate shows the employer the cost up front.
 - **Role calibration call.** The team calls the employer to agree what good looks like and what rules a candidate out.
 - **Shortlist in five working days.** For serviceable roles, the target is 3–5 screened candidates within five working days of calibration.
 - **Candidate Cards.** Each shortlisted candidate is shown on a consistent card with their target role, location, experience, salary expectation, availability, key skills, the recruiter's note and the LaunchPath screening results (match level, communication rating, role assessment score and interview readiness).
@@ -69,6 +71,7 @@ For employers who want to run their own hiring:
 
 ## 4. Features for job seekers (free)
 
+- **For every stage of a career.** Profiles cover every level, from graduate or junior through mid-level, senior, lead and executive, so experienced professionals can use LaunchPath as well as people starting out.
 - **One profile, built automatically.** Candidates upload a CV or connect LinkedIn, and AI extracts their skills, education and experience. No long forms.
 - **Quick onboarding.** Setup takes two steps, and candidates can skip the CV upload and add it later.
 - **Job matches.** Candidates see how well they fit each role and which skills are worth building next.
@@ -85,7 +88,9 @@ For employers who want to run their own hiring:
 These tools let a small LaunchPath team run managed recruitment at scale. Most of the service's margin depends on them.
 
 - **Vacancy pipeline.** Every vacancy moves through 15 tracked stages, from *New Vacancy → Calibration → Sourcing → Screening → Shortlist Sent → Interviewing → Offer → Hired* to *30/60/90-day checks* and closure. Every status change is recorded.
-- **Explainable candidate matching.** For each vacancy, the system suggests candidates from the talent pool and explains each criterion in plain language: skills, experience, location, salary, availability and role. Every suggestion has to be reviewed by a recruiter, and the system never rejects anyone automatically. This approach is transparent, auditable and fair, which matters for POPIA and for employer trust.
+- **AI CV import, single or bulk.** Staff can upload one CV, or up to 200 at a time, and AI builds a complete candidate profile from each: contact details, headline, experience level, location, skills, qualifications and work history. Single CVs are checked by a person before saving. Bulk uploads create profiles automatically and flag any that need a closer look, for example a CV with no email address. Scanned CVs work too. This lets LaunchPath load a whole graduate class or training cohort in minutes instead of asking each person to sign up.
+- **Partner organisation tracking.** Every import can be tagged with the school, university, college or training provider the CVs came from. The talent list can then be filtered by organisation, which shows each partner how many of their candidates are on the platform and where they are in the hiring process.
+- **Explainable candidate matching.** For each vacancy, the system suggests candidates from the talent pool and explains each criterion in plain language: skills, experience, location, salary, availability and role. Experience is matched at every level, from entry-level roles to roles needing 5+ years. Every suggestion has to be reviewed by a recruiter, and the system never rejects anyone automatically. This approach is transparent, auditable and fair, which matters for POPIA and for employer trust.
 - **Shortlist builder.** Recruiters put together Candidate Cards, record their screening assessments, attach CVs and send the employer a secure link.
 - **Placements and invoicing.** When a candidate starts, the server calculates the placement fee from the agreed terms and records the guarantee end date. The invoice is then tracked from *Not invoiced* through *Invoiced* to *Paid*.
 - **Retention follow-ups.** At 30, 60 and 90 days after a placement, recruiters record whether the person is still in the role. This data underpins the guarantee and the quality claims LaunchPath makes to employers.
@@ -119,7 +124,9 @@ Reports can be broken down by role category and exported to PDF.
 ## 6. Public website and growth
 
 - **Landing page with a page for each audience** (employers, bulk hirers and job seekers), clear pricing, a three-step "how it works" section and an FAQ.
-- **SEO role pages.** Pages such as "Hire a junior sales consultant" are generated for each role category to bring in organic search traffic from employers.
+- **Messaging for every level.** The website and sign-up pages speak to employers hiring at any level and to job seekers at any stage of their career, not only to graduates.
+- **Partner logos.** The homepage shows LaunchPath's training and university partners (Regent Business School, Richfield, Melsoft Academy, Umuzi, Code Girls Academy and Capacitia) and hiring partners (Checkers, Trenchless Technologies and Idilli).
+- **SEO role pages.** Pages such as "Hire a Sales Development Representative" and "Hire a Software Developer" are generated for each role category to bring in organic search traffic from employers.
 - **Search engine optimisation.** The site has a sitemap, canonical URLs and structured data, so it shows up well in Google results.
 - **Working contact form** that sends enquiries straight to the team.
 - **Analytics** on visits and conversions across the site.
@@ -131,6 +138,7 @@ Reports can be broken down by role category and exported to PDF.
 Hiring involves personal data, so these protections were built into the platform from the start:
 
 - **POPIA by design.** Employers browsing the Talent Pool never see a candidate's email, phone number or CV until the candidate applies. Candidates are told at sign-up that employers can discover their profile, and they can delete their account at any time.
+- **Consent for imported CVs.** Before importing CVs, staff must confirm the candidates agreed to LaunchPath processing them, for example through their school or training provider. Imported profiles are visible only to LaunchPath staff until the candidate signs in for the first time, unless staff choose otherwise for that import. An import never overwrites a profile a candidate created themselves.
 - **Human in the loop.** AI helps recruiters (drafting, summarising, suggesting) but every hiring decision is made by a person. Matching never rejects candidates automatically.
 - **Secure sharing.** Shortlist links use bank-grade random tokens. Only a fingerprint of each token is stored, links expire, and they can be revoked.
 - **Role-based access.** Candidates, employers, LaunchPath staff and super-admins each see only what they are allowed to see. Private notes and AI dossiers are never shown to candidates.
@@ -147,7 +155,7 @@ A modern, scalable stack with low running costs:
 |---|---|
 | Web application | Next.js 14 and TypeScript, hosted on Vercel |
 | Database | PostgreSQL (Neon) with Prisma |
-| AI | Google Gemini (CV parsing, job drafting, interview scoring, recruiter dossiers) |
+| AI | Google Gemini (CV parsing and bulk CV import, job drafting, interview scoring, recruiter dossiers) |
 | Video interviews | Mux (video upload, processing and playback) |
 | Payments | PayFast (South Africa) and Stripe-ready |
 | Messaging | Email (SendGrid and Brevo), SMS (Twilio), WhatsApp (Brevo) |
@@ -162,6 +170,7 @@ A modern, scalable stack with low running costs:
 - **Built:** everything described above is built. The platform has been in development since June 2026, with more than 130 releases.
 - **Live:** the managed recruitment service (LaunchPath Hire), the candidate platform, the self-serve employer tools and the admin console.
 - **Built and switched off:** the Hiring Partner subscription, bulk programmes and the employer hiring dashboard. These can be turned on as soon as the pricing and terms are finalised.
-- **Next:** finalise the subscription and bulk pricing terms, publish the Privacy Policy and Terms of Service, add team invitations so several recruiters at one employer can work together, and scale the talent pool.
+- **Built, release pending:** AI CV import (single and bulk) with partner organisation tracking. It needs a database update before it goes live.
+- **Next:** release CV import and start loading cohorts from training and university partners, finalise the subscription and bulk pricing terms, publish the Privacy Policy and Terms of Service, add team invitations so several recruiters at one employer can work together, and scale the talent pool.
 
 > **Traction:** *[Add current figures: candidates registered, vacancies received, shortlists sent, placements, revenue.]*

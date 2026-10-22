@@ -22,6 +22,14 @@ export async function GET() {
         linkedin_url: true,
         github_url: true,
         phone: true,
+        location: true,
+        skills: true,
+        source_id: true,
+        source: { select: { id: true, name: true, kind: true } },
+        import_batch_id: true,
+        created_via: true,
+        claimed_at: true,
+        talent_pool_visible: true,
         video_interviews: {
           select: {
             id: true,
